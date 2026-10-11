@@ -1,0 +1,1155 @@
+{
+  "version": 1,
+  "status": "pending-independent-review",
+  "split": "development",
+  "corpusSha256": "224dafbe993a69d6e67977aac103140bc20887ddfe2007eceaba847a6e892283",
+  "originalCasesSha256": "0e4452775edba329c949241a162f9f6209f4377983ef377f16933a11d97be087",
+  "reviewer": {
+    "name": "",
+    "date": "",
+    "role": "",
+    "independentOfQuestionAuthoringAndRetrieverTuning": null
+  },
+  "cases": [
+    {
+      "id": "PUB-001",
+      "question": "What is the first-year engineering Open category total fee for AY 2026-27?",
+      "language": "en",
+      "answerability": null,
+      "requiredFacets": [],
+      "acceptedEvidenceGroups": [],
+      "rationale": "",
+      "candidateJudgments": [
+        {
+          "recordId": "KB-10",
+          "relevance": null,
+          "supportedFacet": "",
+          "rationale": ""
+        },
+        {
+          "recordId": "KB-2",
+          "relevance": null,
+          "supportedFacet": "",
+          "rationale": ""
+        },
+        {
+          "recordId": "KB-3",
+          "relevance": null,
+          "supportedFacet": "",
+          "rationale": ""
+        },
+        {
+          "recordId": "KB-30",
+          "relevance": null,
+          "supportedFacet": "",
+          "rationale": ""
+        }
+      ],
+      "additionalSupportingRecordIds": [],
+      "allCorpusRecordsConsidered": false,
+      "reviewed": false
+    },
+    {
+      "id": "PUB-002",
+      "question": "What are the hostel deposit and annual mess charges for 2026-27?",
+      "language": "en",
+      "answerability": null,
+      "requiredFacets": [],
+      "acceptedEvidenceGroups": [],
+      "rationale": "",
+      "candidateJudgments": [
+        {
+          "recordId": "KB-15",
+          "relevance": null,
+          "supportedFacet": "",
+          "rationale": ""
+        },
+        {
+          "recordId": "KB-23",
+          "relevance": null,
+          "supportedFacet": "",
+          "rationale": ""
+        },
+        {
+          "recordId": "KB-3",
+          "relevance": null,
+          "supportedFacet": "",
+          "rationale": ""
+        },
+        {
+          "recordId": "KB-32",
+          "relevance": null,
+          "supportedFacet": "",
+          "rationale": ""
+        }
+      ],
+      "additionalSupportingRecordIds": [],
+      "allCorpusRecordsConsidered": false,
+      "reviewed": false
+    },
+    {
+      "id": "PUB-003",
+      "question": "What is the published CSE B.Tech intake for 2026-27?",
+      "language": "en",
+      "answerability": null,
+      "requiredFacets": [],
+      "acceptedEvidenceGroups": [],
+      "rationale": "",
+      "candidateJudgments": [
+        {
+          "recordId": "KB-10",
+          "relevance": null,
+          "supportedFacet": "",
+          "rationale": ""
+        },
+        {
+          "recordId": "KB-12",
+          "relevance": null,
+          "supportedFacet": "",
+          "rationale": ""
+        },
+        {
+          "recordId": "KB-9",
+          "relevance": null,
+          "supportedFacet": "",
+          "rationale": ""
+        }
+      ],
+      "additionalSupportingRecordIds": [],
+      "allCorpusRecordsConsidered": false,
+      "reviewed": false
+    },
+    {
+      "id": "PUB-004",
+      "question": "Show the historical 2024-25 CSE seat matrix, not the current intake.",
+      "language": "en",
+      "answerability": null,
+      "requiredFacets": [],
+      "acceptedEvidenceGroups": [],
+      "rationale": "",
+      "candidateJudgments": [
+        {
+          "recordId": "KB-10",
+          "relevance": null,
+          "supportedFacet": "",
+          "rationale": ""
+        },
+        {
+          "recordId": "KB-6",
+          "relevance": null,
+          "supportedFacet": "",
+          "rationale": ""
+        },
+        {
+          "recordId": "KB-7",
+          "relevance": null,
+          "supportedFacet": "",
+          "rationale": ""
+        },
+        {
+          "recordId": "KB-9",
+          "relevance": null,
+          "supportedFacet": "",
+          "rationale": ""
+        }
+      ],
+      "additionalSupportingRecordIds": [],
+      "allCorpusRecordsConsidered": false,
+      "reviewed": false
+    },
+    {
+      "id": "PUB-005",
+      "question": "Does the college offer accommodation?",
+      "language": "en",
+      "answerability": null,
+      "requiredFacets": [],
+      "acceptedEvidenceGroups": [],
+      "rationale": "",
+      "candidateJudgments": [
+        {
+          "recordId": "KB-15",
+          "relevance": null,
+          "supportedFacet": "",
+          "rationale": ""
+        },
+        {
+          "recordId": "KB-23",
+          "relevance": null,
+          "supportedFacet": "",
+          "rationale": ""
+        },
+        {
+          "recordId": "KB-34",
+          "relevance": null,
+          "supportedFacet": "",
+          "rationale": ""
+        },
+        {
+          "recordId": "KB-35",
+          "relevance": null,
+          "supportedFacet": "",
+          "rationale": ""
+        }
+      ],
+      "additionalSupportingRecordIds": [],
+      "allCorpusRecordsConsidered": false,
+      "reviewed": false
+    },
+    {
+      "id": "PUB-006",
+      "question": "Where can I borrow books and access digital journals on campus?",
+      "language": "en",
+      "answerability": null,
+      "requiredFacets": [],
+      "acceptedEvidenceGroups": [],
+      "rationale": "",
+      "candidateJudgments": [
+        {
+          "recordId": "KB-15",
+          "relevance": null,
+          "supportedFacet": "",
+          "rationale": ""
+        },
+        {
+          "recordId": "KB-20",
+          "relevance": null,
+          "supportedFacet": "",
+          "rationale": ""
+        },
+        {
+          "recordId": "KB-21",
+          "relevance": null,
+          "supportedFacet": "",
+          "rationale": ""
+        },
+        {
+          "recordId": "KB-36",
+          "relevance": null,
+          "supportedFacet": "",
+          "rationale": ""
+        }
+      ],
+      "additionalSupportingRecordIds": [],
+      "allCorpusRecordsConsidered": false,
+      "reviewed": false
+    },
+    {
+      "id": "PUB-007",
+      "question": "List the first-year B.Tech courses and the Open category academic fee for 2026-27.",
+      "language": "en",
+      "answerability": null,
+      "requiredFacets": [],
+      "acceptedEvidenceGroups": [],
+      "rationale": "",
+      "candidateJudgments": [
+        {
+          "recordId": "KB-10",
+          "relevance": null,
+          "supportedFacet": "",
+          "rationale": ""
+        },
+        {
+          "recordId": "KB-2",
+          "relevance": null,
+          "supportedFacet": "",
+          "rationale": ""
+        },
+        {
+          "recordId": "KB-30",
+          "relevance": null,
+          "supportedFacet": "",
+          "rationale": ""
+        },
+        {
+          "recordId": "KB-9",
+          "relevance": null,
+          "supportedFacet": "",
+          "rationale": ""
+        }
+      ],
+      "additionalSupportingRecordIds": [],
+      "allCorpusRecordsConsidered": false,
+      "reviewed": false
+    },
+    {
+      "id": "PUB-008",
+      "question": "Explain hostel facilities and the college bus facility.",
+      "language": "en",
+      "answerability": null,
+      "requiredFacets": [],
+      "acceptedEvidenceGroups": [],
+      "rationale": "",
+      "candidateJudgments": [
+        {
+          "recordId": "KB-15",
+          "relevance": null,
+          "supportedFacet": "",
+          "rationale": ""
+        },
+        {
+          "recordId": "KB-19",
+          "relevance": null,
+          "supportedFacet": "",
+          "rationale": ""
+        },
+        {
+          "recordId": "KB-23",
+          "relevance": null,
+          "supportedFacet": "",
+          "rationale": ""
+        }
+      ],
+      "additionalSupportingRecordIds": [],
+      "allCorpusRecordsConsidered": false,
+      "reviewed": false
+    },
+    {
+      "id": "PUB-009",
+      "question": "मराठीत उत्तर द्या: 2026-27 मध्ये CSE B.Tech ची प्रवेश क्षमता किती आहे?",
+      "language": "mr",
+      "answerability": null,
+      "requiredFacets": [],
+      "acceptedEvidenceGroups": [],
+      "rationale": "",
+      "candidateJudgments": [
+        {
+          "recordId": "KB-10",
+          "relevance": null,
+          "supportedFacet": "",
+          "rationale": ""
+        },
+        {
+          "recordId": "KB-12",
+          "relevance": null,
+          "supportedFacet": "",
+          "rationale": ""
+        },
+        {
+          "recordId": "KB-30",
+          "relevance": null,
+          "supportedFacet": "",
+          "rationale": ""
+        },
+        {
+          "recordId": "KB-9",
+          "relevance": null,
+          "supportedFacet": "",
+          "rationale": ""
+        }
+      ],
+      "additionalSupportingRecordIds": [],
+      "allCorpusRecordsConsidered": false,
+      "reviewed": false
+    },
+    {
+      "id": "PUB-010",
+      "question": "हिंदी में बताइए: 2026-27 में CSE B.Tech का intake कितना है?",
+      "language": "hi",
+      "answerability": null,
+      "requiredFacets": [],
+      "acceptedEvidenceGroups": [],
+      "rationale": "",
+      "candidateJudgments": [
+        {
+          "recordId": "KB-10",
+          "relevance": null,
+          "supportedFacet": "",
+          "rationale": ""
+        },
+        {
+          "recordId": "KB-12",
+          "relevance": null,
+          "supportedFacet": "",
+          "rationale": ""
+        },
+        {
+          "recordId": "KB-9",
+          "relevance": null,
+          "supportedFacet": "",
+          "rationale": ""
+        }
+      ],
+      "additionalSupportingRecordIds": [],
+      "allCorpusRecordsConsidered": false,
+      "reviewed": false
+    },
+    {
+      "id": "PUB-011",
+      "question": "Please answer in Marathi: list the first-year B.Tech courses for 2026-27.",
+      "language": "mr",
+      "answerability": null,
+      "requiredFacets": [],
+      "acceptedEvidenceGroups": [],
+      "rationale": "",
+      "candidateJudgments": [
+        {
+          "recordId": "KB-10",
+          "relevance": null,
+          "supportedFacet": "",
+          "rationale": ""
+        },
+        {
+          "recordId": "KB-11",
+          "relevance": null,
+          "supportedFacet": "",
+          "rationale": ""
+        },
+        {
+          "recordId": "KB-30",
+          "relevance": null,
+          "supportedFacet": "",
+          "rationale": ""
+        },
+        {
+          "recordId": "KB-9",
+          "relevance": null,
+          "supportedFacet": "",
+          "rationale": ""
+        }
+      ],
+      "additionalSupportingRecordIds": [],
+      "allCorpusRecordsConsidered": false,
+      "reviewed": false
+    },
+    {
+      "id": "PUB-012",
+      "question": "Mala hostel fee ani mess charges 2026-27 sanga.",
+      "language": "mixed",
+      "answerability": null,
+      "requiredFacets": [],
+      "acceptedEvidenceGroups": [],
+      "rationale": "",
+      "candidateJudgments": [
+        {
+          "recordId": "KB-2",
+          "relevance": null,
+          "supportedFacet": "",
+          "rationale": ""
+        },
+        {
+          "recordId": "KB-23",
+          "relevance": null,
+          "supportedFacet": "",
+          "rationale": ""
+        },
+        {
+          "recordId": "KB-3",
+          "relevance": null,
+          "supportedFacet": "",
+          "rationale": ""
+        }
+      ],
+      "additionalSupportingRecordIds": [],
+      "allCorpusRecordsConsidered": false,
+      "reviewed": false
+    },
+    {
+      "id": "RET-01",
+      "question": "Where can I borrow books and read electronic journals?",
+      "language": "en",
+      "answerability": null,
+      "requiredFacets": [],
+      "acceptedEvidenceGroups": [],
+      "rationale": "",
+      "candidateJudgments": [
+        {
+          "recordId": "KB-12",
+          "relevance": null,
+          "supportedFacet": "",
+          "rationale": ""
+        },
+        {
+          "recordId": "KB-20",
+          "relevance": null,
+          "supportedFacet": "",
+          "rationale": ""
+        },
+        {
+          "recordId": "KB-8",
+          "relevance": null,
+          "supportedFacet": "",
+          "rationale": ""
+        }
+      ],
+      "additionalSupportingRecordIds": [],
+      "allCorpusRecordsConsidered": false,
+      "reviewed": false
+    },
+    {
+      "id": "RET-02",
+      "question": "Is wireless internet available on campus?",
+      "language": "en",
+      "answerability": null,
+      "requiredFacets": [],
+      "acceptedEvidenceGroups": [],
+      "rationale": "",
+      "candidateJudgments": [
+        {
+          "recordId": "KB-21",
+          "relevance": null,
+          "supportedFacet": "",
+          "rationale": ""
+        },
+        {
+          "recordId": "KB-22",
+          "relevance": null,
+          "supportedFacet": "",
+          "rationale": ""
+        },
+        {
+          "recordId": "KB-34",
+          "relevance": null,
+          "supportedFacet": "",
+          "rationale": ""
+        },
+        {
+          "recordId": "KB-36",
+          "relevance": null,
+          "supportedFacet": "",
+          "rationale": ""
+        }
+      ],
+      "additionalSupportingRecordIds": [],
+      "allCorpusRecordsConsidered": false,
+      "reviewed": false
+    },
+    {
+      "id": "RET-03",
+      "question": "How do students travel using college transportation?",
+      "language": "en",
+      "answerability": null,
+      "requiredFacets": [],
+      "acceptedEvidenceGroups": [],
+      "rationale": "",
+      "candidateJudgments": [
+        {
+          "recordId": "KB-17",
+          "relevance": null,
+          "supportedFacet": "",
+          "rationale": ""
+        },
+        {
+          "recordId": "KB-19",
+          "relevance": null,
+          "supportedFacet": "",
+          "rationale": ""
+        },
+        {
+          "recordId": "KB-28",
+          "relevance": null,
+          "supportedFacet": "",
+          "rationale": ""
+        },
+        {
+          "recordId": "KB-3",
+          "relevance": null,
+          "supportedFacet": "",
+          "rationale": ""
+        },
+        {
+          "recordId": "KB-34",
+          "relevance": null,
+          "supportedFacet": "",
+          "rationale": ""
+        },
+        {
+          "recordId": "KB-36",
+          "relevance": null,
+          "supportedFacet": "",
+          "rationale": ""
+        }
+      ],
+      "additionalSupportingRecordIds": [],
+      "allCorpusRecordsConsidered": false,
+      "reviewed": false
+    },
+    {
+      "id": "RET-04",
+      "question": "Where can boys and girls stay during their studies?",
+      "language": "en",
+      "answerability": null,
+      "requiredFacets": [],
+      "acceptedEvidenceGroups": [],
+      "rationale": "",
+      "candidateJudgments": [
+        {
+          "recordId": "KB-15",
+          "relevance": null,
+          "supportedFacet": "",
+          "rationale": ""
+        },
+        {
+          "recordId": "KB-2",
+          "relevance": null,
+          "supportedFacet": "",
+          "rationale": ""
+        },
+        {
+          "recordId": "KB-23",
+          "relevance": null,
+          "supportedFacet": "",
+          "rationale": ""
+        },
+        {
+          "recordId": "KB-35",
+          "relevance": null,
+          "supportedFacet": "",
+          "rationale": ""
+        }
+      ],
+      "additionalSupportingRecordIds": [],
+      "allCorpusRecordsConsidered": false,
+      "reviewed": false
+    },
+    {
+      "id": "RET-05",
+      "question": "Which entrance examinations are accepted for admission?",
+      "language": "en",
+      "answerability": null,
+      "requiredFacets": [],
+      "acceptedEvidenceGroups": [],
+      "rationale": "",
+      "candidateJudgments": [
+        {
+          "recordId": "KB-1",
+          "relevance": null,
+          "supportedFacet": "",
+          "rationale": ""
+        },
+        {
+          "recordId": "KB-13",
+          "relevance": null,
+          "supportedFacet": "",
+          "rationale": ""
+        },
+        {
+          "recordId": "KB-25",
+          "relevance": null,
+          "supportedFacet": "",
+          "rationale": ""
+        },
+        {
+          "recordId": "KB-3",
+          "relevance": null,
+          "supportedFacet": "",
+          "rationale": ""
+        },
+        {
+          "recordId": "KB-9",
+          "relevance": null,
+          "supportedFacet": "",
+          "rationale": ""
+        }
+      ],
+      "additionalSupportingRecordIds": [],
+      "allCorpusRecordsConsidered": false,
+      "reviewed": false
+    },
+    {
+      "id": "RET-06",
+      "question": "What documents does an SC applicant need?",
+      "language": "en",
+      "answerability": null,
+      "requiredFacets": [],
+      "acceptedEvidenceGroups": [],
+      "rationale": "",
+      "candidateJudgments": [
+        {
+          "recordId": "KB-1",
+          "relevance": null,
+          "supportedFacet": "",
+          "rationale": ""
+        },
+        {
+          "recordId": "KB-13",
+          "relevance": null,
+          "supportedFacet": "",
+          "rationale": ""
+        },
+        {
+          "recordId": "KB-24",
+          "relevance": null,
+          "supportedFacet": "",
+          "rationale": ""
+        },
+        {
+          "recordId": "KB-26",
+          "relevance": null,
+          "supportedFacet": "",
+          "rationale": ""
+        },
+        {
+          "recordId": "KB-27",
+          "relevance": null,
+          "supportedFacet": "",
+          "rationale": ""
+        }
+      ],
+      "additionalSupportingRecordIds": [],
+      "allCorpusRecordsConsidered": false,
+      "reviewed": false
+    },
+    {
+      "id": "RET-07",
+      "question": "What certificates does an OBC applicant need?",
+      "language": "en",
+      "answerability": null,
+      "requiredFacets": [],
+      "acceptedEvidenceGroups": [],
+      "rationale": "",
+      "candidateJudgments": [
+        {
+          "recordId": "KB-1",
+          "relevance": null,
+          "supportedFacet": "",
+          "rationale": ""
+        },
+        {
+          "recordId": "KB-13",
+          "relevance": null,
+          "supportedFacet": "",
+          "rationale": ""
+        },
+        {
+          "recordId": "KB-24",
+          "relevance": null,
+          "supportedFacet": "",
+          "rationale": ""
+        },
+        {
+          "recordId": "KB-27",
+          "relevance": null,
+          "supportedFacet": "",
+          "rationale": ""
+        }
+      ],
+      "additionalSupportingRecordIds": [],
+      "allCorpusRecordsConsidered": false,
+      "reviewed": false
+    },
+    {
+      "id": "RET-08",
+      "question": "Can I apply through institute-level admission?",
+      "language": "en",
+      "answerability": null,
+      "requiredFacets": [],
+      "acceptedEvidenceGroups": [],
+      "rationale": "",
+      "candidateJudgments": [
+        {
+          "recordId": "KB-1",
+          "relevance": null,
+          "supportedFacet": "",
+          "rationale": ""
+        },
+        {
+          "recordId": "KB-14",
+          "relevance": null,
+          "supportedFacet": "",
+          "rationale": ""
+        },
+        {
+          "recordId": "KB-29",
+          "relevance": null,
+          "supportedFacet": "",
+          "rationale": ""
+        },
+        {
+          "recordId": "KB-7",
+          "relevance": null,
+          "supportedFacet": "",
+          "rationale": ""
+        },
+        {
+          "recordId": "KB-8",
+          "relevance": null,
+          "supportedFacet": "",
+          "rationale": ""
+        }
+      ],
+      "additionalSupportingRecordIds": [],
+      "allCorpusRecordsConsidered": false,
+      "reviewed": false
+    },
+    {
+      "id": "RET-09",
+      "question": "What support is available for internships?",
+      "language": "en",
+      "answerability": null,
+      "requiredFacets": [],
+      "acceptedEvidenceGroups": [],
+      "rationale": "",
+      "candidateJudgments": [
+        {
+          "recordId": "KB-16",
+          "relevance": null,
+          "supportedFacet": "",
+          "rationale": ""
+        },
+        {
+          "recordId": "KB-22",
+          "relevance": null,
+          "supportedFacet": "",
+          "rationale": ""
+        },
+        {
+          "recordId": "KB-24",
+          "relevance": null,
+          "supportedFacet": "",
+          "rationale": ""
+        },
+        {
+          "recordId": "KB-9",
+          "relevance": null,
+          "supportedFacet": "",
+          "rationale": ""
+        }
+      ],
+      "additionalSupportingRecordIds": [],
+      "allCorpusRecordsConsidered": false,
+      "reviewed": false
+    },
+    {
+      "id": "RET-10",
+      "question": "What does the Pragati scholarship offer girl students?",
+      "language": "en",
+      "answerability": null,
+      "requiredFacets": [],
+      "acceptedEvidenceGroups": [],
+      "rationale": "",
+      "candidateJudgments": [
+        {
+          "recordId": "KB-14",
+          "relevance": null,
+          "supportedFacet": "",
+          "rationale": ""
+        },
+        {
+          "recordId": "KB-18",
+          "relevance": null,
+          "supportedFacet": "",
+          "rationale": ""
+        },
+        {
+          "recordId": "KB-32",
+          "relevance": null,
+          "supportedFacet": "",
+          "rationale": ""
+        },
+        {
+          "recordId": "KB-33",
+          "relevance": null,
+          "supportedFacet": "",
+          "rationale": ""
+        }
+      ],
+      "additionalSupportingRecordIds": [],
+      "allCorpusRecordsConsidered": false,
+      "reviewed": false
+    },
+    {
+      "id": "RET-11",
+      "question": "What is the minimum attendance requirement?",
+      "language": "en",
+      "answerability": null,
+      "requiredFacets": [],
+      "acceptedEvidenceGroups": [],
+      "rationale": "",
+      "candidateJudgments": [
+        {
+          "recordId": "KB-31",
+          "relevance": null,
+          "supportedFacet": "",
+          "rationale": ""
+        },
+        {
+          "recordId": "KB-32",
+          "relevance": null,
+          "supportedFacet": "",
+          "rationale": ""
+        },
+        {
+          "recordId": "KB-9",
+          "relevance": null,
+          "supportedFacet": "",
+          "rationale": ""
+        }
+      ],
+      "additionalSupportingRecordIds": [],
+      "allCorpusRecordsConsidered": false,
+      "reviewed": false
+    },
+    {
+      "id": "RET-12",
+      "question": "What does the biometric attendance circular require?",
+      "language": "en",
+      "answerability": null,
+      "requiredFacets": [],
+      "acceptedEvidenceGroups": [],
+      "rationale": "",
+      "candidateJudgments": [
+        {
+          "recordId": "KB-20",
+          "relevance": null,
+          "supportedFacet": "",
+          "rationale": ""
+        },
+        {
+          "recordId": "KB-31",
+          "relevance": null,
+          "supportedFacet": "",
+          "rationale": ""
+        },
+        {
+          "recordId": "KB-32",
+          "relevance": null,
+          "supportedFacet": "",
+          "rationale": ""
+        },
+        {
+          "recordId": "KB-5",
+          "relevance": null,
+          "supportedFacet": "",
+          "rationale": ""
+        }
+      ],
+      "additionalSupportingRecordIds": [],
+      "allCorpusRecordsConsidered": false,
+      "reviewed": false
+    },
+    {
+      "id": "RET-13",
+      "question": "How can I contact the admissions office?",
+      "language": "en",
+      "answerability": null,
+      "requiredFacets": [],
+      "acceptedEvidenceGroups": [],
+      "rationale": "",
+      "candidateJudgments": [
+        {
+          "recordId": "KB-1",
+          "relevance": null,
+          "supportedFacet": "",
+          "rationale": ""
+        },
+        {
+          "recordId": "KB-13",
+          "relevance": null,
+          "supportedFacet": "",
+          "rationale": ""
+        },
+        {
+          "recordId": "KB-17",
+          "relevance": null,
+          "supportedFacet": "",
+          "rationale": ""
+        },
+        {
+          "recordId": "KB-7",
+          "relevance": null,
+          "supportedFacet": "",
+          "rationale": ""
+        },
+        {
+          "recordId": "KB-8",
+          "relevance": null,
+          "supportedFacet": "",
+          "rationale": ""
+        }
+      ],
+      "additionalSupportingRecordIds": [],
+      "allCorpusRecordsConsidered": false,
+      "reviewed": false
+    },
+    {
+      "id": "RET-14",
+      "question": "Give first-year fees and annual hostel charges.",
+      "language": "en",
+      "answerability": null,
+      "requiredFacets": [],
+      "acceptedEvidenceGroups": [],
+      "rationale": "",
+      "candidateJudgments": [
+        {
+          "recordId": "KB-10",
+          "relevance": null,
+          "supportedFacet": "",
+          "rationale": ""
+        },
+        {
+          "recordId": "KB-14",
+          "relevance": null,
+          "supportedFacet": "",
+          "rationale": ""
+        },
+        {
+          "recordId": "KB-2",
+          "relevance": null,
+          "supportedFacet": "",
+          "rationale": ""
+        },
+        {
+          "recordId": "KB-23",
+          "relevance": null,
+          "supportedFacet": "",
+          "rationale": ""
+        },
+        {
+          "recordId": "KB-3",
+          "relevance": null,
+          "supportedFacet": "",
+          "rationale": ""
+        }
+      ],
+      "additionalSupportingRecordIds": [],
+      "allCorpusRecordsConsidered": false,
+      "reviewed": false
+    },
+    {
+      "id": "RET-15",
+      "question": "ग्रंथालयात कोणत्या सुविधा उपलब्ध आहेत?",
+      "language": "mr",
+      "answerability": null,
+      "requiredFacets": [],
+      "acceptedEvidenceGroups": [],
+      "rationale": "",
+      "candidateJudgments": [
+        {
+          "recordId": "KB-15",
+          "relevance": null,
+          "supportedFacet": "",
+          "rationale": ""
+        },
+        {
+          "recordId": "KB-20",
+          "relevance": null,
+          "supportedFacet": "",
+          "rationale": ""
+        },
+        {
+          "recordId": "KB-35",
+          "relevance": null,
+          "supportedFacet": "",
+          "rationale": ""
+        },
+        {
+          "recordId": "KB-36",
+          "relevance": null,
+          "supportedFacet": "",
+          "rationale": ""
+        }
+      ],
+      "additionalSupportingRecordIds": [],
+      "allCorpusRecordsConsidered": false,
+      "reviewed": false
+    },
+    {
+      "id": "RET-16",
+      "question": "पुस्तकालय में कौन-कौन सी सुविधाएँ उपलब्ध हैं?",
+      "language": "hi",
+      "answerability": null,
+      "requiredFacets": [],
+      "acceptedEvidenceGroups": [],
+      "rationale": "",
+      "candidateJudgments": [
+        {
+          "recordId": "KB-15",
+          "relevance": null,
+          "supportedFacet": "",
+          "rationale": ""
+        },
+        {
+          "recordId": "KB-20",
+          "relevance": null,
+          "supportedFacet": "",
+          "rationale": ""
+        },
+        {
+          "recordId": "KB-35",
+          "relevance": null,
+          "supportedFacet": "",
+          "rationale": ""
+        },
+        {
+          "recordId": "KB-36",
+          "relevance": null,
+          "supportedFacet": "",
+          "rationale": ""
+        }
+      ],
+      "additionalSupportingRecordIds": [],
+      "allCorpusRecordsConsidered": false,
+      "reviewed": false
+    },
+    {
+      "id": "RET-17",
+      "question": "वसतिगृह आणि मेसचे शुल्क किती आहे?",
+      "language": "mr",
+      "answerability": null,
+      "requiredFacets": [],
+      "acceptedEvidenceGroups": [],
+      "rationale": "",
+      "candidateJudgments": [
+        {
+          "recordId": "KB-2",
+          "relevance": null,
+          "supportedFacet": "",
+          "rationale": ""
+        },
+        {
+          "recordId": "KB-23",
+          "relevance": null,
+          "supportedFacet": "",
+          "rationale": ""
+        },
+        {
+          "recordId": "KB-3",
+          "relevance": null,
+          "supportedFacet": "",
+          "rationale": ""
+        }
+      ],
+      "additionalSupportingRecordIds": [],
+      "allCorpusRecordsConsidered": false,
+      "reviewed": false
+    },
+    {
+      "id": "RET-18",
+      "question": "प्रथम वर्ष B.Tech की फीस कितनी है?",
+      "language": "hi",
+      "answerability": null,
+      "requiredFacets": [],
+      "acceptedEvidenceGroups": [],
+      "rationale": "",
+      "candidateJudgments": [
+        {
+          "recordId": "KB-10",
+          "relevance": null,
+          "supportedFacet": "",
+          "rationale": ""
+        },
+        {
+          "recordId": "KB-11",
+          "relevance": null,
+          "supportedFacet": "",
+          "rationale": ""
+        },
+        {
+          "recordId": "KB-2",
+          "relevance": null,
+          "supportedFacet": "",
+          "rationale": ""
+        },
+        {
+          "recordId": "KB-9",
+          "relevance": null,
+          "supportedFacet": "",
+          "rationale": ""
+        }
+      ],
+      "additionalSupportingRecordIds": [],
+      "allCorpusRecordsConsidered": false,
+      "reviewed": false
+    }
+  ]
+}

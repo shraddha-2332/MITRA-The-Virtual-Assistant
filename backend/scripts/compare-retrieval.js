@@ -1,0 +1,64 @@
+import fs from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
+import crypto from 'node:crypto';
+import { fileURLToPath } from 'node:url';
+import { performance } from 'node:perf_hooks';
+import { config } from '../src/config.js';
+import { createSeedData } from '../src/seed.js';
+import { resetDbForTests } from '../src/store.js';
+import { retrieveKnowledge, normalizeIntentText } from '../src/server.js';
+import { createBm25 } from '../src/bm25.js';
+import { retrievalMetrics } from '../evaluation/retrieval-metrics.js';
+
+const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+const hash = value => crypto.createHash('sha256').update(value).digest('hex');
+const original = JSON.parse(fs.readFileSync(path.join(root, 'evaluation/public-development.json')));
+const additional = JSON.parse(fs.readFileSync(path.join(root, 'evaluation/retrieval-development.json')));
+const cases = [...original.records.filter(r => r.answerability === 'supported').map(r => ({ id: r.id, question: r.question, language: r.language, evidenceGroups: r.evidenceGroups })), ...additional.records];
+const seed = createSeedData();
+const corpus = seed.knowledge.filter(record => record.status === 'Published');
+const known = new Set(corpus.map(record => record.id));
+const ids = new Set();
+for (const item of cases) {
+  if (ids.has(item.id) || !item.question || !item.evidenceGroups.length || item.evidenceGroups.some(group => !group.length || group.some(id => !known.has(id)))) throw new Error(`Invalid judgment: ${item.id}`);
+  ids.add(item.id);
+}
+const temporary = fs.mkdtempSync(path.join(os.tmpdir(), 'mitra-retrieval-'));
+function cleanup() {
+  if (path.dirname(temporary) !== path.resolve(os.tmpdir()) || !path.basename(temporary).startsWith('mitra-retrieval-')) throw new Error('Unsafe cleanup');
+  fs.rmSync(temporary, { recursive: true, force: true });
+}
+config.databaseFile = path.join(temporary, 'evaluation.sqlite');
+config.geminiApiKey = '';
+resetDbForTests(seed);
+try {
+  const started = performance.now();
+  const bm25 = createBm25(corpus);
+  const buildMs = performance.now() - started;
+  const methods = { keyword: retrieveKnowledge, bm25Raw: bm25, bm25Normalized: question => bm25(normalizeIntentText(question)) };
+  const rows = cases.map(item => ({ ...item, methods: {} }));
+  const timings = Object.fromEntries(Object.keys(methods).map(name => [name, []]));
+  for (const row of rows) for (const [name, retrieve] of Object.entries(methods)) {
+    const results = retrieve(row.question);
+    row.methods[name] = { ids: results.map(r => r.id), scores: results.map(r => r.score), ...retrievalMetrics(results.map(r => r.id), row.evidenceGroups) };
+    for (let i = 0; i < 10; i++) retrieve(row.question);
+  }
+  for (let repeat = 0; repeat < 100; repeat++) for (const row of rows) {
+    const entries = Object.entries(methods);
+    if (repeat % 2) entries.reverse();
+    for (const [name, retrieve] of entries) {
+      const start = performance.now(); retrieve(row.question); timings[name].push(performance.now() - start);
+    }
+  }
+  const mean = values => values.reduce((a, b) => a + b, 0) / values.length;
+  const summary = Object.fromEntries(Object.keys(methods).map(name => {
+    const times = timings[name].sort((a, b) => a - b);
+    return [name, { ...Object.fromEntries(['groupRecallAt1', 'groupRecallAt3', 'groupMRRAt3'].map(metric => [metric, mean(rows.map(row => row.methods[name][metric]))])), p50Ms: times[Math.ceil(times.length * 0.5) - 1], p95Ms: times[Math.ceil(times.length * 0.95) - 1] }];
+  }));
+  const sourceHashes = Object.fromEntries(['src/server.js', 'src/language.js', 'src/bm25.js', 'evaluation/retrieval-metrics.js', 'scripts/compare-retrieval.js'].map(file => [file, hash(fs.readFileSync(path.join(root, file)))]));
+  const report = { version: 1, generatedAt: new Date().toISOString(), node: process.version, platform: process.platform, reviewStatus: 'unreviewed', split: 'development', corpusSha256: hash(JSON.stringify(corpus)), casesSha256: hash(JSON.stringify(cases)), sourceHashes, corpusSize: corpus.length, caseCount: cases.length, bm25: { k1: 1.2, b: 0.75, buildMs, fields: 'title category tags text, concatenated without weighting', queryTermFrequency: 'binary', tieBreak: 'id lexical' }, methodology: 'Same seeded corpus and questions; current unchanged keyword top-3; BM25 top-3; shared query normalization ablation; 10 warmups per case/method; 100 timed repeats with alternating method order; ranking only, no HTTP, generation or audit writes.', limitations: ['Developer-authored incomplete relevance groups; not independently reviewed or held-out.', 'Group recall and group MRR are facet proxies, not standard exhaustive-document Recall or MRR.', 'Precision is omitted because relevance labels are incomplete.', 'Retrieval overlap does not establish answerability, correct year or safe abstention.', 'Local warm latency is not production latency; keyword scans each query and BM25 prebuilds an index.', 'No semantic retrieval, stemming, parameter tuning or production switch.'], summary, rows, corpus };
+  const folder = path.join(root, 'evaluation/reports'); fs.mkdirSync(folder, { recursive: true });
+  fs.writeFileSync(path.join(folder, 'retrieval-latest.json'), `${JSON.stringify(report, null, 2)}\n`);
+  console.log(JSON.stringify({ caseCount: cases.length, corpusSize: corpus.length, summary, report: 'evaluation/reports/retrieval-latest.json' }, null, 2));
+} finally { resetDbForTests({}); cleanup(); }

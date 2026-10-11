@@ -1,0 +1,464 @@
+{
+  "generatedAt": "2026-10-10T18:09:53.176Z",
+  "reviewStatus": "speaker-review-pending",
+  "cases": [
+    {
+      "question": "What are the first-year B.Tech fees?",
+      "language": "mr",
+      "english": "First Year Engineering fees for AY 2026-27 include Open or OMS total INR 1,05,000, Open EBC EWS OBC SEBC boys INR 61,109, girls INR 17,217, VJNT SBC TFWS INR 17,217, and SC ST INR 8,000. These are annual amounts, not semester-wise amounts and not a semester-wise schedule. The record does not establish an installment split. Category concessions require valid admission and category documents.",
+      "answer": "शैक्षणिक वर्ष 2026-27, प्रथम वर्ष Engineering:\nOpen / OMS — वार्षिक एकूण शुल्क: INR 1,05,000\nEBC / EWS / OBC / SEBC मुलांसाठी — वार्षिक एकूण शुल्क: INR 61,109\nEBC / EWS / OBC / SEBC मुलींसाठी — वार्षिक एकूण शुल्क: INR 17,217\nVJNT / SBC / TFWS — वार्षिक एकूण शुल्क: INR 17,217\nSC / ST — वार्षिक एकूण शुल्क: INR 8,000\n\nही वार्षिक रक्कम आहे. या नोंदीत सत्रनिहाय शुल्क किंवा हप्त्यांचे वेळापत्रक दिलेले नाही. सवलतीसाठी प्रवेश व प्रवर्गाची वैध कागदपत्रे आवश्यक आहेत.",
+      "evidence": [
+        {
+          "id": "KB-2",
+          "title": "MITCORER fees AY 2026-27",
+          "category": "Fees",
+          "source": "Approved fee records shared for AY 2026-27",
+          "sourceUrl": "",
+          "score": 200,
+          "revision": 0,
+          "academicYear": "2026-27",
+          "provenance": {},
+          "verification": {
+            "status": "not-recorded",
+            "verifiedAt": null
+          },
+          "citationId": "KB-2:0:863da9657d7d",
+          "passage": {
+            "text": "First Year Engineering fees for AY 2026-27 include Open or OMS total INR 1,05,000, Open EBC EWS OBC SEBC boys INR 61,109, girls INR 17,217, VJNT SBC TFWS INR 17,217, and SC ST INR 8,000. Direct Second Year fees for AY 2026-27 include Open or OMS total INR 98,000, Open EBC EWS OBC SEBC boys INR 58,181, girls INR 18,362, VJNT SBC TFWS INR 18,362, and SC ST INR 10,000.",
+            "sha256": "863da9657d7db7546622212b2d9b8862ba255730dcd54d469ab7ae0ba9599335",
+            "truncated": false
+          }
+        }
+      ],
+      "localizationStatus": "template",
+      "reviewer": "",
+      "verdict": "pending",
+      "corrections": ""
+    },
+    {
+      "question": "What are hostel and mess fees?",
+      "language": "mr",
+      "english": "For AY 2026-27, the hostel fee is INR 35,000 plus a refundable hostel deposit of INR 5,000, for a hostel total of INR 40,000. Mess fees are INR 42,000 per year. Room availability, hostel and mess rules, and payment process must be confirmed with the college.",
+      "answer": "शैक्षणिक वर्ष 2026-27:\nवार्षिक वसतिगृह शुल्क: INR 35,000\nपरत मिळणारी वसतिगृह ठेव: INR 5,000\nवसतिगृह एकूण: INR 40,000\nवार्षिक मेस शुल्क: INR 42,000\n\nखोलीची उपलब्धता, वसतिगृह व मेसचे नियम आणि भरणा पद्धत महाविद्यालयाकडून निश्चित करा. शुल्काची नोंद म्हणजे खोली मिळण्याची हमी नाही.",
+      "evidence": [
+        {
+          "id": "KB-3",
+          "title": "Hostel and mess fees AY 2026-27",
+          "category": "Facilities",
+          "source": "Hostel and mess fee structure shared for AY 2026-27",
+          "sourceUrl": "",
+          "score": 200,
+          "revision": 0,
+          "academicYear": "2026-27",
+          "provenance": {},
+          "verification": {
+            "status": "not-recorded",
+            "verifiedAt": null
+          },
+          "citationId": "KB-3:0:abf950f03375",
+          "passage": {
+            "text": "Hostel fee structure for AY 2026-27 includes hostel fees INR 35,000 and refundable hostel deposit INR 5,000, total INR 40,000. Mess fees per year are INR 42,000. Room availability, hostel rules, mess rules, and payment process should be confirmed by admission or hostel staff.",
+            "sha256": "abf950f0337545b254451e492caab9a98847547d62e4cef1c90764745b085026",
+            "truncated": false
+          }
+        }
+      ],
+      "localizationStatus": "template",
+      "reviewer": "",
+      "verdict": "pending",
+      "corrections": ""
+    },
+    {
+      "question": "What is the current CSE intake?",
+      "language": "mr",
+      "english": "For AY 2026-27, Computer Science and Engineering has sanctioned intake 120 and choice code 0690124210. Intake does not confirm current vacancies or guarantee admission.",
+      "answer": "शैक्षणिक वर्ष 2026-27:\nComputer Science and Engineering — मंजूर प्रवेश क्षमता: 120; चॉइस कोड: 0690124210\n\nप्रवेशक्षमता म्हणजे सध्याच्या रिक्त जागा किंवा प्रवेशाची हमी नाही.",
+      "evidence": [
+        {
+          "id": "KB-10",
+          "title": "MITCORER First Year B.Tech programs, intake and choice codes",
+          "category": "Programs",
+          "source": "MITCORER First Year B.Tech admissions page",
+          "sourceUrl": "https://mitcorer.edu.in/fy-btech.php",
+          "score": 200,
+          "revision": 0,
+          "academicYear": "2026-27",
+          "provenance": {},
+          "verification": {
+            "status": "not-recorded",
+            "verifiedAt": null
+          },
+          "citationId": "KB-10:0:8e3783d00519",
+          "passage": {
+            "text": "For AY 2026-27, the official First Year B.Tech page lists: Artificial Intelligence and Data Science, sanctioned intake 60, choice code 0690126310; Civil Engineering, sanctioned intake 60, choice code 0690119110; Computer Science and Engineering, sanctioned intake 120, choice code 0690124210; Electronics and Computer Engineering, sanctioned intake 60, choice code 0690184410; Electronics and Telecommunication Engineering, sanctioned intake 60, choice code 0690137210; Mechanical and Rail Engineering, sanctioned intake 60, choice code 0690158510.",
+            "sha256": "8e3783d00519bc0d3d26e150e8fa0933d2202d3ee12459257d9fa013f204b4e7",
+            "truncated": false
+          }
+        }
+      ],
+      "localizationStatus": "template",
+      "reviewer": "",
+      "verdict": "pending",
+      "corrections": ""
+    },
+    {
+      "question": "What is its intake?",
+      "language": "mr",
+      "english": "Which course or programme do you mean? Please specify the programme and admission route, such as first-year B.Tech or Polytechnic. I do not have conversation context for “it” or “its”.",
+      "answer": "तुम्ही कोणत्या अभ्यासक्रमाबद्दल विचारत आहात? कृपया अभ्यासक्रम आणि प्रवेशमार्ग स्पष्ट करा, उदाहरणार्थ प्रथम वर्ष B.Tech किंवा Polytechnic. मागील संदेशांचा संदर्भ या उत्तरासाठी वापरला जात नाही.",
+      "evidence": [],
+      "localizationStatus": "template",
+      "reviewer": "",
+      "verdict": "pending",
+      "corrections": ""
+    },
+    {
+      "question": "Tell me about the library.",
+      "language": "mr",
+      "english": "MITCORER states that it has a well-equipped library with digital resources and journals. The public FAQ does not publish borrowing rules, timings, or access eligibility, so those operational details require confirmation from the library.",
+      "answer": "या माहितीचे पुनरावलोकन केलेले मराठी भाषांतर उपलब्ध नाही. तथ्ये न बदलता मूळ इंग्रजी माहिती खाली दिली आहे.\n\nMITCORER states that it has a well-equipped library with digital resources and journals. The public FAQ does not publish borrowing rules, timings, or access eligibility, so those operational details require confirmation from the library.",
+      "evidence": [
+        {
+          "id": "KB-20",
+          "title": "MITCORER library and digital resources",
+          "category": "Facilities",
+          "source": "MITCORER Admissions FAQ",
+          "sourceUrl": "https://mitcorer.edu.in/about-lib-details.php",
+          "revision": 0,
+          "academicYear": null,
+          "provenance": {},
+          "verification": {
+            "status": "not-recorded",
+            "verifiedAt": null
+          },
+          "citationId": "KB-20:0:da65f5c3a9ff",
+          "passage": {
+            "text": "MITCORER states that it has a well-equipped library with digital resources and journals. The public FAQ does not publish borrowing rules, timings, or access eligibility, so those operational details require confirmation from the library.",
+            "sha256": "da65f5c3a9ff5c263ae1977953f43c3298520921833b156510a9c2a26a4bb7ed",
+            "truncated": false
+          }
+        }
+      ],
+      "localizationStatus": "fallback",
+      "reviewer": "",
+      "verdict": "pending",
+      "corrections": ""
+    },
+    {
+      "question": "Tell me about MITCORER.",
+      "language": "mr",
+      "english": "MIT College of Railway Engineering and Research (MITCORER) is an MIT Group college in Barshi, Solapur district, created with a focus on railway technology. Its railway-oriented curriculum draws on real railway practices and aims to prepare students for technological and social challenges.\n\nStudents learn through practical assignments, projects, interactive classes, campus facilities, and industry engagement.",
+      "answer": "या माहितीचे पुनरावलोकन केलेले मराठी भाषांतर उपलब्ध नाही. तथ्ये न बदलता मूळ इंग्रजी माहिती खाली दिली आहे.\n\nMIT College of Railway Engineering and Research (MITCORER) is an MIT Group college in Barshi, Solapur district, created with a focus on railway technology. Its railway-oriented curriculum draws on real railway practices and aims to prepare students for technological and social challenges.\n\nStudents learn through practical assignments, projects, interactive classes, campus facilities, and industry engagement.",
+      "evidence": [
+        {
+          "id": "KB-34",
+          "title": "About MITCORER",
+          "category": "About MITCORER",
+          "source": "MITCORER About Us page",
+          "sourceUrl": "https://www.mitcorer.edu.in/mit-corer.php",
+          "score": 200,
+          "revision": 0,
+          "academicYear": null,
+          "provenance": {},
+          "verification": {
+            "status": "not-recorded",
+            "verifiedAt": null
+          },
+          "citationId": "KB-34:0:fadb2eaa7e94",
+          "passage": {
+            "text": "MIT College of Railway Engineering and Research (MITCORER) is an MIT Group college in Barshi, Solapur district. The college focuses on railway technology through a curriculum based on real railway practices. It aims to prepare future leaders and offers practical learning through assignments, projects, interactive classes, campus facilities, and industry engagement.",
+            "sha256": "fadb2eaa7e9462cf1e2639072d4633ea4d9d0457ab2043ca35d2ee68827b947f",
+            "truncated": false
+          }
+        }
+      ],
+      "localizationStatus": "fallback",
+      "reviewer": "",
+      "verdict": "pending",
+      "corrections": ""
+    },
+    {
+      "question": "What are fees and hostel fees?",
+      "language": "mr",
+      "english": "Academic fees: First Year Engineering fees for AY 2026-27 include Open or OMS total INR 1,05,000, Open EBC EWS OBC SEBC boys INR 61,109, girls INR 17,217, VJNT SBC TFWS INR 17,217, and SC ST INR 8,000. Direct Second Year fees for AY 2026-27 include Open or OMS total INR 98,000, Open EBC EWS OBC SEBC boys INR 58,181, girls INR 18,362, VJNT SBC TFWS INR 18,362, and SC ST INR 10,000. These are annual amounts, not semester-wise amounts and not a semester-wise schedule. The record does not establish an installment split. Category concessions require valid admission and category documents. [1]\n\nHostel and mess fees: For AY 2026-27, the hostel fee is INR 35,000 plus a refundable hostel deposit of INR 5,000, for a hostel total of INR 40,000. Room availability, hostel and mess rules, and payment process must be confirmed with the college. [2]",
+      "answer": "शैक्षणिक शुल्क: शैक्षणिक वर्ष 2026-27, प्रथम वर्ष Engineering:\nOpen / OMS — वार्षिक एकूण शुल्क: INR 1,05,000\nEBC / EWS / OBC / SEBC मुलांसाठी — वार्षिक एकूण शुल्क: INR 61,109\nEBC / EWS / OBC / SEBC मुलींसाठी — वार्षिक एकूण शुल्क: INR 17,217\nVJNT / SBC / TFWS — वार्षिक एकूण शुल्क: INR 17,217\nSC / ST — वार्षिक एकूण शुल्क: INR 8,000\n\nशैक्षणिक वर्ष 2026-27, थेट द्वितीय वर्ष Engineering:\nOpen / OMS — वार्षिक एकूण शुल्क: INR 98,000\nEBC / EWS / OBC / SEBC मुलांसाठी — वार्षिक एकूण शुल्क: INR 58,181\nEBC / EWS / OBC / SEBC मुलींसाठी — वार्षिक एकूण शुल्क: INR 18,362\nVJNT / SBC / TFWS — वार्षिक एकूण शुल्क: INR 18,362\nSC / ST — वार्षिक एकूण शुल्क: INR 10,000\n\nही वार्षिक रक्कम आहे. या नोंदीत सत्रनिहाय शुल्क किंवा हप्त्यांचे वेळापत्रक दिलेले नाही. सवलतीसाठी प्रवेश व प्रवर्गाची वैध कागदपत्रे आवश्यक आहेत. [1]\n\nवसतिगृह व मेस शुल्क: शैक्षणिक वर्ष 2026-27:\nवार्षिक वसतिगृह शुल्क: INR 35,000\nपरत मिळणारी वसतिगृह ठेव: INR 5,000\nवसतिगृह एकूण: INR 40,000\n\nखोलीची उपलब्धता, वसतिगृह व मेसचे नियम आणि भरणा पद्धत महाविद्यालयाकडून निश्चित करा. शुल्काची नोंद म्हणजे खोली मिळण्याची हमी नाही. [2]",
+      "evidence": [
+        {
+          "id": "KB-2",
+          "title": "MITCORER fees AY 2026-27",
+          "category": "Fees",
+          "source": "Approved fee records shared for AY 2026-27",
+          "sourceUrl": "",
+          "score": 200,
+          "revision": 0,
+          "academicYear": "2026-27",
+          "provenance": {},
+          "verification": {
+            "status": "not-recorded",
+            "verifiedAt": null
+          },
+          "citationId": "KB-2:0:863da9657d7d",
+          "passage": {
+            "text": "First Year Engineering fees for AY 2026-27 include Open or OMS total INR 1,05,000, Open EBC EWS OBC SEBC boys INR 61,109, girls INR 17,217, VJNT SBC TFWS INR 17,217, and SC ST INR 8,000. Direct Second Year fees for AY 2026-27 include Open or OMS total INR 98,000, Open EBC EWS OBC SEBC boys INR 58,181, girls INR 18,362, VJNT SBC TFWS INR 18,362, and SC ST INR 10,000.",
+            "sha256": "863da9657d7db7546622212b2d9b8862ba255730dcd54d469ab7ae0ba9599335",
+            "truncated": false
+          }
+        },
+        {
+          "id": "KB-3",
+          "title": "Hostel and mess fees AY 2026-27",
+          "category": "Facilities",
+          "source": "Hostel and mess fee structure shared for AY 2026-27",
+          "sourceUrl": "",
+          "score": 200,
+          "revision": 0,
+          "academicYear": "2026-27",
+          "provenance": {},
+          "verification": {
+            "status": "not-recorded",
+            "verifiedAt": null
+          },
+          "citationId": "KB-3:0:abf950f03375",
+          "passage": {
+            "text": "Hostel fee structure for AY 2026-27 includes hostel fees INR 35,000 and refundable hostel deposit INR 5,000, total INR 40,000. Mess fees per year are INR 42,000. Room availability, hostel rules, mess rules, and payment process should be confirmed by admission or hostel staff.",
+            "sha256": "abf950f0337545b254451e492caab9a98847547d62e4cef1c90764745b085026",
+            "truncated": false
+          }
+        }
+      ],
+      "localizationStatus": "template",
+      "reviewer": "",
+      "verdict": "pending",
+      "corrections": ""
+    },
+    {
+      "question": "What are the first-year B.Tech fees?",
+      "language": "hi",
+      "english": "First Year Engineering fees for AY 2026-27 include Open or OMS total INR 1,05,000, Open EBC EWS OBC SEBC boys INR 61,109, girls INR 17,217, VJNT SBC TFWS INR 17,217, and SC ST INR 8,000. These are annual amounts, not semester-wise amounts and not a semester-wise schedule. The record does not establish an installment split. Category concessions require valid admission and category documents.",
+      "answer": "शैक्षणिक वर्ष 2026-27, प्रथम वर्ष Engineering:\nOpen / OMS — वार्षिक कुल शुल्क: INR 1,05,000\nEBC / EWS / OBC / SEBC लड़कों के लिए — वार्षिक कुल शुल्क: INR 61,109\nEBC / EWS / OBC / SEBC लड़कियों के लिए — वार्षिक कुल शुल्क: INR 17,217\nVJNT / SBC / TFWS — वार्षिक कुल शुल्क: INR 17,217\nSC / ST — वार्षिक कुल शुल्क: INR 8,000\n\nयह वार्षिक राशि है। इस रिकॉर्ड में सेमेस्टर के अनुसार शुल्क या किस्तों का समय निर्धारित नहीं है। रियायत के लिए प्रवेश और श्रेणी के वैध दस्तावेज आवश्यक हैं।",
+      "evidence": [
+        {
+          "id": "KB-2",
+          "title": "MITCORER fees AY 2026-27",
+          "category": "Fees",
+          "source": "Approved fee records shared for AY 2026-27",
+          "sourceUrl": "",
+          "score": 200,
+          "revision": 0,
+          "academicYear": "2026-27",
+          "provenance": {},
+          "verification": {
+            "status": "not-recorded",
+            "verifiedAt": null
+          },
+          "citationId": "KB-2:0:863da9657d7d",
+          "passage": {
+            "text": "First Year Engineering fees for AY 2026-27 include Open or OMS total INR 1,05,000, Open EBC EWS OBC SEBC boys INR 61,109, girls INR 17,217, VJNT SBC TFWS INR 17,217, and SC ST INR 8,000. Direct Second Year fees for AY 2026-27 include Open or OMS total INR 98,000, Open EBC EWS OBC SEBC boys INR 58,181, girls INR 18,362, VJNT SBC TFWS INR 18,362, and SC ST INR 10,000.",
+            "sha256": "863da9657d7db7546622212b2d9b8862ba255730dcd54d469ab7ae0ba9599335",
+            "truncated": false
+          }
+        }
+      ],
+      "localizationStatus": "template",
+      "reviewer": "",
+      "verdict": "pending",
+      "corrections": ""
+    },
+    {
+      "question": "What are hostel and mess fees?",
+      "language": "hi",
+      "english": "For AY 2026-27, the hostel fee is INR 35,000 plus a refundable hostel deposit of INR 5,000, for a hostel total of INR 40,000. Mess fees are INR 42,000 per year. Room availability, hostel and mess rules, and payment process must be confirmed with the college.",
+      "answer": "शैक्षणिक वर्ष 2026-27:\nवार्षिक छात्रावास शुल्क: INR 35,000\nवापस मिलने वाली छात्रावास जमा राशि: INR 5,000\nछात्रावास कुल: INR 40,000\nवार्षिक मेस शुल्क: INR 42,000\n\nकमरे की उपलब्धता, छात्रावास और मेस के नियम तथा भुगतान की प्रक्रिया कॉलेज से सुनिश्चित करें। शुल्क रिकॉर्ड कमरे की गारंटी नहीं है।",
+      "evidence": [
+        {
+          "id": "KB-3",
+          "title": "Hostel and mess fees AY 2026-27",
+          "category": "Facilities",
+          "source": "Hostel and mess fee structure shared for AY 2026-27",
+          "sourceUrl": "",
+          "score": 200,
+          "revision": 0,
+          "academicYear": "2026-27",
+          "provenance": {},
+          "verification": {
+            "status": "not-recorded",
+            "verifiedAt": null
+          },
+          "citationId": "KB-3:0:abf950f03375",
+          "passage": {
+            "text": "Hostel fee structure for AY 2026-27 includes hostel fees INR 35,000 and refundable hostel deposit INR 5,000, total INR 40,000. Mess fees per year are INR 42,000. Room availability, hostel rules, mess rules, and payment process should be confirmed by admission or hostel staff.",
+            "sha256": "abf950f0337545b254451e492caab9a98847547d62e4cef1c90764745b085026",
+            "truncated": false
+          }
+        }
+      ],
+      "localizationStatus": "template",
+      "reviewer": "",
+      "verdict": "pending",
+      "corrections": ""
+    },
+    {
+      "question": "What is the current CSE intake?",
+      "language": "hi",
+      "english": "For AY 2026-27, Computer Science and Engineering has sanctioned intake 120 and choice code 0690124210. Intake does not confirm current vacancies or guarantee admission.",
+      "answer": "शैक्षणिक वर्ष 2026-27:\nComputer Science and Engineering — स्वीकृत प्रवेश क्षमता: 120; चॉइस कोड: 0690124210\n\nप्रवेश क्षमता वर्तमान रिक्त सीटों या प्रवेश की गारंटी नहीं है।",
+      "evidence": [
+        {
+          "id": "KB-10",
+          "title": "MITCORER First Year B.Tech programs, intake and choice codes",
+          "category": "Programs",
+          "source": "MITCORER First Year B.Tech admissions page",
+          "sourceUrl": "https://mitcorer.edu.in/fy-btech.php",
+          "score": 200,
+          "revision": 0,
+          "academicYear": "2026-27",
+          "provenance": {},
+          "verification": {
+            "status": "not-recorded",
+            "verifiedAt": null
+          },
+          "citationId": "KB-10:0:8e3783d00519",
+          "passage": {
+            "text": "For AY 2026-27, the official First Year B.Tech page lists: Artificial Intelligence and Data Science, sanctioned intake 60, choice code 0690126310; Civil Engineering, sanctioned intake 60, choice code 0690119110; Computer Science and Engineering, sanctioned intake 120, choice code 0690124210; Electronics and Computer Engineering, sanctioned intake 60, choice code 0690184410; Electronics and Telecommunication Engineering, sanctioned intake 60, choice code 0690137210; Mechanical and Rail Engineering, sanctioned intake 60, choice code 0690158510.",
+            "sha256": "8e3783d00519bc0d3d26e150e8fa0933d2202d3ee12459257d9fa013f204b4e7",
+            "truncated": false
+          }
+        }
+      ],
+      "localizationStatus": "template",
+      "reviewer": "",
+      "verdict": "pending",
+      "corrections": ""
+    },
+    {
+      "question": "What is its intake?",
+      "language": "hi",
+      "english": "Which course or programme do you mean? Please specify the programme and admission route, such as first-year B.Tech or Polytechnic. I do not have conversation context for “it” or “its”.",
+      "answer": "आप किस पाठ्यक्रम के बारे में पूछ रहे हैं? कृपया पाठ्यक्रम और प्रवेश मार्ग बताएं, जैसे प्रथम वर्ष B.Tech या Polytechnic। इस उत्तर में पिछले संदेशों का संदर्भ उपयोग नहीं किया जाता।",
+      "evidence": [],
+      "localizationStatus": "template",
+      "reviewer": "",
+      "verdict": "pending",
+      "corrections": ""
+    },
+    {
+      "question": "Tell me about the library.",
+      "language": "hi",
+      "english": "MITCORER states that it has a well-equipped library with digital resources and journals. The public FAQ does not publish borrowing rules, timings, or access eligibility, so those operational details require confirmation from the library.",
+      "answer": "इस जानकारी का समीक्षा किया हुआ हिंदी अनुवाद उपलब्ध नहीं है। तथ्यों को बदले बिना मूल अंग्रेजी जानकारी नीचे दी गई है।\n\nMITCORER states that it has a well-equipped library with digital resources and journals. The public FAQ does not publish borrowing rules, timings, or access eligibility, so those operational details require confirmation from the library.",
+      "evidence": [
+        {
+          "id": "KB-20",
+          "title": "MITCORER library and digital resources",
+          "category": "Facilities",
+          "source": "MITCORER Admissions FAQ",
+          "sourceUrl": "https://mitcorer.edu.in/about-lib-details.php",
+          "revision": 0,
+          "academicYear": null,
+          "provenance": {},
+          "verification": {
+            "status": "not-recorded",
+            "verifiedAt": null
+          },
+          "citationId": "KB-20:0:da65f5c3a9ff",
+          "passage": {
+            "text": "MITCORER states that it has a well-equipped library with digital resources and journals. The public FAQ does not publish borrowing rules, timings, or access eligibility, so those operational details require confirmation from the library.",
+            "sha256": "da65f5c3a9ff5c263ae1977953f43c3298520921833b156510a9c2a26a4bb7ed",
+            "truncated": false
+          }
+        }
+      ],
+      "localizationStatus": "fallback",
+      "reviewer": "",
+      "verdict": "pending",
+      "corrections": ""
+    },
+    {
+      "question": "Tell me about MITCORER.",
+      "language": "hi",
+      "english": "MIT College of Railway Engineering and Research (MITCORER) is an MIT Group college in Barshi, Solapur district, created with a focus on railway technology. Its railway-oriented curriculum draws on real railway practices and aims to prepare students for technological and social challenges.\n\nStudents learn through practical assignments, projects, interactive classes, campus facilities, and industry engagement.",
+      "answer": "इस जानकारी का समीक्षा किया हुआ हिंदी अनुवाद उपलब्ध नहीं है। तथ्यों को बदले बिना मूल अंग्रेजी जानकारी नीचे दी गई है।\n\nMIT College of Railway Engineering and Research (MITCORER) is an MIT Group college in Barshi, Solapur district, created with a focus on railway technology. Its railway-oriented curriculum draws on real railway practices and aims to prepare students for technological and social challenges.\n\nStudents learn through practical assignments, projects, interactive classes, campus facilities, and industry engagement.",
+      "evidence": [
+        {
+          "id": "KB-34",
+          "title": "About MITCORER",
+          "category": "About MITCORER",
+          "source": "MITCORER About Us page",
+          "sourceUrl": "https://www.mitcorer.edu.in/mit-corer.php",
+          "score": 200,
+          "revision": 0,
+          "academicYear": null,
+          "provenance": {},
+          "verification": {
+            "status": "not-recorded",
+            "verifiedAt": null
+          },
+          "citationId": "KB-34:0:fadb2eaa7e94",
+          "passage": {
+            "text": "MIT College of Railway Engineering and Research (MITCORER) is an MIT Group college in Barshi, Solapur district. The college focuses on railway technology through a curriculum based on real railway practices. It aims to prepare future leaders and offers practical learning through assignments, projects, interactive classes, campus facilities, and industry engagement.",
+            "sha256": "fadb2eaa7e9462cf1e2639072d4633ea4d9d0457ab2043ca35d2ee68827b947f",
+            "truncated": false
+          }
+        }
+      ],
+      "localizationStatus": "fallback",
+      "reviewer": "",
+      "verdict": "pending",
+      "corrections": ""
+    },
+    {
+      "question": "What are fees and hostel fees?",
+      "language": "hi",
+      "english": "Academic fees: First Year Engineering fees for AY 2026-27 include Open or OMS total INR 1,05,000, Open EBC EWS OBC SEBC boys INR 61,109, girls INR 17,217, VJNT SBC TFWS INR 17,217, and SC ST INR 8,000. Direct Second Year fees for AY 2026-27 include Open or OMS total INR 98,000, Open EBC EWS OBC SEBC boys INR 58,181, girls INR 18,362, VJNT SBC TFWS INR 18,362, and SC ST INR 10,000. These are annual amounts, not semester-wise amounts and not a semester-wise schedule. The record does not establish an installment split. Category concessions require valid admission and category documents. [1]\n\nHostel and mess fees: For AY 2026-27, the hostel fee is INR 35,000 plus a refundable hostel deposit of INR 5,000, for a hostel total of INR 40,000. Room availability, hostel and mess rules, and payment process must be confirmed with the college. [2]",
+      "answer": "शैक्षणिक शुल्क: शैक्षणिक वर्ष 2026-27, प्रथम वर्ष Engineering:\nOpen / OMS — वार्षिक कुल शुल्क: INR 1,05,000\nEBC / EWS / OBC / SEBC लड़कों के लिए — वार्षिक कुल शुल्क: INR 61,109\nEBC / EWS / OBC / SEBC लड़कियों के लिए — वार्षिक कुल शुल्क: INR 17,217\nVJNT / SBC / TFWS — वार्षिक कुल शुल्क: INR 17,217\nSC / ST — वार्षिक कुल शुल्क: INR 8,000\n\nशैक्षणिक वर्ष 2026-27, सीधे द्वितीय वर्ष Engineering:\nOpen / OMS — वार्षिक कुल शुल्क: INR 98,000\nEBC / EWS / OBC / SEBC लड़कों के लिए — वार्षिक कुल शुल्क: INR 58,181\nEBC / EWS / OBC / SEBC लड़कियों के लिए — वार्षिक कुल शुल्क: INR 18,362\nVJNT / SBC / TFWS — वार्षिक कुल शुल्क: INR 18,362\nSC / ST — वार्षिक कुल शुल्क: INR 10,000\n\nयह वार्षिक राशि है। इस रिकॉर्ड में सेमेस्टर के अनुसार शुल्क या किस्तों का समय निर्धारित नहीं है। रियायत के लिए प्रवेश और श्रेणी के वैध दस्तावेज आवश्यक हैं। [1]\n\nछात्रावास और मेस शुल्क: शैक्षणिक वर्ष 2026-27:\nवार्षिक छात्रावास शुल्क: INR 35,000\nवापस मिलने वाली छात्रावास जमा राशि: INR 5,000\nछात्रावास कुल: INR 40,000\n\nकमरे की उपलब्धता, छात्रावास और मेस के नियम तथा भुगतान की प्रक्रिया कॉलेज से सुनिश्चित करें। शुल्क रिकॉर्ड कमरे की गारंटी नहीं है। [2]",
+      "evidence": [
+        {
+          "id": "KB-2",
+          "title": "MITCORER fees AY 2026-27",
+          "category": "Fees",
+          "source": "Approved fee records shared for AY 2026-27",
+          "sourceUrl": "",
+          "score": 200,
+          "revision": 0,
+          "academicYear": "2026-27",
+          "provenance": {},
+          "verification": {
+            "status": "not-recorded",
+            "verifiedAt": null
+          },
+          "citationId": "KB-2:0:863da9657d7d",
+          "passage": {
+            "text": "First Year Engineering fees for AY 2026-27 include Open or OMS total INR 1,05,000, Open EBC EWS OBC SEBC boys INR 61,109, girls INR 17,217, VJNT SBC TFWS INR 17,217, and SC ST INR 8,000. Direct Second Year fees for AY 2026-27 include Open or OMS total INR 98,000, Open EBC EWS OBC SEBC boys INR 58,181, girls INR 18,362, VJNT SBC TFWS INR 18,362, and SC ST INR 10,000.",
+            "sha256": "863da9657d7db7546622212b2d9b8862ba255730dcd54d469ab7ae0ba9599335",
+            "truncated": false
+          }
+        },
+        {
+          "id": "KB-3",
+          "title": "Hostel and mess fees AY 2026-27",
+          "category": "Facilities",
+          "source": "Hostel and mess fee structure shared for AY 2026-27",
+          "sourceUrl": "",
+          "score": 200,
+          "revision": 0,
+          "academicYear": "2026-27",
+          "provenance": {},
+          "verification": {
+            "status": "not-recorded",
+            "verifiedAt": null
+          },
+          "citationId": "KB-3:0:abf950f03375",
+          "passage": {
+            "text": "Hostel fee structure for AY 2026-27 includes hostel fees INR 35,000 and refundable hostel deposit INR 5,000, total INR 40,000. Mess fees per year are INR 42,000. Room availability, hostel rules, mess rules, and payment process should be confirmed by admission or hostel staff.",
+            "sha256": "abf950f0337545b254451e492caab9a98847547d62e4cef1c90764745b085026",
+            "truncated": false
+          }
+        }
+      ],
+      "localizationStatus": "template",
+      "reviewer": "",
+      "verdict": "pending",
+      "corrections": ""
+    }
+  ]
+}

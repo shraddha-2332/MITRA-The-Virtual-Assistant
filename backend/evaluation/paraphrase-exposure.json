@@ -1,0 +1,105 @@
+{
+  "version": 1,
+  "datasetSha256": "56263aa4f37700065bf01102088b75ed6a3de659a0edb177073caa5a8667acfc",
+  "corpusSha256": "224dafbe993a69d6e67977aac103140bc20887ddfe2007eceaba847a6e892283",
+  "status": "exposed-development-diagnostics",
+  "reason": "User requested completing candidate tests; questions are now used for diagnostics and must not be claimed as untouched held-out evaluation.",
+  "cases": [
+    {
+      "id": "HOC-01",
+      "questionSha256": "4ade8a16925a916226af132d75f5afbb47cfe9e5125402d247cc4fd0dbd474f1"
+    },
+    {
+      "id": "HOC-02",
+      "questionSha256": "e9665a5a74ddccca5adacad152fe294d9fcf147dfaceb516ef4c259353f2429e"
+    },
+    {
+      "id": "HOC-03",
+      "questionSha256": "6073af8399a45119b1a339d5fe187432ff9dda7dfe090f2dde6252ca20405c8b"
+    },
+    {
+      "id": "HOC-04",
+      "questionSha256": "179df3222de0cac54c736d6da3df2c11db86aa65bf8468b423ddac632c82b6e1"
+    },
+    {
+      "id": "HOC-05",
+      "questionSha256": "d36d54469f92c35f0204c46d94bc6ba7d8d62fb93556ef5dc40ca7b6b6c66cc9"
+    },
+    {
+      "id": "HOC-06",
+      "questionSha256": "faf9983649e202b9d53b23c17eb671e425ba5a1ccb397c20627f47d20fe3c310"
+    },
+    {
+      "id": "HOC-07",
+      "questionSha256": "643cb97c39c45de3c1e4ec308e0441f36fa4e8d4024a96e94088ad6dce40163f"
+    },
+    {
+      "id": "HOC-08",
+      "questionSha256": "fe71d8aba374880063331c65192dc175c7200800bbf77846ad8d66f300c92e65"
+    },
+    {
+      "id": "HOC-09",
+      "questionSha256": "6c41a3c8a7f2000c90a992d4235c2abb4d266025befacf620d6c9292b04038f7"
+    },
+    {
+      "id": "HOC-10",
+      "questionSha256": "8b5c3323e6a0f454f4a7834fae575dc5c23c8e9916f597692856987922a3bdb1"
+    },
+    {
+      "id": "HOC-11",
+      "questionSha256": "880ed0c8963538919b809fe06f5ea06ef0715ec7a33a1ffb7c8dcf3b9ddc5d0c"
+    },
+    {
+      "id": "HOC-12",
+      "questionSha256": "3fa1bd82bfa627fcd0914b07ac1f4658115cdad430514df43b7e8b4ebf284f91"
+    },
+    {
+      "id": "HOC-13",
+      "questionSha256": "d1c488549cb70da1af7431c5eb98862ca6e18ee25c69d1f5cb9694fb1eaad7c3"
+    },
+    {
+      "id": "HOC-14",
+      "questionSha256": "b2c814b42842fb071c584f0b22e75d910dd1304df8496d45105a1c0eca98c78a"
+    },
+    {
+      "id": "HOC-15",
+      "questionSha256": "682368bb35ab3753ce1df2770ef7676e180889792c8cd4dc46fd2daf1310c49b"
+    },
+    {
+      "id": "HOC-16",
+      "questionSha256": "39a6c1d873ae1af91ff6dd000b3748a5da2bb8f1b1e68f8931be4af8d7eb41d6"
+    },
+    {
+      "id": "HOC-17",
+      "questionSha256": "f8dce8bd264f9e0fc851fb56d6855f39fa2053f02120f8a13e4254378e3a2d0a"
+    },
+    {
+      "id": "HOC-18",
+      "questionSha256": "d4a4f8f0e25600d9f220ddb89754d1ee0cd6f062f2f55484094f91ee17614201"
+    },
+    {
+      "id": "HOC-19",
+      "questionSha256": "585fdc441b53005acc843e760c6a430a744a744e8eed44c0003ef293646678b1"
+    },
+    {
+      "id": "HOC-20",
+      "questionSha256": "4a7d4fc6d3876a1743f90212faa694d70ec92b1fd8d5d4cfda663996a9d53015"
+    },
+    {
+      "id": "HOC-21",
+      "questionSha256": "dddd8c6bdf15911d997e937da3725492d8b23b698ca7a68ac0e6247a0a57b5fb"
+    },
+    {
+      "id": "HOC-22",
+      "questionSha256": "d5f43744d43dbe61639228461ba077c74e960985fc09fe2136baa6947bc33cf8"
+    },
+    {
+      "id": "HOC-23",
+      "questionSha256": "e306a17335352f82e8cbda846461e31a8701ec6c989f94284883ef4944f2019b"
+    },
+    {
+      "id": "HOC-24",
+      "questionSha256": "4fe96fed0fd22ac9eb4c39bb173028e4619a970183940cb9e49dd77b5c8d4eea"
+    }
+  ]
+}

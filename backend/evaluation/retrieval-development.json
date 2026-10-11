@@ -1,0 +1,25 @@
+{
+  "version": 1,
+  "split": "development",
+  "reviewStatus": "unreviewed",
+  "records": [
+    {"id":"RET-01","language":"en","question":"Where can I borrow books and read electronic journals?","evidenceGroups":[["KB-20"]]},
+    {"id":"RET-02","language":"en","question":"Is wireless internet available on campus?","evidenceGroups":[["KB-21"]]},
+    {"id":"RET-03","language":"en","question":"How do students travel using college transportation?","evidenceGroups":[["KB-19"]]},
+    {"id":"RET-04","language":"en","question":"Where can boys and girls stay during their studies?","evidenceGroups":[["KB-23","KB-15"]]},
+    {"id":"RET-05","language":"en","question":"Which entrance examinations are accepted for admission?","evidenceGroups":[["KB-25"]]},
+    {"id":"RET-06","language":"en","question":"What documents does an SC applicant need?","evidenceGroups":[["KB-26"]]},
+    {"id":"RET-07","language":"en","question":"What certificates does an OBC applicant need?","evidenceGroups":[["KB-27"]]},
+    {"id":"RET-08","language":"en","question":"Can I apply through institute-level admission?","evidenceGroups":[["KB-14"]]},
+    {"id":"RET-09","language":"en","question":"What support is available for internships?","evidenceGroups":[["KB-24"]]},
+    {"id":"RET-10","language":"en","question":"What does the Pragati scholarship offer girl students?","evidenceGroups":[["KB-33"]]},
+    {"id":"RET-11","language":"en","question":"What is the minimum attendance requirement?","evidenceGroups":[["KB-31"]]},
+    {"id":"RET-12","language":"en","question":"What does the biometric attendance circular require?","evidenceGroups":[["KB-32"]]},
+    {"id":"RET-13","language":"en","question":"How can I contact the admissions office?","evidenceGroups":[["KB-17"]]},
+    {"id":"RET-14","language":"en","question":"Give first-year fees and annual hostel charges.","evidenceGroups":[["KB-2"],["KB-3"]]},
+    {"id":"RET-15","language":"mr","question":"ग्रंथालयात कोणत्या सुविधा उपलब्ध आहेत?","evidenceGroups":[["KB-20"]]},
+    {"id":"RET-16","language":"hi","question":"पुस्तकालय में कौन-कौन सी सुविधाएँ उपलब्ध हैं?","evidenceGroups":[["KB-20"]]},
+    {"id":"RET-17","language":"mr","question":"वसतिगृह आणि मेसचे शुल्क किती आहे?","evidenceGroups":[["KB-3"]]},
+    {"id":"RET-18","language":"hi","question":"प्रथम वर्ष B.Tech की फीस कितनी है?","evidenceGroups":[["KB-2"]]}
+  ]
+}

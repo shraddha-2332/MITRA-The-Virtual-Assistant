@@ -1,0 +1,39 @@
+# Environment secrets (keep documented examples)
+.env
+.env.*
+!.env.example
+!.env.production.example
+backend/.env
+backend/.env.*
+!backend/.env.example
+
+# Dependencies and build output
+node_modules/
+frontend/node_modules/
+frontend/dist/
+dist/
+coverage/
+backend/evaluation/reports/
+docs/answer-audit/report.json
+docs/answer-audit/browser-results.json
+
+# Runtime databases, uploads, extracted sources, and backups
+backend/data/
+backend/uploads/
+backend/official-sources/
+backend/backups/
+*.sqlite
+*.sqlite-*
+*.db
+*.db-*
+
+# Temporary and local tooling output
+tmp/
+*.log
+*.pid
+.DS_Store
+Thumbs.db
+
+# Editor configuration
+.vscode/
+.idea/

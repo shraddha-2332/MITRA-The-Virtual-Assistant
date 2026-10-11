@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "description": "Original public backend engine; deterministic development baseline; unreviewed",
+  "files": {
+    "engine-src.zip": "bef8082af3507ff214b64ba0bdf0b7d7d296d5e1d5fdf74c0bc63cbf7feb82d8",
+    "seed-knowledge.json": "3e92e472906596317d50b332730e7e25f9124c6d9a76e2486ebe11d551af65ac",
+    "public-report.json": "2cd20b63dd7cae7a9feea8254b79888fe2a98010ab766a3b4e53018eb9aed843",
+    "public-development.json": "4ad8ec93295b00e4557cdd13746778fede85f2b7957f22c05b580c05e644ec29",
+    "evaluation-tools.zip": "9bb656c51567f37e23d36a604e87d145696a35d8b05d21e16f0a188f44b8c533"
+  },
+  "sourceHashes": {
+    "src/auth.js": "1ca493ad6df8c04fa9e258acf3ae08e3bc9c61caaadb4ffe5b10eaf099c73e63",
+    "src/config.js": "c1481899e5ed01efb3c2684125550f23edc4eba81d1c446854243439523e56f7",
+    "src/conversations.js": "d51afb3213e6861c85a3c50a5127348ac319fa3e0eac8c814b2485d67bbf4723",
+    "src/errors.js": "522ae04d77c61e7fada3d19f8701c86a4ff0cdc3df5c52c5366fa8da99ce2fdb",
+    "src/seed.js": "c46b096ea7ef1ee7df8111c7b7aca4d6d3e643292ccde3143669322a3b315ac8",
+    "src/server.js": "5773401fdd889e3f9ae2b7a6d75e895c5b6b3387dee2f16e5785bfddcd1058e7",
+    "src/store.js": "df0d43be0ebaf0c326b3d91da5bb83429a3faa2102ba34a428c574cb9305f8a0",
+    "src/utils.js": "078d2cb54f434464f00799f434b79b533eb1c1ed02764d67153953a1aa437ae6"
+  },
+  "datasetSha256": "4ad8ec93295b00e4557cdd13746778fede85f2b7957f22c05b580c05e644ec29",
+  "corpusSha256": "3e92e472906596317d50b332730e7e25f9124c6d9a76e2486ebe11d551af65ac",
+  "nodeVersion": "v22.23.1"
+}
