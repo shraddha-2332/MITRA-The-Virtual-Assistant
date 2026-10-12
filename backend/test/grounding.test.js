@@ -134,3 +134,45 @@ test('classifyAnswerOutcome assigns correct categories for trustworthiness repor
   assert.strictEqual(clarifying, 'INSUFFICIENT_EVIDENCE');
 });
 
+test('verifyGeneratedAnswer validates intake capacities, helplines, and institute codes', () => {
+  const evidence = [
+    {
+      id: 'KB-10',
+      title: 'B.Tech Engineering Programmes and Intake',
+      source: 'Approved intake list AY 2026-27',
+      text: 'Civil Engineering has an intake of 60 seats. For inquiries contact +91 84599 67882. DTE Code is 06901.',
+      facts: {
+        kind: 'programList',
+        programs: [{ name: 'Civil Engineering', intake: 60, choiceCode: '0690119110' }],
+      },
+    },
+  ];
+
+  // Valid grounded answer
+  const valid = 'Civil Engineering offers an intake of 60 seats under DTE Code 06901. For help call 8459967882.';
+  const validRes = verifyGeneratedAnswer(valid, evidence);
+  assert.strictEqual(validRes.verified, true);
+  assert.strictEqual(validRes.status, 'VERIFIED');
+
+  // Hallucinated intake (300 seats)
+  const fakeIntake = 'Civil Engineering has an intake of 300 seats for AY 2026-27.';
+  const fakeIntakeRes = verifyGeneratedAnswer(fakeIntake, evidence);
+  assert.strictEqual(fakeIntakeRes.verified, false);
+  assert.strictEqual(fakeIntakeRes.status, 'UNSUPPORTED_FACTUAL_CLAIMS');
+  assert.ok(fakeIntakeRes.unsupported.some((u) => u.type === 'intake'));
+
+  // Hallucinated helpline number
+  const fakePhone = 'Civil Engineering intake is 60 seats. Contact 9999999999.';
+  const fakePhoneRes = verifyGeneratedAnswer(fakePhone, evidence);
+  assert.strictEqual(fakePhoneRes.verified, false);
+  assert.strictEqual(fakePhoneRes.status, 'UNSUPPORTED_FACTUAL_CLAIMS');
+  assert.ok(fakePhoneRes.unsupported.some((u) => u.type === 'helpline'));
+
+  // Hallucinated institute code
+  const fakeDte = 'Civil Engineering intake is 60 seats with DTE Code 1234.';
+  const fakeDteRes = verifyGeneratedAnswer(fakeDte, evidence);
+  assert.strictEqual(fakeDteRes.verified, false);
+  assert.strictEqual(fakeDteRes.status, 'UNSUPPORTED_FACTUAL_CLAIMS');
+  assert.ok(fakeDteRes.unsupported.some((u) => u.type === 'instituteCode'));
+});
+

@@ -23,6 +23,9 @@ export function extractFactualTokens(text) {
     academicYears: new Set(),
     choiceCodes: new Set(),
     dates: new Set(),
+    intakes: new Set(),
+    helplineNumbers: new Set(),
+    instituteCodes: new Set(),
   };
 
   // 1. Academic years (e.g. 2026-27, 2024-25)
@@ -55,6 +58,26 @@ export function extractFactualTokens(text) {
   }
   for (const match of content.matchAll(/\b(\d{4}-\d{2}-\d{2})\b/g)) {
     tokens.dates.add(match[1]);
+  }
+
+  // 6. Explicit intake and seat capacities (e.g. 60 seats, intake of 120, capacity: 60)
+  for (const match of content.matchAll(/(?:intake(?:\s+is|\s+of|:)?\s*(\b\d{1,4}\b))/gi)) {
+    tokens.intakes.add(match[1]);
+    tokens.numbers.add(match[1]);
+  }
+  for (const match of content.matchAll(/(\b\d{1,4}\b)\s*(?:seats?\b|intake\b)/gi)) {
+    tokens.intakes.add(match[1]);
+    tokens.numbers.add(match[1]);
+  }
+
+  // 7. Helpline phone numbers (10 digits starting with 6-9, with optional space/hyphen)
+  for (const match of content.matchAll(/(?:\+91[\-\s]?)?\b([6-9]\d{4}[\-\s]?\d{5})\b/g)) {
+    tokens.helplineNumbers.add(match[1].replace(/[\-\s]/g, ''));
+  }
+
+  // 8. DTE / Institute code references
+  for (const match of content.matchAll(/\b(?:dte|institute|college)\s*(?:code)?\s*[:\-]?\s*(\b\d{4,5}\b)/gi)) {
+    tokens.instituteCodes.add(match[1]);
   }
 
   return tokens;
@@ -92,6 +115,9 @@ export function extractEvidenceTokens(evidenceList) {
     academicYears: new Set(),
     choiceCodes: new Set(),
     dates: new Set(),
+    intakes: new Set(),
+    helplineNumbers: new Set(),
+    instituteCodes: new Set(['06901', '6901']),
   };
 
   const addTokens = (tokens) => {
@@ -100,6 +126,9 @@ export function extractEvidenceTokens(evidenceList) {
     for (const item of tokens.academicYears) allTokens.academicYears.add(item);
     for (const item of tokens.choiceCodes) allTokens.choiceCodes.add(item);
     for (const item of tokens.dates) allTokens.dates.add(item);
+    for (const item of tokens.intakes) allTokens.intakes.add(item);
+    for (const item of tokens.helplineNumbers) allTokens.helplineNumbers.add(item);
+    for (const item of tokens.instituteCodes) allTokens.instituteCodes.add(item);
   };
 
   for (const record of evidenceList || []) {
@@ -122,7 +151,10 @@ export function extractEvidenceTokens(evidenceList) {
       if (Array.isArray(record.facts.programs)) {
         for (const prog of record.facts.programs) {
           if (prog.choiceCode) allTokens.choiceCodes.add(prog.choiceCode);
-          if (prog.intake) allTokens.numbers.add(String(prog.intake));
+          if (prog.intake) {
+            allTokens.numbers.add(String(prog.intake));
+            allTokens.intakes.add(String(prog.intake));
+          }
         }
       }
     }
@@ -201,6 +233,27 @@ export function verifyGeneratedAnswer(generatedText, evidenceList) {
   for (const dt of generatedTokens.dates) {
     if (!evidenceTokens.dates.has(dt)) {
       unsupported.push({ type: 'date', value: dt });
+    }
+  }
+
+  // Check intake capacities
+  for (const intake of generatedTokens.intakes) {
+    if (!evidenceTokens.intakes.has(intake) && !evidenceTokens.numbers.has(intake)) {
+      unsupported.push({ type: 'intake', value: `${intake} seats` });
+    }
+  }
+
+  // Check helpline phone numbers
+  for (const phone of generatedTokens.helplineNumbers) {
+    if (!evidenceTokens.helplineNumbers.has(phone)) {
+      unsupported.push({ type: 'helpline', value: phone });
+    }
+  }
+
+  // Check DTE / institute codes
+  for (const code of generatedTokens.instituteCodes) {
+    if (!evidenceTokens.instituteCodes.has(code) && code !== '06901' && code !== '6901') {
+      unsupported.push({ type: 'instituteCode', value: code });
     }
   }
 
