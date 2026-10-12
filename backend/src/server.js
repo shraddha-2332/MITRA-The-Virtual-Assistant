@@ -822,21 +822,30 @@ function buildFacilityAnswer(question) {
     return {
       source: 'MITCORER Admissions FAQ and official brochure',
       sourceUrl: 'https://www.mitcorer.edu.in/hostel-amenities.php',
-      answer: 'MITCORER provides separate hostels for boys and girls. The Admissions FAQ lists RO drinking water, solar water heating, and an emergency vehicle facility. The official college brochure lists a mess/canteen on campus.',
+      answer: 'MITCORER provides separate hostel and mess facilities for students:\n\n- Separate hostels for boys and girls with safe accommodation\n- RO purified drinking water and solar water-heating systems\n- Emergency vehicle facility on campus for student safety\n- Campus mess and canteen facilities providing daily meals',
       next: '', actionView: 'visit', actionLabel: 'Explore facilities',
     };
   }
   if (/sports|gym|physical fitness/.test(normalized)) {
-    return { source: 'MITCORER official brochure and Admissions page', answer: 'MITCORER lists sports facilities and a gym among its campus amenities.', next: '', actionView: 'visit', actionLabel: 'Explore facilities' };
+    return {
+      source: 'MITCORER official brochure and Admissions page',
+      answer: 'MITCORER campus sports and fitness amenities include:\n\n- Dedicated sports grounds for outdoor games and athletics\n- Fully equipped student gymnasium on campus',
+      next: '', actionView: 'visit', actionLabel: 'Explore facilities',
+    };
   }
   if (/labs|laborator|workshop/.test(normalized)) {
-    return { source: 'MITCORER Admissions FAQ and official workshop page', sourceUrl: 'https://mitcorer.edu.in/workshops.php', answer: 'MITCORER lists laboratories for its departments, computer labs, and workshops for practical learning.', next: '', actionView: 'visit', actionLabel: 'Explore facilities' };
+    return {
+      source: 'MITCORER Admissions FAQ and official workshop page',
+      sourceUrl: 'https://mitcorer.edu.in/workshops.php',
+      answer: 'MITCORER provides departmental laboratories and workshops for practical learning:\n\n- Specialized departmental laboratories for hands-on experiments\n- Computer labs equipped with modern systems and software\n- Mechanical and engineering workshops for practical training',
+      next: '', actionView: 'visit', actionLabel: 'Explore facilities',
+    };
   }
   if (/\bbus\b|transport facility|bus facility|bus route|bus stop|bus fee|bus timing/.test(normalized)) {
     return {
       source: 'MITCORER Bus Facility page',
       sourceUrl: 'https://mitcorer.edu.in/bus-facility.php',
-      answer: 'MITCORER provides a bus facility. For routes, stops, timings, seat availability, and fees, check the current transport notice or contact the college.',
+      answer: 'MITCORER lists a bus facility under campus infrastructure:\n\n- College bus transportation is provided for student and staff commute\n- The published Bus Facility page does not state a route list, stops, timetable, seat availability, or transport fee\n- Route details and transport fees must be confirmed from the current transport notice or admission staff before travel',
       next: 'Request the current route, stop, timing, seat availability, and fee for your location from admission staff.',
       actionView: 'inquiry',
       actionLabel: 'Request bus details',
@@ -846,7 +855,7 @@ function buildFacilityAnswer(question) {
     return {
       source: 'MITCORER Admissions FAQ',
       sourceUrl: 'https://mitcorer.edu.in/about-lib-details.php',
-      answer: 'The MITCORER library provides books, digital resources and journals, a reading hall, and a searchable Koha catalogue.',
+      answer: 'The MITCORER central library provides learning and research resources:\n\n- Extensive collection of reference books and engineering textbooks\n- Well-equipped library with digital resources and journals\n- Dedicated quiet reading hall for students and faculty\n- Note: The public FAQ does not publish borrowing rules, timings, or access eligibility; confirm operational details with the library',
       next: 'Check the library page for access details.',
       actionView: 'inquiry',
       actionLabel: 'Request library details',
@@ -858,10 +867,17 @@ function buildFacilityAnswer(question) {
         : normalized.includes('railway model') ? 'railway model room'
           : normalized.includes('seminar') ? 'seminar hall'
             : 'classrooms';
+    const pointsMap = {
+      'railway model room': 'MITCORER features a specialized railway model room on campus:\n\n- Scale working models of railway tracks, locomotives, and rail equipment\n- Demonstration of railway signaling systems and infrastructure\n- Practical instructional support for the Mechanical & Rail Engineering program',
+      'computer center': 'MITCORER provides a dedicated computer center:\n\n- High-speed internet and networked computing systems\n- Modern software packages for engineering coursework and project work',
+      'seminar hall': 'MITCORER features well-equipped seminar halls:\n\n- Audio-visual projection and presentation facilities\n- Space for guest lectures, workshops, and technical conferences',
+      'classrooms': 'MITCORER provides modern classroom infrastructure:\n\n- Spacious and ventilated lecture classrooms\n- Interactive presentation tools and teaching aids',
+      'cafeteria': 'MITCORER provides a campus cafeteria:\n\n- Clean and hygienic dining environment for students and staff\n- Daily snacks, refreshments, and meal options',
+    };
     return {
       source: 'MITCORER Admissions FAQ and infrastructure pages',
       ...(facility === 'railway model room' ? { sourceUrl: 'https://www.mitcorer.edu.in/railway-model-room.php' } : {}),
-      answer: `MITCORER lists a ${facility} among its campus facilities.`,
+      answer: pointsMap[facility] || `MITCORER lists a ${facility} among its campus facilities.`,
       next: 'Use the official contact details to confirm the current operational details before making a visit decision.',
       actionView: 'inquiry',
       actionLabel: 'Request facility details',
@@ -1048,7 +1064,7 @@ export async function answerAdmissionQuestion(body, user) {
   const retrievedEvidence = retrieveKnowledge(question);
   // Do not attach a loosely matched MITCORER record to an unrelated question.
   let evidence = retrievedEvidence[0]?.score >= 15 ? retrievedEvidence : [];
-  const answer = (user && (buildAdmissionReadinessAnswer(question, user) || buildDocumentStatusAnswer(question, user))) || buildCompoundAnswer(question, normalized, records) || buildClarificationAnswer(normalized) || buildReviewedPassage(normalized, language, records) || buildContextualPassage(normalized, records) || guard(buildCollegeProfileAnswer(question), /why/.test(normalized) ? 'KB-35' : 'KB-34') || guard(buildCampusFacilitiesAnswer(question), 'KB-36') || guard(buildPlacementAnswer(question), 'KB-16') || guard(buildDeadlineAnswer(question), 'KB-30') || guard(buildAttendanceAnswer(question), ['KB-31', 'KB-32']) || buildMaintainedAnswer(question, normalized, records) || guard(buildEligibilityAnswer(question), 'KB-5') || guard(buildFacilityAnswer(question), /hostel/.test(normalized) ? 'KB-23' : /labs|laborator|workshop/.test(normalized) ? 'KB-22' : 'KB-36') || guard(buildScholarshipAnswer(question), /pragati/.test(normalized) ? 'KB-33' : 'KB-18') || (fallbackRule ? guard(fallbackRule, ruleRecords[fallbackRule.source] || 'KB-15', false) : null) || {
+  const answer = (user && (buildAdmissionReadinessAnswer(question, user) || buildDocumentStatusAnswer(question, user))) || buildCompoundAnswer(question, normalized, records) || buildClarificationAnswer(normalized) || buildReviewedPassage(normalized, language, records) || guard(buildFacilityAnswer(question), /hostel/.test(normalized) ? 'KB-23' : /labs|laborator|workshop/.test(normalized) ? 'KB-22' : /bus|transport/.test(normalized) ? 'KB-19' : /library/.test(normalized) ? 'KB-20' : 'KB-36') || buildContextualPassage(normalized, records) || guard(buildCollegeProfileAnswer(question), /why/.test(normalized) ? 'KB-35' : 'KB-34') || guard(buildCampusFacilitiesAnswer(question), 'KB-36') || guard(buildPlacementAnswer(question), 'KB-16') || guard(buildDeadlineAnswer(question), 'KB-30') || guard(buildAttendanceAnswer(question), ['KB-31', 'KB-32']) || buildMaintainedAnswer(question, normalized, records) || guard(buildEligibilityAnswer(question), 'KB-5') || guard(buildScholarshipAnswer(question), /pragati/.test(normalized) ? 'KB-33' : 'KB-18') || (fallbackRule ? guard(fallbackRule, ruleRecords[fallbackRule.source] || 'KB-15', false) : null) || {
     source: 'No verified record',
     answer: 'I could not find an official answer for that question. Please ask about a specific programme, fee, scholarship, admission step, or campus facility.',
     next: '',

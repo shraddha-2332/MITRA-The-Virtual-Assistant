@@ -36,7 +36,20 @@ try {
   const started = performance.now();
   const bm25 = createBm25(corpus);
   const buildMs = performance.now() - started;
-  const methods = { keyword: retrieveKnowledge, bm25Raw: bm25, bm25Normalized: question => bm25(normalizeIntentText(question)) };
+  const methods = {
+    keyword: retrieveKnowledge,
+    bm25Raw: bm25,
+    bm25Normalized: question => bm25(normalizeIntentText(question)),
+    hybridRrf: question => {
+      const kw = retrieveKnowledge(question);
+      const bm = bm25(normalizeIntentText(question));
+      const map = new Map();
+      const k = 60;
+      kw.forEach((item, r) => map.set(item.id, (map.get(item.id) || 0) + (1 / (k + r + 1))));
+      bm.forEach((item, r) => map.set(item.id, (map.get(item.id) || 0) + (1 / (k + r + 1))));
+      return [...map.entries()].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0])).map(([id, score]) => ({ id, score }));
+    },
+  };
   const rows = cases.map(item => ({ ...item, methods: {} }));
   const timings = Object.fromEntries(Object.keys(methods).map(name => [name, []]));
   for (const row of rows) for (const [name, retrieve] of Object.entries(methods)) {

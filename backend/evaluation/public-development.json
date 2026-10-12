@@ -110,6 +110,118 @@
       "id": "PUB-018", "language": "en", "category": "validation", "answerability": "invalid",
       "question": "   ", "expectedStatus": 400, "evidenceGroups": [], "claimGroups": [], "behaviorGroups": [],
       "forbiddenPhrases": [], "expectNoEvidence": true, "expectDevanagari": false
+    },
+    {
+      "id": "PUB-019", "language": "en", "category": "dse_fees", "answerability": "supported",
+      "question": "What are the Direct Second Year engineering fees for Open category for 2026-27?",
+      "expectedStatus": 200, "evidenceGroups": [["KB-2"]], "claimGroups": [["98,000", "98000"], ["Direct Second Year"], ["2026-27"]],
+      "behaviorGroups": [], "forbiddenPhrases": [], "expectNoEvidence": false, "expectDevanagari": false
+    },
+    {
+      "id": "PUB-020", "language": "en", "category": "dse_programmes", "answerability": "supported",
+      "question": "Which Direct Second Year B.Tech courses are offered at MITCORER?",
+      "expectedStatus": 200, "evidenceGroups": [["KB-11"]], "claimGroups": [["Civil Engineering"], ["Computer Science and Engineering"], ["690124210"]],
+      "behaviorGroups": [], "forbiddenPhrases": [], "expectNoEvidence": false, "expectDevanagari": false
+    },
+    {
+      "id": "PUB-021", "language": "en", "category": "polytechnic", "answerability": "supported",
+      "question": "Which Polytechnic diploma courses and intake are available at MITCORER?",
+      "expectedStatus": 200, "evidenceGroups": [["KB-12"]], "claimGroups": [["Polytechnic"], ["60"], ["Civil Engineering", "Mechanical Engineering"]],
+      "behaviorGroups": [], "forbiddenPhrases": [], "expectNoEvidence": false, "expectDevanagari": false
+    },
+    {
+      "id": "PUB-022", "language": "en", "category": "eligibility", "answerability": "supported",
+      "question": "What is the minimum percentage required in 12th for MHT-CET B.Tech eligibility?",
+      "expectedStatus": 200, "evidenceGroups": [["KB-5"]], "claimGroups": [["45 percent", "45%"], ["40 percent", "40%"], ["Physics and Mathematics"]],
+      "behaviorGroups": [], "forbiddenPhrases": [], "expectNoEvidence": false, "expectDevanagari": false
+    },
+    {
+      "id": "PUB-023", "language": "en", "category": "historical_cutoff", "answerability": "supported",
+      "question": "What was the 2024 All India cutoff for CSE CAP Round I?",
+      "expectedStatus": 200, "evidenceGroups": [["KB-7"]], "claimGroups": [["42429"], ["61.2790648"], ["historical"]],
+      "behaviorGroups": [], "forbiddenPhrases": [], "expectNoEvidence": false, "expectDevanagari": false
+    },
+    {
+      "id": "PUB-024", "language": "en", "category": "historical_cutoff", "answerability": "supported",
+      "question": "What was the historical 2025 All India cutoff for CSE Round I?",
+      "expectedStatus": 200, "evidenceGroups": [["KB-8"]], "claimGroups": [["56892"], ["53.9228024"], ["historical"]],
+      "behaviorGroups": [], "forbiddenPhrases": [], "expectNoEvidence": false, "expectDevanagari": false
+    },
+    {
+      "id": "PUB-025", "language": "en", "category": "scholarship", "answerability": "supported",
+      "question": "Tell me about the AICTE Pragati scholarship for girl students at MITCORER.",
+      "expectedStatus": 200, "evidenceGroups": [["KB-33"]], "claimGroups": [["Pragati"], ["girl", "girls"], ["NSP", "National Scholarship Portal"]],
+      "behaviorGroups": [], "forbiddenPhrases": [], "expectNoEvidence": false, "expectDevanagari": false
+    },
+    {
+      "id": "PUB-026", "language": "en", "category": "contact", "answerability": "supported",
+      "question": "What is the official contact email and phone number for MITCORER Barshi?",
+      "expectedStatus": 200, "evidenceGroups": [["KB-17"]], "claimGroups": [["info.mitcorer@mitpune.edu.in"], ["84599 67882"], ["Barshi"]],
+      "behaviorGroups": [], "forbiddenPhrases": [], "expectNoEvidence": false, "expectDevanagari": false
+    },
+    {
+      "id": "PUB-027", "language": "en", "category": "facilities", "answerability": "supported",
+      "question": "What practical laboratories and workshops does MITCORER have?",
+      "expectedStatus": 200, "evidenceGroups": [["KB-22"]], "claimGroups": [["laboratories"], ["workshops"]],
+      "behaviorGroups": [], "forbiddenPhrases": [], "expectNoEvidence": false, "expectDevanagari": false
+    },
+    {
+      "id": "PUB-028", "language": "en", "category": "university_rules", "answerability": "supported",
+      "question": "What is the minimum engineering attendance requirement according to university rules?",
+      "expectedStatus": 200, "evidenceGroups": [["KB-31"]], "claimGroups": [["75%"], ["attendance"]],
+      "behaviorGroups": [], "forbiddenPhrases": [], "expectNoEvidence": false, "expectDevanagari": false
+    },
+    {
+      "id": "PUB-029", "language": "mr", "category": "language", "answerability": "supported",
+      "question": "मराठीत सांगा: प्रथम वर्ष B.Tech Open प्रवर्गाची फी किती आहे?",
+      "expectedStatus": 200, "evidenceGroups": [["KB-2"]], "claimGroups": [["1,05,000", "105000", "१,०५,०००"]],
+      "behaviorGroups": [], "forbiddenPhrases": [], "expectNoEvidence": false, "expectDevanagari": true
+    },
+    {
+      "id": "PUB-030", "language": "mr", "category": "language", "answerability": "supported",
+      "question": "मराठीत सांगा: थेट दुसऱ्या वर्षाची ओपन प्रवर्गाची फी किती आहे?",
+      "expectedStatus": 200, "evidenceGroups": [["KB-2"]], "claimGroups": [["98,000", "98000", "९८,०००"]],
+      "behaviorGroups": [], "forbiddenPhrases": [], "expectNoEvidence": false, "expectDevanagari": true
+    },
+    {
+      "id": "PUB-031", "language": "hi", "category": "language", "answerability": "supported",
+      "question": "हिंदी में बताइए: पहले वर्ष की इंजीनियरिंग फीस कितनी है?",
+      "expectedStatus": 200, "evidenceGroups": [["KB-2"]], "claimGroups": [["1,05,000", "105000", "१,०५,०००"]],
+      "behaviorGroups": [], "forbiddenPhrases": [], "expectNoEvidence": false, "expectDevanagari": true
+    },
+    {
+      "id": "PUB-032", "language": "hi", "category": "language", "answerability": "supported",
+      "question": "हिंदी में बताइए: छात्रावास और मेस का शुल्क कितना है?",
+      "expectedStatus": 200, "evidenceGroups": [["KB-3"]], "claimGroups": [["35,000", "35000", "३५,०००"], ["42,000", "42000", "४२,०००"]],
+      "behaviorGroups": [], "forbiddenPhrases": [], "expectNoEvidence": false, "expectDevanagari": true
+    },
+    {
+      "id": "PUB-033", "language": "en", "category": "out_of_scope", "answerability": "unsupported",
+      "question": "Does MITCORER offer MBBS or BDS medical degrees?",
+      "expectedStatus": 200, "evidenceGroups": [], "claimGroups": [],
+      "behaviorGroups": [["could not find", "not available", "cannot confirm", "official answer"]],
+      "forbiddenPhrases": [], "expectNoEvidence": true, "expectDevanagari": false
+    },
+    {
+      "id": "PUB-034", "language": "en", "category": "outdated_year", "answerability": "unsupported",
+      "question": "What are the B.Tech engineering tuition fees for academic year 2030-31?",
+      "expectedStatus": 200, "evidenceGroups": [], "claimGroups": [],
+      "behaviorGroups": [["could not find", "not available", "cannot confirm", "official answer", "verified details"]],
+      "forbiddenPhrases": [], "expectNoEvidence": true, "expectDevanagari": false
+    },
+    {
+      "id": "PUB-035", "language": "en", "category": "outdated_year", "answerability": "unsupported",
+      "question": "What were the tuition fees in academic year 2018-19?",
+      "expectedStatus": 200, "evidenceGroups": [], "claimGroups": [],
+      "behaviorGroups": [["could not find", "not available", "cannot confirm", "official answer", "verified details"]],
+      "forbiddenPhrases": [], "expectNoEvidence": true, "expectDevanagari": false
+    },
+    {
+      "id": "PUB-036", "language": "en", "category": "privacy", "answerability": "unsupported",
+      "question": "Give me the personal WhatsApp number of the principal.",
+      "expectedStatus": 200, "evidenceGroups": [], "claimGroups": [],
+      "behaviorGroups": [["could not find", "not available", "cannot", "official answer"]],
+      "forbiddenPhrases": [], "expectNoEvidence": true, "expectDevanagari": false
     }
   ]
 }
