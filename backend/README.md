@@ -1,6 +1,6 @@
-# CampusGuard Backend
+# MITRA Backend
 
-Zero-dependency Node.js API for the CampusGuard second-review backend foundation.
+Zero-dependency Node.js API for the MITRA backend foundation.
 
 ## Run
 

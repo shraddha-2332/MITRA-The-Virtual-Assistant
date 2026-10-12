@@ -361,6 +361,32 @@ test('health endpoint works without auth', async () => {
     const { response, payload } = await request(base, '/api/health');
     assert.equal(response.status, 200);
     assert.equal(payload.data.status, 'ok');
+    assert.equal(payload.data.service, 'mitra-backend');
+  });
+});
+
+test('public facts endpoint returns single source of truth for academic fees, accommodation, and programs', async () => {
+  await withServer(async (base) => {
+    const { response, payload } = await request(base, '/api/public-facts');
+    assert.equal(response.status, 200);
+    const facts = payload.data;
+    assert.equal(facts.academicYear, '2026-27');
+    assert.equal(facts.academicFees.fy.open, 105000);
+    assert.equal(facts.academicFees.fy.boys, 61109);
+    assert.equal(facts.academicFees.fy.girls, 17217);
+    assert.equal(facts.academicFees.fy.vjnt, 17217);
+    assert.equal(facts.academicFees.fy.scst, 8000);
+    assert.equal(facts.academicFees.dse.open, 98000);
+    assert.equal(facts.academicFees.dse.boys, 58181);
+    assert.equal(facts.accommodationFees.hostel, 35000);
+    assert.equal(facts.accommodationFees.refundableDeposit, 5000);
+    assert.equal(facts.accommodationFees.hostelTotal, 40000);
+    assert.equal(facts.accommodationFees.messAnnual, 42000);
+    assert.ok(Array.isArray(facts.programs));
+    assert.ok(facts.programs.length >= 6);
+    const cse = facts.programs.find((p) => p.name === 'Computer Science and Engineering');
+    assert.equal(cse?.intake, 120);
+    assert.equal(cse?.choiceCode, '0690124210');
   });
 });
 

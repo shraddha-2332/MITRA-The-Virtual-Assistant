@@ -1,4 +1,4 @@
-# CampusGuard Frontend
+# MITRA Frontend
 
 The React/Vite frontend for the MITCORER admission-support workspace.
 

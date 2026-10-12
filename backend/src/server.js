@@ -5,7 +5,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { config } from './config.js';
 import { askWithHistory, getConversation, listConversations } from './conversations.js';
-import { validateKnowledgeFields, buildMaintainedAnswer, academicFeeSelection, parseLegacyFactText } from './knowledge.js';
+import { validateKnowledgeFields, buildMaintainedAnswer, academicFeeSelection, parseLegacyFactText, extractPublicFacts } from './knowledge.js';
 import { selectLanguage, localizeResponse, buildReviewedPassage } from './language.js';
 import { buildClarificationAnswer, buildCompoundAnswer, buildContextualPassage } from './question-plan.js';
 import { publicEvidence } from './evidence.js';
@@ -18,7 +18,15 @@ import { getDb, loadDb, saveDb } from './store.js';
 import { generateId, jsonResponse, nowIso, pick, requireString } from './utils.js';
 import { verifyGeneratedAnswer, classifyAnswerOutcome } from './grounding.js';
 
-const publicRoutes = new Set(['GET /api/health', 'POST /api/auth/login', 'POST /api/auth/signup', 'POST /api/auth/refresh', 'POST /api/auth/logout', 'POST /api/public-assistant/ask']);
+const publicRoutes = new Set([
+  'GET /api/health',
+  'GET /api/public-facts',
+  'POST /api/auth/login',
+  'POST /api/auth/signup',
+  'POST /api/auth/refresh',
+  'POST /api/auth/logout',
+  'POST /api/public-assistant/ask',
+]);
 const allowedRoles = ['applicant', 'parent', 'staff', 'admin'];
 const authAttempts = new Map();
 const assistantAttempts = new Map();
@@ -199,7 +207,7 @@ function getCookie(req, name) {
 
 function refreshCookie(token, maxAgeSeconds) {
   const secure = config.nodeEnv === 'production' ? '; Secure' : '';
-  return `campusguard_refresh=${encodeURIComponent(token || '')}; HttpOnly; SameSite=Strict; Path=/api/auth; Max-Age=${maxAgeSeconds}${secure}`;
+  return `mitra_refresh=${encodeURIComponent(token || '')}; HttpOnly; SameSite=Strict; Path=/api/auth; Max-Age=${maxAgeSeconds}${secure}`;
 }
 
 function sanitizeUser(user) {
@@ -226,7 +234,7 @@ function issueSession(user) {
 
 function refreshSession(body, req) {
   const db = getDb();
-  const refreshToken = requireString(body.refreshToken || getCookie(req, 'campusguard_refresh'), 'refreshToken', 500);
+  const refreshToken = requireString(body.refreshToken || getCookie(req, 'mitra_refresh') || getCookie(req, 'campusguard_refresh'), 'refreshToken', 500);
   const tokenHash = hashToken(refreshToken);
   const session = (db.refreshTokens || []).find((item) => item.tokenHash === tokenHash);
   if (!session || session.revoked || new Date(session.expiresAt).getTime() < Date.now()) {
@@ -243,7 +251,7 @@ function refreshSession(body, req) {
 
 function logoutSession(body, req) {
   const db = getDb();
-  const refreshToken = String(body.refreshToken || getCookie(req, 'campusguard_refresh') || '');
+  const refreshToken = String(body.refreshToken || getCookie(req, 'mitra_refresh') || getCookie(req, 'campusguard_refresh') || '');
   if (!refreshToken) return { loggedOut: true, clearRefreshCookie: true };
   const tokenHash = hashToken(refreshToken);
   const session = (db.refreshTokens || []).find((item) => item.tokenHash === tokenHash);
@@ -1427,7 +1435,10 @@ async function handleApi(req) {
   const body = await readJson(req);
 
   if (req.method === 'GET' && url.pathname === '/api/health') {
-    return { status: 'ok', service: 'campusguard-backend', time: nowIso() };
+    return { status: 'ok', service: 'mitra-backend', time: nowIso() };
+  }
+  if (req.method === 'GET' && url.pathname === '/api/public-facts') {
+    return extractPublicFacts(getDb().knowledge || []);
   }
   if (req.method === 'POST' && url.pathname === '/api/auth/login') return handleAuthLogin(body);
   if (req.method === 'POST' && url.pathname === '/api/auth/signup') return handleAuthSignup(body);
@@ -1556,6 +1567,6 @@ const entryFile = process.argv[1] ? path.resolve(process.argv[1]) : '';
 
 if (currentFile === entryFile) {
   createServer().listen(config.port, config.host, () => {
-    console.log(`CampusGuard backend listening on http://${config.host}:${config.port}`);
+    console.log(`MITRA backend listening on http://${config.host}:${config.port}`);
   });
 }

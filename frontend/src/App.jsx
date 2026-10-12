@@ -319,7 +319,8 @@ function App() {
   const [view, setView] = useState('assistant');
   const [viewHistory, setViewHistory] = useState([]);
   const [navOpen, setNavOpen] = useState(false);
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(() => localStorage.getItem('campusguard.sidebarCollapsed') === 'true');
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(() => (localStorage.getItem('mitra.sidebarCollapsed') ?? localStorage.getItem('campusguard.sidebarCollapsed')) === 'true');
+  const [publicFacts, setPublicFacts] = useState(null);
   const [documentReviews, setDocumentReviews] = useState(initialDocumentReviews);
   const [inquiries, setInquiries] = useState(initialInquiries);
   const [content, setContent] = useState(contentItems);
@@ -360,16 +361,18 @@ function App() {
       setAdmissionWorkspace(await api.getAdmissionWorkspace(authToken));
     }
     if (['staff', 'admin'].includes(currentRole)) {
-      const [reportResult, auditResult, knowledgeResult, sourceResult] = await Promise.all([
+      const [reportResult, auditResult, knowledgeResult, sourceResult, factsResult] = await Promise.all([
         api.getReports(authToken),
         api.getAuditLogs(authToken),
         api.getKnowledge(authToken),
         api.getOfficialSources(authToken),
+        api.getPublicFacts().catch(() => null),
       ]);
       setReports(reportResult);
       setAuditLogs(auditResult.items || []);
       setKnowledge(knowledgeResult.items || []);
       setOfficialSources(sourceResult.items || []);
+      if (factsResult) setPublicFacts(factsResult);
     } else {
       setReports(null);
       setAuditLogs([]);
@@ -381,6 +384,9 @@ function App() {
 
   useEffect(() => {
     let active = true;
+    api.getPublicFacts().then((facts) => {
+      if (active && facts) setPublicFacts(facts);
+    }).catch(() => {});
     const restoreSession = async () => {
       try {
         const payload = await api.refresh();
@@ -540,6 +546,7 @@ function App() {
     try {
       const saved = await api.createKnowledge(token, record);
       setKnowledge((items) => [saved, ...items]);
+      api.getPublicFacts().then((facts) => { if (facts) setPublicFacts(facts); }).catch(() => {});
       return saved;
     } catch (error) {
       setAppError(error.message);
@@ -549,6 +556,7 @@ function App() {
   const updateKnowledgeItem = async (id, changes) => {
     const saved = await api.updateKnowledge(token, id, changes);
     setKnowledge((items) => items.map((item) => item.id === id ? saved : item));
+    api.getPublicFacts().then((facts) => { if (facts) setPublicFacts(facts); }).catch(() => {});
     return saved;
   };
 
@@ -614,6 +622,7 @@ function App() {
       setOfficialSources((items) => items.map((item) => (item.id === id ? saved : item)));
       const knowledgeResult = await api.getKnowledge(token);
       setKnowledge(knowledgeResult.items || []);
+      api.getPublicFacts().then((facts) => { if (facts) setPublicFacts(facts); }).catch(() => {});
       return saved;
     } catch (error) {
       setAppError(error.message);
@@ -639,11 +648,11 @@ function App() {
             {view === 'assistant' && <AdmissionDesk key={history.active?.id || 'new'} user={user} setView={navigateTo} history={history} onError={setAppError} onUploadAttachment={uploadAssistantAttachment} onCreateInquiry={createInquiry} />}
             {view === 'cap' && <CapProcess initial={admissionWorkspace.cap} onSave={(value) => saveAdmissionWorkspace('cap', value)} setView={navigateTo} />}
             {view === 'documents' && <Documents role={role} user={user} documentReviews={documentReviews} assistantAttachments={assistantAttachments} onDocumentUpload={upsertDocumentReview} onDocumentSubmit={submitDocumentsForReview} onDocumentRemove={removeDocumentReview} onDocumentStatusChange={updateDocumentReviewStatus} onOpenDocument={openDocument} onOpenAttachment={openAssistantAttachment} />}
-            {view === 'programs' && <Programs initial={admissionWorkspace.programs} onSave={(value) => saveAdmissionWorkspace('programs', value)} setView={navigateTo} />}
-            {view === 'fees' && <Fees initial={admissionWorkspace.fees} onSave={(value) => saveAdmissionWorkspace('fees', value)} setView={navigateTo} />}
+            {view === 'programs' && <Programs initial={admissionWorkspace.programs} onSave={(value) => saveAdmissionWorkspace('programs', value)} setView={navigateTo} publicFacts={publicFacts} />}
+            {view === 'fees' && <Fees initial={admissionWorkspace.fees} onSave={(value) => saveAdmissionWorkspace('fees', value)} setView={navigateTo} publicFacts={publicFacts} />}
             {view === 'scholarships' && <ScholarshipAid initial={admissionWorkspace.scholarship} onSave={(value) => saveAdmissionWorkspace('scholarship', value)} setView={navigateTo} />}
             {view === 'placements' && <CareerOutcomes setView={navigateTo} />}
-            {view === 'visit' && <HostelMess initial={admissionWorkspace.stay} onSave={(value) => saveAdmissionWorkspace('stay', value)} setView={navigateTo} />}
+            {view === 'visit' && <HostelMess initial={admissionWorkspace.stay} onSave={(value) => saveAdmissionWorkspace('stay', value)} setView={navigateTo} publicFacts={publicFacts} />}
             {view === 'inquiry' && <Inquiry user={user} role={role} inquiries={inquiries} onCreateInquiry={createInquiry} />}
             {view === 'queue' && <StaffQueue user={user} inquiries={inquiries} documentReviews={documentReviews} onUpdateInquiry={updateInquiryStatus} />}
             {view === 'content' && <ContentManager contentItems={content} onCreate={createContentItem} onUpdate={updateContentItem} />}
@@ -917,7 +926,7 @@ function Sidebar({ user, role, view, setView, navOpen, setNavOpen, collapsed, se
   const toggleCollapsed = () => {
     const next = !collapsed;
     setCollapsed(next);
-    localStorage.setItem('campusguard.sidebarCollapsed', String(next));
+    localStorage.setItem('mitra.sidebarCollapsed', String(next));
   };
   return (
     <aside className={`sidebar ${navOpen ? 'open' : ''} ${collapsed ? 'collapsed' : ''}`}>
@@ -1388,7 +1397,8 @@ function CapProcess({ initial, onSave, setView }) {
   );
 }
 
-function Programs({ initial, onSave, setView }) {
+function Programs({ initial, onSave, setView, publicFacts }) {
+  const activeCourses = (publicFacts?.programs && publicFacts.programs.length > 0) ? publicFacts.programs : courses;
   const [preferences, setPreferences] = useState(initial?.preferences || []);
   const updatePreferences = (updater) => setPreferences((items) => { const next = typeof updater === 'function' ? updater(items) : updater; onSave({ preferences: next }); return next; });
   const addPreference = (course) => {
@@ -1418,7 +1428,7 @@ function Programs({ initial, onSave, setView }) {
       <div className="sectionHead"><span className="eyebrow">Program Finder</span><h2>Compare admission options before filling preferences.</h2><p>Shortlist branches, arrange a draft preference order, and keep choice codes ready for CAP or institute-level discussion.</p></div>
       <section className="decisionPanel">
         <div className="programGrid">
-          {courses.map((course) => {
+          {activeCourses.map((course) => {
             const added = preferences.some((item) => item.choiceCode === course.choiceCode);
             return (
               <article key={course.choiceCode}>
@@ -1457,16 +1467,21 @@ function Programs({ initial, onSave, setView }) {
   );
 }
 
-function Fees({ initial, onSave, setView }) {
+function Fees({ initial, onSave, setView, publicFacts }) {
   const [estimate, setEstimate] = useState(Object.keys(initial || {}).length ? initial : { admission: 'fy', category: 'open', hostel: 'no', mess: 'no' });
   const updateEstimate = (key, value) => { const next = { ...estimate, [key]: value }; setEstimate(next); onSave(next); };
-  const academicFees = {
+  const academicFees = publicFacts?.academicFees ? {
+    fy: publicFacts.academicFees.fy,
+    dse: publicFacts.academicFees.dse,
+  } : {
     fy: { open: 105000, boys: 61109, girls: 17217, vjnt: 17217, scst: 8000 },
     dse: { open: 98000, boys: 58181, girls: 18362, vjnt: 18362, scst: 10000 },
   };
   const academic = academicFees[estimate.admission][estimate.category];
-  const hostel = estimate.hostel === 'yes' ? 40000 : 0;
-  const mess = estimate.mess === 'yes' ? 42000 : 0;
+  const hostelTotalAmount = publicFacts?.accommodationFees?.hostelTotal ?? 40000;
+  const messTotalAmount = publicFacts?.accommodationFees?.messAnnual ?? 42000;
+  const hostel = estimate.hostel === 'yes' ? hostelTotalAmount : 0;
+  const mess = estimate.mess === 'yes' ? messTotalAmount : 0;
   const total = academic + hostel + mess;
   const formatCurrency = (amount) => `INR ${amount.toLocaleString('en-IN')}`;
   const scholarshipHint = estimate.category === 'open'
@@ -1475,7 +1490,43 @@ function Fees({ initial, onSave, setView }) {
       ? 'SC/ST profile should prepare category proof and applicable scholarship documents.'
       : 'Category profile should verify scholarship/concession documents before reporting.';
 
-  return <div className="pageStack"><div className="sectionHead"><span className="eyebrow">Fee Planner</span><h2>Estimate what to confirm before reporting.</h2><p>Select admission route and category to get an estimated payable amount before visiting campus.</p></div><section className="decisionPanel"><div><div className="sectionHead"><span className="eyebrow">Estimate calculator</span><h2>{formatCurrency(total)}</h2></div><div className="decisionForm"><label>Admission type<select value={estimate.admission} onChange={(event) => updateEstimate('admission', event.target.value)}><option value="fy">First Year Engineering</option><option value="dse">Direct Second Year</option></select></label><label>Category<select value={estimate.category} onChange={(event) => updateEstimate('category', event.target.value)}><option value="open">Open / OMS</option><option value="boys">Open EBC/EWS/OBC/SEBC Boys</option><option value="girls">Girls</option><option value="vjnt">VJNT / SBC / TFWS</option><option value="scst">SC / ST</option></select></label><label>Hostel<select value={estimate.hostel} onChange={(event) => updateEstimate('hostel', event.target.value)}><option value="no">No</option><option value="yes">Yes</option></select></label><label>Mess<select value={estimate.mess} onChange={(event) => updateEstimate('mess', event.target.value)}><option value="no">No</option><option value="yes">Yes</option></select></label></div></div><div className="decisionResult positive"><span className="eyebrow">Saved estimate</span><div className="stepRow compact"><CheckCircle2 size={17} /> Academic fee: {formatCurrency(academic)}</div><div className="stepRow compact"><CheckCircle2 size={17} /> Hostel: {formatCurrency(hostel)}</div><div className="stepRow compact"><CheckCircle2 size={17} /> Mess: {formatCurrency(mess)}</div><strong>Total: {formatCurrency(total)}</strong></div></section><section className="panelBlock"><div className="sectionHead"><span className="eyebrow">Scholarship connection</span><h2>Check concession documents before payment.</h2><p>{scholarshipHint}</p></div><div className="workflowActions"><button type="button" onClick={() => setView('scholarships')}>Check scholarship readiness <ArrowRight size={16} /></button><button type="button" onClick={() => setView('documents')}>Prepare fee documents</button><a href="https://mahafra.org/" target="_blank" rel="noreferrer">Verify approved fees on FRA <ArrowRight size={16} /></a><button type="button" onClick={() => setView('inquiry')}>Ask staff about payment</button></div></section>{feeRecords.map((record) => <section className="feeRecord" key={record.title}><div><span className="eyebrow">{record.year}</span><h3>{record.title}</h3><ul>{record.rows.map((row) => <li key={row}>{row}</li>)}</ul></div><img src={record.image} alt={`${record.title} fee table`} /></section>)}</div>;
+  const displayFeeRecords = publicFacts?.academicFees ? [
+    {
+      title: 'First Year Engineering',
+      year: `AY ${publicFacts.academicFees.academicYear}`,
+      image: feeFirstYearImage,
+      rows: [
+        `Open/OMS: INR ${publicFacts.academicFees.fy.open.toLocaleString('en-IN')}`,
+        `Open EBC/EWS/OBC/SEBC boys: INR ${publicFacts.academicFees.fy.boys.toLocaleString('en-IN')}`,
+        `Girls/VJNT/SBC/TFWS: INR ${publicFacts.academicFees.fy.girls.toLocaleString('en-IN')}`,
+        `SC/ST: INR ${publicFacts.academicFees.fy.scst.toLocaleString('en-IN')}`,
+      ],
+    },
+    {
+      title: 'Direct Second Year',
+      year: `AY ${publicFacts.academicFees.academicYear}`,
+      image: feeDirectSecondYearImage,
+      rows: [
+        `Open/OMS: INR ${publicFacts.academicFees.dse.open.toLocaleString('en-IN')}`,
+        `Open EBC/EWS/OBC/SEBC boys: INR ${publicFacts.academicFees.dse.boys.toLocaleString('en-IN')}`,
+        `Girls/VJNT/SBC/TFWS: INR ${publicFacts.academicFees.dse.girls.toLocaleString('en-IN')}`,
+        `SC/ST: INR ${publicFacts.academicFees.dse.scst.toLocaleString('en-IN')}`,
+      ],
+    },
+    {
+      title: 'Hostel and Mess',
+      year: `AY ${publicFacts.accommodationFees?.academicYear || publicFacts.academicFees.academicYear}`,
+      image: hostelMessFeeImage,
+      rows: [
+        `Hostel fee: INR ${(publicFacts.accommodationFees?.hostel ?? 35000).toLocaleString('en-IN')}`,
+        `Refundable deposit: INR ${(publicFacts.accommodationFees?.refundableDeposit ?? 5000).toLocaleString('en-IN')}`,
+        `Hostel total: INR ${hostelTotalAmount.toLocaleString('en-IN')}`,
+        `Mess fee per year: INR ${messTotalAmount.toLocaleString('en-IN')}`,
+      ],
+    },
+  ] : feeRecords;
+
+  return <div className="pageStack"><div className="sectionHead"><span className="eyebrow">Fee Planner</span><h2>Estimate what to confirm before reporting.</h2><p>Select admission route and category to get an estimated payable amount before visiting campus.</p></div><section className="decisionPanel"><div><div className="sectionHead"><span className="eyebrow">Estimate calculator</span><h2>{formatCurrency(total)}</h2></div><div className="decisionForm"><label>Admission type<select value={estimate.admission} onChange={(event) => updateEstimate('admission', event.target.value)}><option value="fy">First Year Engineering</option><option value="dse">Direct Second Year</option></select></label><label>Category<select value={estimate.category} onChange={(event) => updateEstimate('category', event.target.value)}><option value="open">Open / OMS</option><option value="boys">Open EBC/EWS/OBC/SEBC Boys</option><option value="girls">Girls</option><option value="vjnt">VJNT / SBC / TFWS</option><option value="scst">SC / ST</option></select></label><label>Hostel<select value={estimate.hostel} onChange={(event) => updateEstimate('hostel', event.target.value)}><option value="no">No</option><option value="yes">Yes</option></select></label><label>Mess<select value={estimate.mess} onChange={(event) => updateEstimate('mess', event.target.value)}><option value="no">No</option><option value="yes">Yes</option></select></label></div></div><div className="decisionResult positive"><span className="eyebrow">Saved estimate</span><div className="stepRow compact"><CheckCircle2 size={17} /> Academic fee: {formatCurrency(academic)}</div><div className="stepRow compact"><CheckCircle2 size={17} /> Hostel: {formatCurrency(hostel)}</div><div className="stepRow compact"><CheckCircle2 size={17} /> Mess: {formatCurrency(mess)}</div><strong>Total: {formatCurrency(total)}</strong></div></section><section className="panelBlock"><div className="sectionHead"><span className="eyebrow">Scholarship connection</span><h2>Check concession documents before payment.</h2><p>{scholarshipHint}</p></div><div className="workflowActions"><button type="button" onClick={() => setView('scholarships')}>Check scholarship readiness <ArrowRight size={16} /></button><button type="button" onClick={() => setView('documents')}>Prepare fee documents</button><a href="https://mahafra.org/" target="_blank" rel="noreferrer">Verify approved fees on FRA <ArrowRight size={16} /></a><button type="button" onClick={() => setView('inquiry')}>Ask staff about payment</button></div></section>{displayFeeRecords.map((record) => <section className="feeRecord" key={record.title}><div><span className="eyebrow">{record.year}</span><h3>{record.title}</h3><ul>{record.rows.map((row) => <li key={row}>{row}</li>)}</ul></div><img src={record.image} alt={`${record.title} fee table`} /></section>)}</div>;
 }
 
 function ScholarshipAid({ initial, onSave, setView }) {
@@ -1551,13 +1602,21 @@ function CareerOutcomes({ setView }) {
   );
 }
 
-function HostelMess({ initial, onSave, setView }) {
+function HostelMess({ initial, onSave, setView, publicFacts }) {
   const [plan, setPlan] = useState(Object.keys(initial || {}).length ? initial : { hostel: 'yes', mess: 'yes', transport: 'no' });
   const updatePlan = (key, value) => { const next = { ...plan, [key]: value }; setPlan(next); onSave(next); };
-  const hostelTotal = plan.hostel === 'yes' ? 40000 : 0;
-  const messTotal = plan.mess === 'yes' ? 42000 : 0;
+  const hostelFeeTotal = publicFacts?.accommodationFees?.hostelTotal ?? 40000;
+  const messFeeAnnual = publicFacts?.accommodationFees?.messAnnual ?? 42000;
+  const hostelTotal = plan.hostel === 'yes' ? hostelFeeTotal : 0;
+  const messTotal = plan.mess === 'yes' ? messFeeAnnual : 0;
   const stayTotal = hostelTotal + messTotal;
   const formatCurrency = (amount) => `INR ${amount.toLocaleString('en-IN')}`;
+  const displayHostelDetails = publicFacts?.accommodationFees ? [
+    ['Hostel fee', `INR ${(publicFacts.accommodationFees.hostel ?? 35000).toLocaleString('en-IN')}`],
+    ['Refundable deposit', `INR ${(publicFacts.accommodationFees.refundableDeposit ?? 5000).toLocaleString('en-IN')}`],
+    ['Hostel total', `INR ${hostelFeeTotal.toLocaleString('en-IN')}`],
+    ['Mess fee per year', `INR ${messFeeAnnual.toLocaleString('en-IN')}`],
+  ] : hostelMessDetails;
   return (
     <div className="pageStack">
       <div className="sectionHead"><span className="eyebrow">Hostel & Mess</span><h2>Check stay and meal planning before reporting.</h2><p>Estimate stay cost and confirm availability, rules, and payment process before travelling.</p></div>
@@ -1573,7 +1632,7 @@ function HostelMess({ initial, onSave, setView }) {
           <p>Hostel: {formatCurrency(hostelTotal)}<br />Mess: {formatCurrency(messTotal)}{plan.transport === 'yes' ? <><br />Bus route and charges should be confirmed with staff.</> : null}</p>
         </div>
       </section>
-      <div className="reportGrid">{hostelMessDetails.map(([label, value]) => <article key={label}><span>{label}</span><strong>{value}</strong></article>)}</div>
+      <div className="reportGrid">{displayHostelDetails.map(([label, value]) => <article key={label}><span>{label}</span><strong>{value}</strong></article>)}</div>
       <div className="visitGrid"><section className="panelBlock"><div className="sectionHead"><span className="eyebrow">Confirm before admission</span><h2>Stay decision checklist</h2></div>{hostelConfirmations.map((item) => <div className="stepRow" key={item}><CheckCircle2 size={17} /> {item}</div>)}</section><section className="panelBlock"><div className="sectionHead"><span className="eyebrow">Campus facilities</span><h2>Useful infrastructure</h2></div><div className="facilityList">{facilities.map((item) => <span key={item}>{item}</span>)}</div><p className="warningText"><ShieldCheck size={16} /> Final room availability, rules, and payment process should be confirmed by admission/hostel staff.</p></section></div>
       <section className="panelBlock"><div className="sectionHead"><span className="eyebrow">Continue</span><h2>Confirm current availability with the college.</h2></div><div className="workflowActions"><button type="button" onClick={() => setView('inquiry')}>Request hostel or transport confirmation <ArrowRight size={16} /></button><button type="button" onClick={() => setView('fees')}>Include stay cost in fee plan</button></div></section>
     </div>

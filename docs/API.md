@@ -1,4 +1,4 @@
-# CampusGuard API
+# MITRA API
 
 Base URL: `http://127.0.0.1:4000`
 
@@ -67,6 +67,7 @@ Real upload supports PDF, JPG, and PNG. Staff/admin can update review status.
 
 ## Content And Knowledge
 
+- `GET /api/public-facts` (unauthenticated single source of truth for academic fees, hostel/mess, and programme intake)
 - `GET /api/content`
 - `POST /api/content`
 - `PATCH /api/content/:id`
@@ -82,7 +83,7 @@ Knowledge records are used by backend retrieval when answering assistant questio
 
 An upload stays in `Review` until a college admin calls `PATCH /api/official-sources/:id/publish` with reviewed `verifiedText`. Publishing replaces any prior retrieval chunks for that source and records an audit event. Unpublished source text is never used to answer applicants.
 
-Assistant attachments support PDF, JPG, and PNG. They are stored as support files for the owner and staff/admin review; CampusGuard does not claim to extract or interpret their visual content unless that capability is explicitly deployed.
+Assistant attachments support PDF, JPG, and PNG. They are stored as support files for the owner and staff/admin review; MITRA does not claim to extract or interpret their visual content unless that capability is explicitly deployed.
 
 ## Assistant evidence snapshots
 

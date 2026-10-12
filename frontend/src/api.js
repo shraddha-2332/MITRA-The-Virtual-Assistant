@@ -14,7 +14,7 @@ async function request(path, { token, method = 'GET', body } = {}) {
   });
   const payload = await response.json().catch(() => ({}));
   if (!response.ok) {
-    const message = payload?.error?.message || 'CampusGuard API request failed.';
+    const message = payload?.error?.message || 'MITRA API request failed.';
     throw new Error(message);
   }
   return payload.data;
@@ -31,7 +31,7 @@ async function upload(path, { token, formData }) {
   });
   const payload = await response.json().catch(() => ({}));
   if (!response.ok) {
-    const message = payload?.error?.message || 'CampusGuard upload failed.';
+    const message = payload?.error?.message || 'MITRA upload failed.';
     throw new Error(message);
   }
   return payload.data;
@@ -102,4 +102,5 @@ export const api = {
   openOfficialSource: (token, id) => openProtectedFile(`/api/official-sources/${id}/file`, token),
   getReports: (token) => request('/api/reports', { token }),
   getAuditLogs: (token) => request('/api/audit-logs', { token }),
+  getPublicFacts: () => request('/api/public-facts'),
 };

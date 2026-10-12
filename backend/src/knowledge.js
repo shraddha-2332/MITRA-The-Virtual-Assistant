@@ -222,3 +222,58 @@ export function buildMaintainedAnswer(question, normalized, records) {
     next: '', actionView, actionLabel: 'View official record',
     evidence: [{ ...record, score: 200 }] };
 }
+
+export function extractPublicFacts(records = []) {
+  const published = records.filter(usableKnowledge);
+  const feeRecord = published.find((item) => item.facts?.kind === 'academicFees')
+    || records.find((item) => item.id === 'KB-2' && item.facts);
+  const hostelRecord = published.find((item) => item.facts?.kind === 'accommodationFees')
+    || records.find((item) => item.id === 'KB-3' && item.facts);
+  const intakeRecord = published.find((item) => item.facts?.kind === 'programIntake')
+    || records.find((item) => item.id === 'KB-10' && item.facts);
+
+  const academicFees = feeRecord?.facts ? {
+    academicYear: feeRecord.facts.academicYear,
+    source: feeRecord.source || 'Approved fee records shared for AY 2026-27',
+    fy: {
+      open: feeRecord.facts.firstYear.open,
+      boys: feeRecord.facts.firstYear.concessionBoy,
+      girls: feeRecord.facts.firstYear.concessionGirl,
+      vjnt: feeRecord.facts.firstYear.vjnt,
+      scst: feeRecord.facts.firstYear.scst,
+    },
+    dse: {
+      open: feeRecord.facts.directSecondYear.open,
+      boys: feeRecord.facts.directSecondYear.concessionBoy,
+      girls: feeRecord.facts.directSecondYear.concessionGirl,
+      vjnt: feeRecord.facts.directSecondYear.vjnt,
+      scst: feeRecord.facts.directSecondYear.scst,
+    },
+    raw: {
+      firstYear: feeRecord.facts.firstYear,
+      directSecondYear: feeRecord.facts.directSecondYear,
+    },
+  } : null;
+
+  const accommodationFees = hostelRecord?.facts ? {
+    academicYear: hostelRecord.facts.academicYear,
+    source: hostelRecord.source || 'Hostel and mess fee structure shared for AY 2026-27',
+    hostel: hostelRecord.facts.hostel,
+    refundableDeposit: hostelRecord.facts.refundableDeposit,
+    hostelTotal: hostelRecord.facts.hostel + hostelRecord.facts.refundableDeposit,
+    messAnnual: hostelRecord.facts.messAnnual,
+  } : null;
+
+  const programs = intakeRecord?.facts?.programs ? intakeRecord.facts.programs.map((prog) => ({
+    name: prog.name,
+    intake: prog.intake,
+    choiceCode: prog.choiceCode,
+  })) : [];
+
+  return {
+    academicYear: academicFees?.academicYear || '2026-27',
+    academicFees,
+    accommodationFees,
+    programs,
+  };
+}
