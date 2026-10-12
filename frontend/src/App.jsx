@@ -445,6 +445,14 @@ function PublicAssistantWidget() {
   ];
   const endRef = useRef(null);
 
+  const resetConversation = () => {
+    setActivePills(null);
+    setInput('');
+    setMessages([
+      { type: 'assistant', text: "Hello and Welcome to MITCORER! I'm your virtual assistant. How can I help you today?" },
+    ]);
+  };
+
   useEffect(() => {
     if (open) endRef.current?.scrollIntoView({ block: 'nearest' });
   }, [messages, open]);
@@ -526,6 +534,16 @@ function PublicAssistantWidget() {
                 <option value="auto">Automatic</option><option value="en">English</option><option value="mr">मराठी</option><option value="hi">हिंदी</option>
               </select>
             </label>
+            <button
+              type="button"
+              className="publicResetButton"
+              onClick={resetConversation}
+              title={language === 'mr' ? 'नवीन संभाषण सुरू करा' : language === 'hi' ? 'नई बातचीत शुरू करें' : 'Start new conversation'}
+              aria-label={language === 'mr' ? 'नवीन संभाषण' : language === 'hi' ? 'नई बातचीत' : 'New conversation'}
+              disabled={busy}
+            >
+              <RefreshCw size={15} />
+            </button>
             <button type="button" onClick={() => setOpen(false)} aria-label="Minimize assistant">−</button>
           </div>
         </header>

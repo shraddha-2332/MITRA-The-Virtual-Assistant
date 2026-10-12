@@ -51,6 +51,7 @@ button { border: 0; }
 .publicAssistantPanel header span i { width: 7px; height: 7px; border-radius: 50%; background: #66d69b; }
 .publicHeaderActions { display: flex; align-items: center; gap: 4px; margin-left: auto; flex: 0 0 auto; }
 .publicHeaderActions > button { width: 32px; height: 34px; border-radius: 7px; background: transparent; color: #fff; font-size: 25px; line-height: 1; cursor: pointer; }
+.publicHeaderActions > button.publicResetButton { display: grid; place-items: center; font-size: 14px; }
 .publicLanguageControl { position: relative; display: grid; place-items: center; width: 34px; height: 34px; border-radius: 7px; color: #fff; cursor: pointer; }
 .publicLanguageControl select { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; }
 .publicLanguageControl option { color: #172533; background: #fff; }
