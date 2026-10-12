@@ -100,6 +100,7 @@ export const api = {
   getOfficialSourceExtractedText: (token, id) => request(`/api/official-sources/${id}/extracted-text`, { token }),
   publishOfficialSource: (token, id, verifiedText) => request(`/api/official-sources/${id}/publish`, { token, method: 'PATCH', body: { verifiedText } }),
   openOfficialSource: (token, id) => openProtectedFile(`/api/official-sources/${id}/file`, token),
+  syncOfficialSources: (token) => request('/api/official-sources/sync', { token, method: 'POST' }),
   getReports: (token) => request('/api/reports', { token }),
   getAuditLogs: (token) => request('/api/audit-logs', { token }),
   getPublicFacts: () => request('/api/public-facts'),

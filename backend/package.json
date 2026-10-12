@@ -13,7 +13,8 @@
     "prepare:retrieval-review": "node scripts/prepare-retrieval-review.js",
     "evaluate:paraphrases": "node --no-warnings=ExperimentalWarning scripts/evaluate-paraphrases.js",
     "check": "node --check src/server.js",
-    "backup": "node scripts/backup-data.js"
+    "backup": "node scripts/backup-data.js",
+    "sync:website": "node --no-warnings=ExperimentalWarning scripts/sync-website.js"
   },
   "engines": {
     "node": ">=20"

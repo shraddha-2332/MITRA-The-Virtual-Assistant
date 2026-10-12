@@ -3,7 +3,7 @@ import {
   ArrowLeft, ArrowRight, BarChart3, BookOpen, CheckCircle2, FileCheck2, FileText,
   HandCoins, LockKeyhole, LogOut, Menu, MessageCircle, Paperclip, Phone,
   Send, ShieldCheck, UploadCloud, UsersRound, X, Eye, EyeOff, LoaderCircle,
-  PanelLeftClose, PanelLeftOpen, Languages,
+  PanelLeftClose, PanelLeftOpen, Languages, Globe, RefreshCw,
 } from 'lucide-react';
 import feeFirstYearImage from './assets/fee-first-year-2026.jpeg';
 import feeDirectSecondYearImage from './assets/fee-direct-second-year-2026.jpeg';
@@ -630,6 +630,19 @@ function App() {
     }
   };
 
+  const syncOfficialSources = async () => {
+    setAppError('');
+    try {
+      const summary = await api.syncOfficialSources(token);
+      const sourceResult = await api.getOfficialSources(token);
+      setOfficialSources(sourceResult.items || []);
+      return summary;
+    } catch (error) {
+      setAppError(error.message);
+      return null;
+    }
+  };
+
   if (!user) {
     return showStaffLogin
       ? <AuthScreen role={role} setRole={setRole} onEnter={enterWorkspace} authError={appError} staffOnly onBack={() => setShowStaffLogin(false)} />
@@ -656,7 +669,7 @@ function App() {
             {view === 'inquiry' && <Inquiry user={user} role={role} inquiries={inquiries} onCreateInquiry={createInquiry} />}
             {view === 'queue' && <StaffQueue user={user} inquiries={inquiries} documentReviews={documentReviews} onUpdateInquiry={updateInquiryStatus} />}
             {view === 'content' && <ContentManager contentItems={content} onCreate={createContentItem} onUpdate={updateContentItem} />}
-            {view === 'knowledge' && <KnowledgeManager items={knowledge} sources={officialSources} onCreate={createKnowledgeItem} onUpdate={updateKnowledgeItem} onUploadSource={uploadOfficialSource} onOpenSource={openOfficialSource} onReviewSource={reviewOfficialSource} onPublishSource={publishOfficialSource} />}
+            {view === 'knowledge' && <KnowledgeManager items={knowledge} sources={officialSources} onCreate={createKnowledgeItem} onUpdate={updateKnowledgeItem} onUploadSource={uploadOfficialSource} onOpenSource={openOfficialSource} onReviewSource={reviewOfficialSource} onPublishSource={publishOfficialSource} onSyncWebsite={syncOfficialSources} />}
             {view === 'audit' && <AuditLogs items={auditLogs} />}
             {view === 'reports' && <Reports inquiries={inquiries} documentReviews={documentReviews} reports={reports} />}
           </ProtectedView>
@@ -1720,10 +1733,12 @@ function ContentManager({ contentItems, onCreate, onUpdate }) {
   );
 }
 
-function KnowledgeManager({ items, sources, onCreate, onUpdate, onUploadSource, onOpenSource, onReviewSource, onPublishSource }) {
+function KnowledgeManager({ items, sources, onCreate, onUpdate, onUploadSource, onOpenSource, onReviewSource, onPublishSource, onSyncWebsite }) {
   const managedUsage = { 'KB-2': 'Public academic fee answers use this record.', 'KB-3': 'Public hostel and mess fee answers use this record.', 'KB-10': 'Public B.Tech intake answers use this record.', 'KB-6': 'Historical seat matrix answers use this record.' };
   const [editing, setEditing] = useState(null);
   const [creating, setCreating] = useState(false);
+  const [syncing, setSyncing] = useState(false);
+  const [syncStatus, setSyncStatus] = useState('');
   const [form, setForm] = useState({ title: '', category: 'Admissions', source: 'Admin verified source', text: '', status: 'Published' });
   const [sourceForm, setSourceForm] = useState({ title: '', documentType: 'Eligibility', academicYear: '2026-27', sourceAuthority: 'MITCORER / Maharashtra CET Cell', verifiedText: '' });
   const [sourceFile, setSourceFile] = useState(null);
@@ -1760,9 +1775,28 @@ function KnowledgeManager({ items, sources, onCreate, onUpdate, onUploadSource, 
     const saved = await onPublishSource(review.id, review.text);
     if (saved) setReview(null);
   };
+  const handleSync = async () => {
+    if (syncing || !onSyncWebsite) return;
+    setSyncing(true);
+    setSyncStatus('');
+    try {
+      const summary = await onSyncWebsite();
+      if (summary) {
+        setSyncStatus(`Website sync complete: ${summary.checked} pages inspected, ${summary.changed} staged for review, ${summary.unchanged} unchanged.`);
+      }
+    } finally {
+      setSyncing(false);
+    }
+  };
   return (
     <div className="pageStack">
-      <div className="sectionHead"><span className="eyebrow">Official source library</span><h2>Documents and verified admission knowledge</h2><p>Upload institutional sources here. Personal applicant documents remain in the separate document-review workflow.</p></div>
+      <div className="sectionHead"><span className="eyebrow">Official source library</span><h2>Documents and verified admission knowledge</h2><p>Upload institutional sources here or synchronize directly with the official college website. Staged pages require admin review before publication.</p></div>
+      <div className="workflowActions" style={{ marginBottom: '1rem' }}>
+        <button className="inlineAction secondary" type="button" disabled={syncing} onClick={handleSync}>
+          <RefreshCw size={16} /> {syncing ? 'Inspecting college website…' : 'Sync college website'}
+        </button>
+      </div>
+      {syncStatus && <div className="decisionResult positive" style={{ marginBottom: '1rem' }}><strong>{syncStatus}</strong></div>}
       <section className="formBlock">
         <form onSubmit={submitSource}>
           <label>Document title<input value={sourceForm.title} onChange={(event) => updateSource('title', event.target.value)} placeholder="Example: CAP Round I cutoff 2025" /></label>

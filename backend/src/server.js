@@ -17,6 +17,7 @@ import { badRequest, forbidden, HttpError, notFound, tooManyRequests, unauthoriz
 import { getDb, loadDb, saveDb } from './store.js';
 import { generateId, jsonResponse, nowIso, pick, requireString } from './utils.js';
 import { verifyGeneratedAnswer, classifyAnswerOutcome } from './grounding.js';
+import { syncMonitoredWebsiteSources } from './website-sync.js';
 
 const publicRoutes = new Set([
   'GET /api/health',
@@ -1476,6 +1477,10 @@ async function handleApi(req) {
   if (req.method === 'GET' && url.pathname === '/api/official-sources') {
     requireRole({ user }, ['staff', 'admin']);
     return { items: getDb().officialSources || [] };
+  }
+  if (req.method === 'POST' && url.pathname === '/api/official-sources/sync') {
+    requireRole({ user }, ['admin']);
+    return syncMonitoredWebsiteSources({ db: getDb(), user, saveFn: saveDb, auditFn: audit });
   }
   const officialSourceExtractionMatch = url.pathname.match(/^\/api\/official-sources\/([^/]+)\/extracted-text$/);
   if (req.method === 'GET' && officialSourceExtractionMatch) return getOfficialSourceExtractedText(officialSourceExtractionMatch[1], user);
