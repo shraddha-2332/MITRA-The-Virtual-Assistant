@@ -837,28 +837,39 @@ function needsHumanEscalation(message) {
 
 function PublicEscalationCard({ message }) {
   const lang = message.requestedLanguage || 'en';
-  const heading = lang === 'mr'
-    ? 'अधिकृत खात्री किंवा मदतीसाठी:'
+  const badge = lang === 'mr'
+    ? 'MITCORER प्रवेश सहाय्य कक्ष'
     : lang === 'hi'
-      ? 'आधिकारिक पुष्टि या सहायता के लिए:'
-      : 'Need confirmed details or assistance?';
+      ? 'MITCORER प्रवेश सहायता कक्ष'
+      : 'MITCORER Admission Desk';
+  const subtext = lang === 'mr'
+    ? 'तारखा, कागदपत्रे किंवा प्रवेशाबाबत थेट प्रवेश समुपदेशकांशी संपर्क साधा:'
+    : lang === 'hi'
+      ? 'तिथियों, दस्तावेजों या प्रवेश के संबंध में सीधे प्रवेश परामर्शदाता से संपर्क करें:'
+      : 'Have questions about dates, documents, or quota? Speak directly with our admissions team:';
+  const callLabel = lang === 'mr'
+    ? 'हेल्पलाइन: +91 84599 67882'
+    : lang === 'hi'
+      ? 'हेल्पलाइन: +91 84599 67882'
+      : '+91 84599 67882';
   const formLabel = lang === 'mr'
-    ? 'प्रवेश चौकशी'
+    ? 'प्रवेश चौकशी अर्ज'
     : lang === 'hi'
-      ? 'प्रवेश पूछताछ'
-      : 'Admission Enquiry';
+      ? 'प्रवेश पूछताछ फॉर्म'
+      : 'Submit Enquiry';
 
   return (
-    <div className="publicEscalationCard" role="region" aria-label="Admissions help">
-      <p className="escalationPrompt">
-        <MessageCircle size={13} aria-hidden="true" />
-        <span>{heading}</span>
-      </p>
+    <div className="publicEscalationCard" role="region" aria-label="MITCORER Admissions Help Desk">
+      <div className="escalationBadge">
+        <UsersRound size={13} aria-hidden="true" />
+        <span>{badge}</span>
+      </div>
+      <p className="escalationSubtext">{subtext}</p>
       <div className="escalationButtons">
-        <a href="tel:+918459967882" className="escalationBtn escalationCall" title="Call MITCORER Admissions">
-          <Phone size={12} aria-hidden="true" /> +91 84599 67882
+        <a href="tel:+918459967882" className="escalationBtn escalationCall" title="Call MITCORER Admissions Helpline">
+          <Phone size={12} aria-hidden="true" /> {callLabel}
         </a>
-        <a href="https://www.mitcorer.edu.in/Admissions-Open-2026-27.html" target="_blank" rel="noreferrer" className="escalationBtn escalationEnquiry">
+        <a href="https://www.mitcorer.edu.in/Admissions-Open-2026-27.html" target="_blank" rel="noreferrer" className="escalationBtn escalationEnquiry" title="Official Admission Enquiry Desk">
           {formLabel} <ArrowRight size={12} aria-hidden="true" />
         </a>
       </div>
