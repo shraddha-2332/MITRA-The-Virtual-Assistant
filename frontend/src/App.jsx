@@ -709,23 +709,8 @@ function PublicAssistantWidget() {
     try {
       const answer = await api.askPublicAssistant(question, language);
       setMessages((items) => [...items,
-        {
-          type: 'assistant',
-          text: answer.answer,
-          next: answer.next,
-          source: answer.source,
-          sourceUrl: answer.sourceUrl,
-          officialLinks: answer.officialLinks,
-          evidence: answer.evidence,
-          sections: answer.sections,
-          requestedLanguage: answer.requestedLanguage,
-          showQuickReplies: !answer.answerPart2,
-          choices: retainedChoices || undefined,
-          outcomeStatus: answer.outcomeStatus,
-          actionView: answer.actionView,
-          actionLabel: answer.actionLabel,
-        },
-        ...(answer.answerPart2 ? [{ type: 'assistant', text: answer.answerPart2, choices: retainedChoices || undefined, outcomeStatus: answer.outcomeStatus }] : []),
+        { type: 'assistant', text: answer.answer, next: answer.next, source: answer.source, sourceUrl: answer.sourceUrl, officialLinks: answer.officialLinks, evidence: answer.evidence, sections: answer.sections, requestedLanguage: answer.requestedLanguage, showQuickReplies: !answer.answerPart2, choices: retainedChoices || undefined },
+        ...(answer.answerPart2 ? [{ type: 'assistant', text: answer.answerPart2, choices: retainedChoices || undefined }] : []),
       ]);
     } catch (error) {
       const limited = /Too many requests/.test(error.message);
@@ -800,7 +785,6 @@ function PublicAssistantWidget() {
             <div>
               <PublicAnswerBody message={message} />
               {publicAnswerLinks(message, { firstYear: feeFirstYearImage, directSecondYear: feeDirectSecondYearImage, hostel: hostelMessFeeImage }).map(link => <a key={link.url} href={link.url} target="_blank" rel="noreferrer">{link.label} <ArrowRight size={13} /></a>)}
-              {needsHumanEscalation(message) && <PublicEscalationCard message={message} />}
             </div>
           </article>{message.type === 'assistant' && message.showQuickReplies !== false && <section className="publicQuickReplies publicQuickRepliesInline" aria-label="Quick questions"><div>{(message.choices || quickReplies).map((topic) => topic.href ? <a key={topic.label} href={topic.href} target="_blank" rel="noreferrer">{topic.label} <ArrowRight size={13} /></a> : <button key={topic.label} type="button" disabled={busy} onClick={() => selectTopic(topic)}>{topic.label}</button>)}</div></section>}</Fragment>)}
           {busy && <article className="publicBubble assistant"><div className="publicBubbleAvatar"><img src={mitcorerLogo} alt="" /></div><div className="typingDots" role="status" aria-label={language === 'mr' ? 'माहिती तपासत आहे' : language === 'hi' ? 'जानकारी जाँची जा रही है' : 'Checking information'}><i /><i /><i /></div></article>}
@@ -814,55 +798,6 @@ function PublicAssistantWidget() {
       </section>}
       <button className="assistantLauncher" type="button" onClick={() => setOpen(true)} aria-label="Open MIT Barshi admission assistant"><span className="launcherPulse" /><img src={mitcorerLogo} alt="" /></button>
     </main>
-  );
-}
-
-function needsHumanEscalation(message) {
-  if (!message || message.type !== 'assistant') return false;
-  if (message.outcomeStatus === 'INSUFFICIENT_EVIDENCE' || message.outcomeStatus === 'OUTDATED_EVIDENCE' || message.actionView === 'inquiry') {
-    return true;
-  }
-  const text = String(message.text || '');
-  if (
-    /exact date needs a current published notice/i.test(text) ||
-    /could not find an official answer/i.test(text) ||
-    /check with the college for (?:current )?verified/i.test(text) ||
-    /contact the admissions? (?:office|team|helpline)/i.test(text) ||
-    /speak with.*admission/i.test(text)
-  ) {
-    return true;
-  }
-  return false;
-}
-
-function PublicEscalationCard({ message }) {
-  const lang = message.requestedLanguage || 'en';
-  const heading = lang === 'mr'
-    ? 'अधिकृत खात्री किंवा मदतीसाठी:'
-    : lang === 'hi'
-      ? 'आधिकारिक पुष्टि या सहायता के लिए:'
-      : 'Need confirmed details or assistance?';
-  const formLabel = lang === 'mr'
-    ? 'प्रवेश चौकशी'
-    : lang === 'hi'
-      ? 'प्रवेश पूछताछ'
-      : 'Admission Enquiry';
-
-  return (
-    <div className="publicEscalationCard" role="region" aria-label="Admissions help">
-      <p className="escalationPrompt">
-        <MessageCircle size={13} aria-hidden="true" />
-        <span>{heading}</span>
-      </p>
-      <div className="escalationButtons">
-        <a href="tel:+918459967882" className="escalationBtn escalationCall" title="Call MITCORER Admissions">
-          <Phone size={12} aria-hidden="true" /> +91 84599 67882
-        </a>
-        <a href="https://www.mitcorer.edu.in/Admissions-Open-2026-27.html" target="_blank" rel="noreferrer" className="escalationBtn escalationEnquiry">
-          {formLabel} <ArrowRight size={12} aria-hidden="true" />
-        </a>
-      </div>
-    </div>
   );
 }
 
