@@ -24,4 +24,5 @@ export const config = {
   geminiModel: process.env.GEMINI_MODEL || 'gemini-2.5-flash',
   maxBodyBytes: 15 * 1024 * 1024,
   assistantRateLimitMax: Number(process.env.ASSISTANT_RATE_LIMIT_MAX || 30),
+  publicAssistantRateLimitMax: Number(process.env.PUBLIC_ASSISTANT_RATE_LIMIT_MAX || process.env.ASSISTANT_RATE_LIMIT_MAX || 30),
 };

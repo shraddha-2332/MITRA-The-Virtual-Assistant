@@ -1223,3 +1223,29 @@ test('assistant rate limit protects the verified-answer endpoint', async () => {
     assert.equal(limited.payload.error.code, 'RATE_LIMITED');
   });
 });
+
+test('api responses return production security headers and support proxy-aware rate limiting', async () => {
+  await withServer(async (base) => {
+    const health = await request(base, '/api/health');
+    assert.equal(health.response.status, 200);
+    assert.equal(health.response.headers.get('x-content-type-options'), 'nosniff');
+    assert.equal(health.response.headers.get('x-frame-options'), 'DENY');
+    assert.equal(health.response.headers.get('referrer-policy'), 'no-referrer');
+    assert.match(health.response.headers.get('permissions-policy'), /camera=\(\)/);
+
+    const clientA = { 'X-Forwarded-For': '198.51.100.1, 10.0.0.1' };
+    const clientB = { 'X-Forwarded-For': '198.51.100.2, 10.0.0.1' };
+    const reqA = await request(base, '/api/public-assistant/ask', {
+      method: 'POST',
+      headers: clientA,
+      body: JSON.stringify({ question: 'What are B.Tech fees?' }),
+    });
+    const reqB = await request(base, '/api/public-assistant/ask', {
+      method: 'POST',
+      headers: clientB,
+      body: JSON.stringify({ question: 'What are B.Tech fees?' }),
+    });
+    assert.equal(reqA.response.status, 200);
+    assert.equal(reqB.response.status, 200);
+  });
+});

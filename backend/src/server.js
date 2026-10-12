@@ -182,6 +182,19 @@ function parseMultipart(req, bodyBuffer) {
   return { fields, files };
 }
 
+export function getClientIp(req) {
+  const forwarded = req.headers['x-forwarded-for'];
+  if (forwarded && typeof forwarded === 'string') {
+    const clientIp = forwarded.split(',')[0].trim();
+    if (clientIp) return clientIp;
+  }
+  const realIp = req.headers['x-real-ip'];
+  if (realIp && typeof realIp === 'string') {
+    return realIp.trim();
+  }
+  return req.socket?.remoteAddress || 'unknown-client';
+}
+
 function attachCors(req, res) {
   const origin = req.headers.origin;
   const isLocalDevelopmentOrigin = config.nodeEnv !== 'production'
@@ -197,6 +210,10 @@ function attachCors(req, res) {
   res.setHeader('X-Content-Type-Options', 'nosniff');
   res.setHeader('X-Frame-Options', 'DENY');
   res.setHeader('Referrer-Policy', 'no-referrer');
+  res.setHeader('Permissions-Policy', 'camera=(), microphone=(), geolocation=()');
+  if (config.nodeEnv === 'production') {
+    res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
+  }
 }
 
 function getCookie(req, name) {
@@ -1451,8 +1468,8 @@ async function handleApi(req) {
     return answerAdmissionQuestion(body, user);
   }
   if (req.method === 'POST' && url.pathname === '/api/public-assistant/ask') {
-    const clientKey = req.socket.remoteAddress || 'unknown-client';
-    enforceRateLimit(publicAssistantAttempts, clientKey, 12, 60_000);
+    const clientKey = getClientIp(req);
+    enforceRateLimit(publicAssistantAttempts, clientKey, config.publicAssistantRateLimitMax, 60_000);
     return answerAdmissionQuestion(body, null);
   }
   if (req.method === 'GET' && url.pathname === '/api/conversations') return listConversations(user, url.searchParams.get('offset'));
