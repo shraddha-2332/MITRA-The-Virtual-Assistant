@@ -71,14 +71,10 @@ button { border: 0; }
 .publicBubble .publicAnswerList { padding: 0; }
 .publicBubble ul + p { margin-top: 9px; }
 .publicBubble a { display: flex; align-items: center; gap: 4px; color: #0d6e4f; font-size: 12px; font-weight: 800; text-decoration: underline; text-underline-offset: 2px; }
-.publicEscalationOption3 { margin-top: 10px; padding-top: 8px; border-top: 1px dashed #d5ded9; display: flex; flex-direction: column; gap: 6px; }
-.publicEscalationOption3 .escalationPromptText { margin: 0; font-size: 11.5px; font-weight: 700; color: #2c443c; }
-.publicEscalationOption3 .escalationChipRow { display: flex; flex-wrap: wrap; gap: 7px; }
-.publicEscalationOption3 .escalationChip { display: inline-flex; align-items: center; gap: 5px; padding: 5px 11px; border-radius: 999px; font-size: 11px; font-weight: 800; text-decoration: none; line-height: 1; transition: all .14s ease; }
-.publicEscalationOption3 .phoneChip { background: #f0f4f7; color: #0d2639; border: 1px solid #c8d7e0; }
-.publicEscalationOption3 .phoneChip:hover { background: #e2ecf2; border-color: #0d2639; color: #061724; }
-.publicEscalationOption3 .deskChip { background: #edf6f2; color: #0d6e4f; border: 1px solid #b8dcce; }
-.publicEscalationOption3 .deskChip:hover { background: #deefe7; border-color: #0d6e4f; color: #064c36; }
+.publicBubble .publicPhoneLink { display: inline; margin: 0; color: #1264c6; font-size: inherit; font-weight: 800; }
+.publicEscalationNote { margin-top: 10px; font-size: 12.5px; color: #3b504b; line-height: 1.5; }
+.publicEscalationNote a { display: inline-flex; align-items: center; gap: 3px; margin: 0; color: #0d6e4f; font-size: inherit; font-weight: 800; text-decoration: underline; text-underline-offset: 2px; }
+.publicEscalationNote a.publicPhoneLink { color: #0d2639; text-decoration: underline; }
 .typingDots { display: flex; gap: 4px; align-items: center; min-height: 38px; }
 .typingDots i { width: 6px; height: 6px; border-radius: 50%; background: #6a7e7c; animation: typingDot 1.1s infinite; }
 .typingDots i:nth-child(2) { animation-delay: .16s; }.typingDots i:nth-child(3) { animation-delay: .32s; }
