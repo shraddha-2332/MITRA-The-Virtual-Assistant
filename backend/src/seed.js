@@ -1,6 +1,7 @@
 import { hashPassword } from './auth.js';
 import { nowIso } from './utils.js';
 import { renderFactText } from './knowledge.js';
+import { config } from './config.js';
 
 const passwordHash = hashPassword('campusguard', 'campusguard-seed-salt');
 
@@ -386,13 +387,27 @@ export const seedOfficialSources = [
 
 export function createSeedData() {
   const createdAt = nowIso();
+  const isProduction = config.nodeEnv === 'production';
+  const allowDemoUsers = process.env.ALLOW_DEMO_USERS === 'true';
+  const defaultUsers = [
+    { id: 'USR-APP', name: 'Applicant', email: 'applicant@example.com', role: 'applicant', passwordHash, createdAt },
+    { id: 'USR-PAR', name: 'Parent', email: 'parent@example.com', role: 'parent', passwordHash, createdAt },
+    { id: 'USR-STF', name: 'Shobhana Raichurkar', email: 'staff@mitcorer.edu.in', role: 'staff', passwordHash, createdAt },
+    { id: 'USR-ADM', name: 'Mundhe', email: 'admin@mitcorer.edu.in', role: 'admin', passwordHash, createdAt },
+  ];
+  const productionUsers = process.env.ADMIN_EMAIL && process.env.ADMIN_PASSWORD ? [
+    {
+      id: 'USR-ADM',
+      name: process.env.ADMIN_NAME || 'Administrator',
+      email: process.env.ADMIN_EMAIL,
+      role: 'admin',
+      passwordHash: hashPassword(process.env.ADMIN_PASSWORD),
+      createdAt,
+    },
+  ] : [];
+  const users = (isProduction && !allowDemoUsers) ? productionUsers : defaultUsers;
   return {
-    users: [
-      { id: 'USR-APP', name: 'Applicant', email: 'applicant@example.com', role: 'applicant', passwordHash, createdAt },
-      { id: 'USR-PAR', name: 'Parent', email: 'parent@example.com', role: 'parent', passwordHash, createdAt },
-      { id: 'USR-STF', name: 'Shobhana Raichurkar', email: 'staff@mitcorer.edu.in', role: 'staff', passwordHash, createdAt },
-      { id: 'USR-ADM', name: 'Mundhe', email: 'admin@mitcorer.edu.in', role: 'admin', passwordHash, createdAt },
-    ],
+    users,
     inquiries: [
       { id: 'INQ-2401', name: 'Aarav Kulkarni', role: 'Applicant', topic: 'Caste validity receipt', priority: 'High', status: 'Needs reply', city: 'Solapur', contact: 'aarav@example.com', question: 'Caste validity receipt is pending. Can I report?', createdAt, updatedAt: createdAt },
       { id: 'INQ-2402', name: 'Mrs. Deshmukh', role: 'Parent', topic: 'Hostel and fee installment', priority: 'Medium', status: 'In progress', city: 'Latur', contact: 'parent@example.com', question: 'Can hostel and mess amount be confirmed before travel?', createdAt, updatedAt: createdAt },

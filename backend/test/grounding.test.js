@@ -1,0 +1,136 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {
+  extractFactualTokens,
+  detectUnauthorizedClaims,
+  extractEvidenceTokens,
+  verifyGeneratedAnswer,
+  classifyAnswerOutcome,
+} from '../src/grounding.js';
+
+test('extractFactualTokens identifies fees, years, percentages, choice codes, and dates', () => {
+  const text = 'First Year Engineering Open fee is INR 1,05,000 for AY 2026-27 with choice code 0690124210. Minimum PCM requirement is 45% or 40 percent for reserved candidates. Document verification ends on 30 June 2026.';
+  const tokens = extractFactualTokens(text);
+
+  assert.ok(tokens.numbers.has('105000'));
+  assert.ok(tokens.academicYears.has('2026-27'));
+  assert.ok(tokens.choiceCodes.has('0690124210'));
+  assert.ok(tokens.percentages.has('45'));
+  assert.ok(tokens.percentages.has('40'));
+  assert.ok(tokens.dates.has('30 june 2026'));
+});
+
+test('detectUnauthorizedClaims flags promissory and guarantee statements', () => {
+  const safeText = 'Eligibility requires 45% marks in PCM. Meeting eligibility allows CAP participation but does not guarantee admission.';
+  const prohibited1 = 'You will get guaranteed admission in Computer Science once you apply.';
+  const prohibited2 = 'The college provides 100% placement guaranteed for all branches.';
+
+  assert.strictEqual(detectUnauthorizedClaims(safeText).hasViolation, false);
+  assert.strictEqual(detectUnauthorizedClaims(prohibited1).hasViolation, true);
+  assert.strictEqual(detectUnauthorizedClaims(prohibited2).hasViolation, true);
+});
+
+test('verifyGeneratedAnswer accepts generations strictly grounded in evidence', () => {
+  const evidence = [
+    {
+      id: 'KB-2',
+      title: 'MITCORER fees AY 2026-27',
+      source: 'Approved fee records AY 2026-27',
+      text: 'First Year Engineering fees for AY 2026-27 include Open total INR 1,05,000 and SC ST INR 8,000.',
+      facts: {
+        kind: 'academicFees',
+        academicYear: '2026-27',
+        firstYear: { open: 105000, scst: 8000 },
+      },
+    },
+  ];
+
+  const validGeneration = 'For AY 2026-27, the Open category First Year fee is INR 1,05,000, while SC and ST candidates pay INR 8,000.';
+  const result = verifyGeneratedAnswer(validGeneration, evidence);
+
+  assert.strictEqual(result.verified, true);
+  assert.strictEqual(result.status, 'VERIFIED');
+});
+
+test('verifyGeneratedAnswer rejects generations with hallucinated numbers, dates, or fees', () => {
+  const evidence = [
+    {
+      id: 'KB-2',
+      title: 'MITCORER fees AY 2026-27',
+      source: 'Approved fee records AY 2026-27',
+      text: 'First Year Engineering fees for AY 2026-27 include Open total INR 1,05,000.',
+    },
+  ];
+
+  // Hallucinated fee: INR 1,20,000 instead of 1,05,000
+  const hallucinatedFee = 'The Open category First Year fee is INR 1,20,000 for AY 2026-27.';
+  const resultFee = verifyGeneratedAnswer(hallucinatedFee, evidence);
+
+  assert.strictEqual(resultFee.verified, false);
+  assert.strictEqual(resultFee.status, 'UNSUPPORTED_FACTUAL_CLAIMS');
+  assert.ok(resultFee.unsupported.some((u) => u.value === '120000'));
+
+  // Hallucinated deadline date
+  const hallucinatedDate = 'The Open category First Year fee is INR 1,05,000 and reporting deadline is 15 August 2026.';
+  const resultDate = verifyGeneratedAnswer(hallucinatedDate, evidence);
+
+  assert.strictEqual(resultDate.verified, false);
+  assert.strictEqual(resultDate.status, 'UNSUPPORTED_FACTUAL_CLAIMS');
+  assert.ok(resultDate.unsupported.some((u) => u.type === 'date'));
+});
+
+test('verifyGeneratedAnswer rejects promissory promises even if numbers match', () => {
+  const evidence = [
+    {
+      id: 'KB-5',
+      title: 'Eligibility criteria',
+      source: 'Official circular',
+      text: 'Minimum marks required are 45% in PCM for Open candidates in AY 2026-27.',
+    },
+  ];
+
+  const promissoryAnswer = 'With 45% in PCM in AY 2026-27, you have guaranteed admission in CSE.';
+  const result = verifyGeneratedAnswer(promissoryAnswer, evidence);
+
+  assert.strictEqual(result.verified, false);
+  assert.strictEqual(result.status, 'PROMISSORY_CLAIM_REJECTED');
+});
+
+test('classifyAnswerOutcome assigns correct categories for trustworthiness reporting', () => {
+  // 1. Normal answered query
+  const answered = classifyAnswerOutcome(
+    { source: 'Approved fee records', answer: 'Open fee is INR 1,05,000.' },
+    [{ id: 'KB-2', status: 'Published', text: 'Open fee is INR 1,05,000.' }]
+  );
+  assert.strictEqual(answered, 'ANSWERED');
+
+  // 2. Insufficient evidence
+  const insufficient = classifyAnswerOutcome(
+    { source: 'No verified record', answer: 'I could not find an official answer.' },
+    []
+  );
+  assert.strictEqual(insufficient, 'INSUFFICIENT_EVIDENCE');
+
+  // 3. Conflicting evidence
+  const conflicting = classifyAnswerOutcome(
+    { conflict: true, source: 'Conflicting published records', answer: 'Records disagree.' },
+    [{ id: 'KB-2', status: 'Published' }]
+  );
+  assert.strictEqual(conflicting, 'CONFLICTING_EVIDENCE');
+
+  // 4. Outdated / expired evidence
+  const outdated = classifyAnswerOutcome(
+    { source: 'Old notice', answer: 'Old fee' },
+    [{ id: 'KB-OLD', status: 'Published', provenance: { validUntil: '2020-01-01' } }],
+    Date.parse('2026-10-12T00:00:00.000Z')
+  );
+  assert.strictEqual(outdated, 'OUTDATED_EVIDENCE');
+
+  // 5. Clarification required
+  const clarifying = classifyAnswerOutcome(
+    { clarification: true, source: 'Clarification required', answer: 'Which branch?' },
+    []
+  );
+  assert.strictEqual(clarifying, 'INSUFFICIENT_EVIDENCE');
+});
+

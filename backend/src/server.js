@@ -16,6 +16,7 @@ import { createRefreshToken, createToken, getBearerToken, hashPassword, hashToke
 import { badRequest, forbidden, HttpError, notFound, tooManyRequests, unauthorized } from './errors.js';
 import { getDb, loadDb, saveDb } from './store.js';
 import { generateId, jsonResponse, nowIso, pick, requireString } from './utils.js';
+import { verifyGeneratedAnswer, classifyAnswerOutcome } from './grounding.js';
 
 const publicRoutes = new Set(['GET /api/health', 'POST /api/auth/login', 'POST /api/auth/signup', 'POST /api/auth/refresh', 'POST /api/auth/logout', 'POST /api/public-assistant/ask']);
 const allowedRoles = ['applicant', 'parent', 'staff', 'admin'];
@@ -1059,10 +1060,17 @@ export async function answerAdmissionQuestion(body, user) {
   evidence = evidence.map(sourceRecord);
   const officialLinks = answer.composed ? answer.officialLinks : answer.clarification ? [] : [...getOfficialAdmissionLinks(question), ...getOfficialScholarshipLinks(question), ...getOfficialUniversityLinks(question), ...getOfficialExperienceLinks(question), ...getContactMapLink(question), ...getOfficialFeeLinks(question)];
   // The LLM is deliberately not allowed to replace verified admissions answers.
-  // It can be introduced later only behind an evaluated, citation-preserving response validator.
-  const generated = language === 'en' && !answer.managedRecordId && !answer.composed && !answer.clarification && answer.source === 'No verified record' && evidence.length
-    ? await generateWithGemini(question, answer, evidence.slice(0, 2))
-    : null;
+  // It is evaluated against evidence tokens and verified before acceptance.
+  let generated = null;
+  if (language === 'en' && !answer.managedRecordId && !answer.composed && !answer.clarification && answer.source === 'No verified record' && evidence.length) {
+    const rawGenerated = await generateWithGemini(question, answer, evidence.slice(0, 2));
+    if (rawGenerated) {
+      const verification = verifyGeneratedAnswer(rawGenerated, evidence.slice(0, 2));
+      if (verification.verified) {
+        generated = rawGenerated;
+      }
+    }
+  }
   const workflowOnlySources = new Set([
     'Historical cutoff records',
     'Engineering eligibility and branch allotment guidance',
@@ -1085,8 +1093,9 @@ export async function answerAdmissionQuestion(body, user) {
   const freshnessAt = Date.now();
   if (evidence.some(record => availability(record, freshnessAt) !== 'available')) {
     audit('assistant.asked', 'assistant', generateId('ASK'), user, 'Source validity changed during answering');
-    return localizeResponse({ source: 'No verified record', answer: 'Source validity changed while answering. Please check with the college for current verified information.', evidence: [], officialLinks: [], model: 'deterministic-rag-fallback' }, language, normalized, [], academicFeeSelection, parseLegacyFactText);
+    return localizeResponse({ source: 'No verified record', answer: 'Source validity changed while answering. Please check with the college for current verified information.', evidence: [], officialLinks: [], model: 'deterministic-rag-fallback', outcomeStatus: 'OUTDATED_EVIDENCE' }, language, normalized, [], academicFeeSelection, parseLegacyFactText);
   }
+  const outcomeStatus = classifyAnswerOutcome(answer, evidence, freshnessAt);
   const groundedAnswer = evidence.length
     ? {
         ...answer,
@@ -1096,8 +1105,9 @@ export async function answerAdmissionQuestion(body, user) {
         evidence: evidence.map(record => publicEvidence(record, freshnessAt)),
         officialLinks,
         model: generated ? config.geminiModel : 'deterministic-rag-fallback',
+        outcomeStatus,
       }
-    : { ...answer, answer: answer.answer.replace(/CampusGuard/gi, 'the assistant'), evidence: [], officialLinks, model: 'deterministic-rag-fallback' };
+    : { ...answer, answer: answer.answer.replace(/CampusGuard/gi, 'the assistant'), evidence: [], officialLinks, model: 'deterministic-rag-fallback', outcomeStatus };
   audit('assistant.asked', 'assistant', generateId('ASK'), user, answer.source);
   groundedAnswer.sourceUrl = resolveSourceUrl(groundedAnswer.sourceUrl);
   groundedAnswer.officialLinks = uniqueSourceLinks([

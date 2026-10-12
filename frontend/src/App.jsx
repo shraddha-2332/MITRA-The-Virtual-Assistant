@@ -662,6 +662,7 @@ function PublicAssistantWidget() {
   const [open, setOpen] = useState(false);
   const [input, setInput] = useState('');
   const [busy, setBusy] = useState(false);
+  const [activePills, setActivePills] = useState(null);
   const [messages, setMessages] = useState([
     { type: 'assistant', text: "Hello and Welcome to MITCORER! I'm your virtual assistant. How can I help you today?" },
   ]);
@@ -669,6 +670,7 @@ function PublicAssistantWidget() {
     { label: 'Programmes', choices: [
       { label: 'B.Tech Engineering', question: 'Which B.Tech programmes are available at MITCORER?' },
       { label: 'Polytechnic Diploma', question: 'Which Polytechnic diploma programmes are available at MITCORER?' },
+      { label: 'More', action: 'main' },
     ] },
     { label: 'Fees', question: 'What are the first-year B.Tech fees?' },
     { label: 'Scholarships', question: 'What scholarships are available at MITCORER and where can I apply?' },
@@ -693,24 +695,26 @@ function PublicAssistantWidget() {
     if (open) endRef.current?.scrollIntoView({ block: 'nearest' });
   }, [messages, open]);
 
-  const ask = async (forcedText = '') => {
+  const ask = async (forcedText = '', pillsContext = activePills) => {
     const question = (forcedText || input).trim();
     if (!question || busy) return;
+    if (!forcedText) setActivePills(null);
+    const retainedChoices = forcedText ? pillsContext : null;
     setMessages((items) => [...items, { type: 'user', text: question }]);
     setInput('');
     setBusy(true);
     try {
       const answer = await api.askPublicAssistant(question, language);
       setMessages((items) => [...items,
-        { type: 'assistant', text: answer.answer, next: answer.next, source: answer.source, sourceUrl: answer.sourceUrl, officialLinks: answer.officialLinks, evidence: answer.evidence, sections: answer.sections, requestedLanguage: answer.requestedLanguage, showQuickReplies: !answer.answerPart2 },
-        ...(answer.answerPart2 ? [{ type: 'assistant', text: answer.answerPart2 }] : []),
+        { type: 'assistant', text: answer.answer, next: answer.next, source: answer.source, sourceUrl: answer.sourceUrl, officialLinks: answer.officialLinks, evidence: answer.evidence, sections: answer.sections, requestedLanguage: answer.requestedLanguage, showQuickReplies: !answer.answerPart2, choices: retainedChoices || undefined },
+        ...(answer.answerPart2 ? [{ type: 'assistant', text: answer.answerPart2, choices: retainedChoices || undefined }] : []),
       ]);
     } catch (error) {
       const limited = /Too many requests/.test(error.message);
       const failure = language === 'mr' ? limited ? 'खूप विनंत्या आल्या आहेत. कृपया थोड्या वेळाने पुन्हा प्रयत्न करा.' : 'सध्या अधिकृत माहिती मिळवता आली नाही. कृपया पुन्हा प्रयत्न करा किंवा प्रवेश कार्यालयाशी संपर्क साधा.'
         : language === 'hi' ? limited ? 'बहुत अधिक अनुरोध आए हैं। कृपया कुछ देर बाद फिर कोशिश करें।' : 'अभी आधिकारिक जानकारी प्राप्त नहीं हो सकी। कृपया फिर कोशिश करें या प्रवेश कार्यालय से संपर्क करें.'
           : limited ? error.message : 'I could not retrieve a verified answer right now. Please try again, or contact the admissions office.';
-      setMessages((items) => [...items, { type: 'assistant', text: failure }]);
+      setMessages((items) => [...items, { type: 'assistant', text: failure, choices: retainedChoices || undefined }]);
     } finally {
       setBusy(false);
     }
@@ -718,17 +722,24 @@ function PublicAssistantWidget() {
 
   const selectTopic = (topic) => {
     if (topic.action === 'main') {
-      setMessages((items) => [...items, { type: 'assistant', text: 'What else would you like to know about MITCORER?' }]);
+      setActivePills(null);
+      setMessages((items) => [...items, { type: 'assistant', text: 'What else would you like to know about MITCORER?', choices: null }]);
       return;
     }
-    if (!topic.choices) {
-      ask(topic.question);
+    if (topic.choices) {
+      setActivePills(topic.choices);
+      setMessages((items) => [...items,
+        { type: 'user', text: topic.label },
+        { type: 'assistant', text: `Please select a ${topic.label === 'Programmes' ? 'course type' : 'facility topic'}.`, choices: topic.choices },
+      ]);
       return;
     }
-    setMessages((items) => [...items,
-      { type: 'user', text: topic.label },
-      { type: 'assistant', text: `Please select a ${topic.label === 'Programmes' ? 'course type' : 'facility topic'}.`, choices: topic.choices },
-    ]);
+    const isMainMenuTopic = quickReplies.some((item) => item.label === topic.label);
+    const nextPills = isMainMenuTopic ? null : activePills;
+    if (isMainMenuTopic) {
+      setActivePills(null);
+    }
+    ask(topic.question, nextPills);
   };
 
   return (
