@@ -663,6 +663,9 @@ function PublicAssistantWidget() {
   const [input, setInput] = useState('');
   const [busy, setBusy] = useState(false);
   const [activePills, setActivePills] = useState(null);
+  const [teaserDismissed, setTeaserDismissed] = useState(() => {
+    try { return sessionStorage.getItem('mitra_teaser_dismissed') === '1'; } catch { return false; }
+  });
   const [messages, setMessages] = useState([
     { type: 'assistant', text: "Hello and Welcome to MITCORER! I'm your virtual assistant. How can I help you today?" },
   ]);
@@ -744,7 +747,22 @@ function PublicAssistantWidget() {
 
   return (
     <main className="publicAssistantShell">
-      {!open && <div className="assistantTeaser"><button type="button" aria-label="Dismiss welcome message" onClick={() => setOpen(true)}><X size={13} /></button><p>Hi! I’m Mitra, your MIT Barshi admission assistant.</p></div>}
+      {!open && !teaserDismissed && (
+        <div className="assistantTeaser" onClick={() => setOpen(true)} role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') setOpen(true); }}>
+          <button
+            type="button"
+            aria-label="Dismiss welcome message"
+            onClick={(e) => {
+              e.stopPropagation();
+              setTeaserDismissed(true);
+              try { sessionStorage.setItem('mitra_teaser_dismissed', '1'); } catch {}
+            }}
+          >
+            <X size={13} />
+          </button>
+          <p>Hi! I’m Mitra, your MIT Barshi admission assistant.</p>
+        </div>
+      )}
       {open && <section className="publicAssistantPanel" aria-label="MIT Barshi admission assistant">
         <header>
           <div className="publicAssistantAvatar"><img src={mitcorerLogo} alt="MITCORER" /></div>

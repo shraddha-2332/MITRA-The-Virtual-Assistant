@@ -37,7 +37,10 @@ button { border: 0; }
 .assistantTeaser::after { content: ''; position: absolute; right: -11px; bottom: 13px; border: 11px solid transparent; border-right: 0; border-left-color: #fff; }
 .assistantTeaser p { margin: 0; font-size: 14px; line-height: 1.45; }
 .assistantTeaser button { position: absolute; top: 7px; right: 8px; display: grid; place-items: center; width: 22px; height: 22px; border-radius: 50%; background: #f3eeee; color: #a33737; cursor: pointer; }
-.publicAssistantPanel { position: fixed; right: 22px; bottom: 22px; z-index: 6; width: min(430px, calc(100vw - 24px)); height: min(690px, calc(100dvh - 32px)); display: grid; grid-template-rows: auto minmax(0, 1fr) auto auto; overflow: hidden; border: 1px solid #cbd8d5; border-radius: 18px; background: #fafcfb; box-shadow: 0 22px 65px rgba(11,31,47,.27); }
+.publicAssistantPanel { position: fixed; right: 24px; bottom: 24px; z-index: 6; width: min(460px, calc(100vw - 28px)); height: min(680px, calc(100dvh - 36px)); display: grid; grid-template-rows: auto minmax(0, 1fr) auto auto; overflow: hidden; border: 1px solid #cbd8d5; border-radius: 16px; background: #fafcfb; box-shadow: 0 22px 65px rgba(11,31,47,.27); }
+@media (max-width: 500px) {
+  .publicAssistantPanel { right: 12px; bottom: 12px; width: calc(100vw - 24px); height: calc(100dvh - 24px); border-radius: 14px; }
+}
 .publicAssistantPanel > header { display: flex; align-items: center; gap: 11px; min-height: 70px; padding: 10px 14px; background: #0d2639; color: #fff; }
 .publicAssistantAvatar, .publicBubbleAvatar { display: grid; place-items: center; flex: 0 0 auto; overflow: hidden; border-radius: 50%; background: #fff; }
 .publicAssistantAvatar { width: 42px; height: 42px; padding: 3px; }
@@ -55,8 +58,8 @@ button { border: 0; }
 .publicLanguageControl:focus-within, .publicHeaderActions > button:focus-visible { outline: 2px solid #9be2c9; outline-offset: 2px; }
 .publicLanguageControl:hover, .publicHeaderActions > button:hover { background: rgba(255,255,255,.12); }
 .publicChatMessages { min-height: 0; overflow-y: auto; padding: 16px 12px; background-color: #f7f8f5; background-image: radial-gradient(#dce6e0 1px, transparent 1px); background-size: 18px 18px; }
-.publicCampusWelcome { min-height: 148px; display: flex; align-items: end; margin: 0 0 14px; padding: 14px; border-radius: 10px; background-position: center; background-size: cover; color: #fff; overflow: hidden; }
-.publicCampusWelcome div { display: grid; gap: 5px; }.publicCampusWelcome span { font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: .04em; }.publicCampusWelcome strong { max-width: 240px; font-size: 20px; line-height: 1.15; }.publicCampusWelcome a { display: inline-flex; align-items: center; gap: 4px; width: fit-content; color: #fff; font-size: 11px; font-weight: 800; text-decoration: underline; text-underline-offset: 3px; }
+.publicCampusWelcome { min-height: 104px; display: flex; align-items: end; margin: 0 0 12px; padding: 12px; border-radius: 10px; background-position: center; background-size: cover; color: #fff; overflow: hidden; }
+.publicCampusWelcome div { display: grid; gap: 4px; }.publicCampusWelcome span { font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: .04em; opacity: .9; }.publicCampusWelcome strong { max-width: 260px; font-size: 16px; line-height: 1.2; }.publicCampusWelcome a { display: inline-flex; align-items: center; gap: 4px; width: fit-content; color: #fff; font-size: 11px; font-weight: 800; text-decoration: underline; text-underline-offset: 3px; }
 .publicBubble { display: flex; gap: 8px; margin-bottom: 12px; }
 .publicBubble.user { justify-content: flex-end; }
 .publicBubbleAvatar { width: 27px; height: 27px; margin-top: 2px; padding: 2px; border: 1px solid #d8e2de; }
