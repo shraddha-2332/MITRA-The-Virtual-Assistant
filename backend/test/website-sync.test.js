@@ -128,7 +128,7 @@ test('POST /api/official-sources/sync enforces admin authorization and executes 
     const applicantLogin = await request(base, '/api/auth/login', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email: 'applicant@example.com', password: 'campusguard' }),
+      body: JSON.stringify({ email: 'applicant@example.com', password: 'mitra' }),
     });
     const applicantToken = applicantLogin.payload.data.token;
     const forbidden = await request(base, '/api/official-sources/sync', {
@@ -141,7 +141,7 @@ test('POST /api/official-sources/sync enforces admin authorization and executes 
     const adminLogin = await request(base, '/api/auth/login', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email: 'admin@mitcorer.edu.in', password: 'campusguard' }),
+      body: JSON.stringify({ email: 'admin@mitcorer.edu.in', password: 'mitra' }),
     });
     const adminToken = adminLogin.payload.data.token;
     const adminSync = await request(base, '/api/official-sources/sync', {
@@ -154,3 +154,4 @@ test('POST /api/official-sources/sync enforces admin authorization and executes 
     assert.ok(typeof adminSync.payload.data.changed === 'number');
   });
 });
+

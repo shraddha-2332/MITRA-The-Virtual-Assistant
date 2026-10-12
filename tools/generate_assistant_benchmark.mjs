@@ -81,7 +81,10 @@ for (const [intent, english, marathi, hindi, hinglish] of topics) {
   }
 }
 
-const output = path.resolve('backend', 'evaluation', 'campusguard-qa-360.json');
+const output = path.resolve('backend', 'evaluation', 'mitra-qa-360.json');
+const legacyOutput = path.resolve('backend', 'evaluation', 'campusguard-qa-360.json');
 fs.mkdirSync(path.dirname(output), { recursive: true });
-fs.writeFileSync(output, `${JSON.stringify({ version: '1.0', purpose: 'retrieval and response evaluation, not model fine-tuning', count: records.length, records }, null, 2)}\n`);
+const content = `${JSON.stringify({ version: '1.0', purpose: 'retrieval and response evaluation, not model fine-tuning', count: records.length, records }, null, 2)}\n`;
+fs.writeFileSync(output, content);
+fs.writeFileSync(legacyOutput, content);
 console.log(`Wrote ${records.length} benchmark questions to ${output}`);

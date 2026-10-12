@@ -1,8 +1,8 @@
-# CampusGuard Database Schema
+# MITRA Database Schema
 
 Current implementation uses SQLite through Node's built-in SQLite module. The database file defaults to:
 
-`backend/data/campusguard.sqlite`
+`backend/data/mitra.sqlite`
 
 Knowledge and official-source seeds are applied only when no persisted application collection exists. Existing records, publication status, edits and removals are retained across saves and process restarts. Changing seed.js is not a migration for an existing database. The load path retains existing legacy field normalization; there is no destructive schema migration in this persistence fix. Back up existing data before any explicit future migration.
 

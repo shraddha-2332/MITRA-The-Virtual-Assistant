@@ -53,7 +53,7 @@ This is keyword/rule-based retrieval with optional generation. There are no embe
 
 ## Knowledge Storage and Maintenance
 
-The default database is backend/data/campusguard.sqlite. The existing filename is retained by the implementation. SQLite contains a collections table; the app row stores application data as JSON, including knowledge records. This is not a normalized table-per-entity database.
+The default database is backend/data/mitra.sqlite. SQLite contains a collections table; the app row stores application data as JSON, including knowledge records. This is not a normalized table-per-entity database.
 
 Knowledge records include a title, category, text, source, optional source URL, and publication status. The backend loads the knowledge into memory and saves application changes through store.js.
 
@@ -61,7 +61,7 @@ Seed records in backend/src/seed.js initialize a new database only. Existing dat
 
 The underlying code also retains protected source-management APIs. They are not public chat features and require administrator authentication. Their ingestion code supports TXT/CSV, PDF extraction through Poppler, and English OCR through Tesseract. DOCX/XLSX require manually supplied verified text. Reviewed text is published in chunks of up to 2,800 characters; original source files are stored under backend/official-sources/ when the backend is started from its directory. Docker installs the PDF/OCR tools; local extraction requires those tools separately.
 
-To inspect the database, open backend/data/campusguard.sqlite in a SQLite viewer and browse collections → app → data. The knowledge array contains the stored knowledge. Do not commit database files or secrets.
+To inspect the database, open backend/data/mitra.sqlite in a SQLite viewer and browse collections → app → data. The knowledge array contains the stored knowledge. Do not commit database files or secrets.
 
 ## Conversation Behavior
 

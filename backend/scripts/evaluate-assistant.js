@@ -58,7 +58,7 @@ function createWorkflowCases() {
     for (const form of forms) {
       for (const [prefix, language] of languagePrefixes) {
         cases.push({
-          id: `CGW-${String(index).padStart(3, '0')}`,
+          id: `MITRA-W-${String(index).padStart(3, '0')}`,
           intent: 'workflow',
           language,
           question: `${prefix}${form(state.detail)}`,
@@ -82,10 +82,10 @@ async function request(base, route, options = {}) {
 }
 
 async function main() {
-  const benchmarkPath = path.resolve(__dirname, '..', 'evaluation', 'campusguard-qa-360.json');
+  const benchmarkPath = [path.resolve(__dirname, '..', 'evaluation', 'mitra-qa-360.json'), path.resolve(__dirname, '..', 'evaluation', 'campusguard-qa-360.json')].find(fs.existsSync);
   const benchmark = JSON.parse(fs.readFileSync(benchmarkPath, 'utf8'));
   const cases = [...benchmark.records, ...createWorkflowCases()];
-  config.databaseFile = path.resolve(__dirname, '..', 'data', 'campusguard.evaluation.sqlite');
+  config.databaseFile = path.resolve(__dirname, '..', 'data', 'mitra.evaluation.sqlite');
   config.geminiApiKey = '';
   config.assistantRateLimitMax = 10_000;
   resetDbForTests(createSeedData());
@@ -96,7 +96,7 @@ async function main() {
   try {
     const login = await request(base, '/api/auth/login', {
       method: 'POST',
-      body: JSON.stringify({ email: 'applicant@example.com', password: 'campusguard' }),
+      body: JSON.stringify({ email: 'applicant@example.com', password: 'mitra' }),
     });
     const token = login.payload.data.token;
     const failures = [];

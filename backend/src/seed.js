@@ -3,7 +3,7 @@ import { nowIso } from './utils.js';
 import { renderFactText } from './knowledge.js';
 import { config } from './config.js';
 
-const passwordHash = hashPassword('campusguard', 'campusguard-seed-salt');
+const passwordHash = hashPassword('mitra', 'mitra-seed-salt');
 
 export const seedKnowledge = [
   {

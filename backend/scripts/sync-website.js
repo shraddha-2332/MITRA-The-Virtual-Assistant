@@ -25,3 +25,4 @@ if (summary.stagedSources.length > 0) {
   summary.stagedSources.forEach((s) => console.log(` - [${s.id}] ${s.title} (${s.sourceUrl})`));
 }
 console.log('========================================\n');
+

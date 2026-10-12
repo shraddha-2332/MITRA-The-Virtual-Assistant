@@ -59,7 +59,7 @@ try {
   // browser cookies then restore the protected workspace through the normal refresh flow.
   const rejected = await page.request.post(`${origin}/api/auth/login`, { data: { email: 'admin@mitcorer.edu.in', password: 'wrong-fixture-password' } });
   assert.equal(rejected.status(), 401);
-  const login = await page.request.post(`${origin}/api/auth/login`, { data: { email: 'admin@mitcorer.edu.in', password: 'campusguard' } });
+  const login = await page.request.post(`${origin}/api/auth/login`, { data: { email: 'admin@mitcorer.edu.in', password: 'mitra' } });
   assert.equal(login.status(), 200);
   const token = (await login.json()).data.token;
   await page.reload();
@@ -149,7 +149,7 @@ try {
   assert.deepEqual((await ask('What are the first-year Open category fees?')).evidence, []);
   const unauthorized = await publicPage.request.patch(`${origin}/api/knowledge/KB-2`, { data: { expectedRevision: 0, title: 'Unauthorized' } });
   assert.equal(unauthorized.status(), 401);
-  const staffLogin = await publicPage.request.post(`${origin}/api/auth/login`, { data: { email: 'staff@mitcorer.edu.in', password: 'campusguard' } });
+  const staffLogin = await publicPage.request.post(`${origin}/api/auth/login`, { data: { email: 'staff@mitcorer.edu.in', password: 'mitra' } });
   const staffToken = (await staffLogin.json()).data.token;
   const forbidden = await publicPage.request.patch(`${origin}/api/knowledge/KB-2`, { headers: { Authorization: `Bearer ${staffToken}` }, data: { expectedRevision: 0, title: 'Unauthorized' } });
   assert.equal(forbidden.status(), 403);

@@ -34,13 +34,13 @@ async function request(base, path, options = {}) {
 async function login(base, email) {
   const { payload } = await request(base, '/api/auth/login', {
     method: 'POST',
-    body: JSON.stringify({ email, password: 'campusguard' }),
+    body: JSON.stringify({ email, password: 'mitra' }),
   });
   return payload.data.token;
 }
 
 beforeEach(() => {
-  config.databaseFile = path.resolve(process.cwd(), 'data', 'campusguard.test.sqlite');
+  config.databaseFile = path.resolve(process.cwd(), 'data', 'mitra.test.sqlite');
   resetRuntimeStateForTests();
   resetDbForTests(createSeedData());
 });
@@ -561,7 +561,7 @@ test('assistant answers engineering attendance from verified university rules', 
 
 test('history is private to each account, including staff and admin, and requires authentication', async () => {
   await withServer(async (base) => {
-    const signup = await request(base, '/api/auth/signup', { method: 'POST', body: JSON.stringify({ name: 'Second applicant', email: 'second-applicant@example.com', password: 'campusguard', role: 'applicant' }) });
+    const signup = await request(base, '/api/auth/signup', { method: 'POST', body: JSON.stringify({ name: 'Second applicant', email: 'second-applicant@example.com', password: 'mitra', role: 'applicant' }) });
     assert.equal(signup.response.status, 200);
     const accounts = ['applicant@example.com', 'second-applicant@example.com', 'parent@example.com', 'staff@mitcorer.edu.in', 'admin@mitcorer.edu.in'];
     const tokens = [];
@@ -1034,11 +1034,11 @@ test('admin-reviewed extracted source text becomes published retrieval knowledge
   await withServer(async (base) => {
     const adminToken = await login(base, 'admin@mitcorer.edu.in');
     const formData = new FormData();
-    formData.append('title', 'CampusGuard source ingestion test notice');
+    formData.append('title', 'MITRA source ingestion test notice');
     formData.append('documentType', 'Admissions');
     formData.append('academicYear', '2026-27');
     formData.append('sourceAuthority', 'MITCORER');
-    formData.append('file', new Blob(['CampusGuard source ingestion verification notice: reporting token ALPHA-2026 must be checked.'], { type: 'text/plain' }), 'ingestion-notice.txt');
+    formData.append('file', new Blob(['MITRA source ingestion verification notice: reporting token ALPHA-2026 must be checked.'], { type: 'text/plain' }), 'ingestion-notice.txt');
     const uploadResponse = await fetch(`${base}/api/official-sources/upload`, {
       method: 'POST',
       headers: { Authorization: `Bearer ${adminToken}` },
@@ -1069,12 +1069,12 @@ test('admin-reviewed extracted source text becomes published retrieval knowledge
       body: JSON.stringify({ question: 'What does the ALPHA-2026 reporting token notice say?' }),
     });
     assert.equal(answer.response.status, 200);
-    assert.equal(answer.payload.data.evidence[0]?.title, 'CampusGuard source ingestion test notice');
+    assert.equal(answer.payload.data.evidence[0]?.title, 'MITRA source ingestion test notice');
   });
 });
 
 test('multilingual assistant benchmark contains 360 cases', () => {
-  const benchmarkPath = path.resolve(process.cwd(), 'evaluation', 'campusguard-qa-360.json');
+  const benchmarkPath = [path.resolve(process.cwd(), 'evaluation', 'mitra-qa-360.json'), path.resolve(process.cwd(), 'evaluation', 'campusguard-qa-360.json')].find(fs.existsSync);
   const benchmark = JSON.parse(fs.readFileSync(benchmarkPath, 'utf8'));
   assert.equal(benchmark.count, 360);
   assert.deepEqual(new Set(benchmark.records.map((item) => item.language)), new Set(['en', 'mr', 'hi', 'hinglish']));
@@ -1084,7 +1084,7 @@ test('refresh token rotates session and logout revokes it', async () => {
   await withServer(async (base) => {
     const loginResponse = await request(base, '/api/auth/login', {
       method: 'POST',
-      body: JSON.stringify({ email: 'applicant@example.com', password: 'campusguard' }),
+      body: JSON.stringify({ email: 'applicant@example.com', password: 'mitra' }),
     });
     assert.equal(loginResponse.payload.data.refreshToken, undefined);
     const refreshCookie = loginResponse.response.headers.get('set-cookie');
@@ -1203,7 +1203,7 @@ test('assistant rate limit protects the verified-answer endpoint', async () => {
   await withServer(async (base) => {
     const signup = await request(base, '/api/auth/signup', {
       method: 'POST',
-      body: JSON.stringify({ name: 'Rate Limit Test', email: 'ratelimit@example.com', password: 'campusguard', role: 'applicant' }),
+      body: JSON.stringify({ name: 'Rate Limit Test', email: 'ratelimit@example.com', password: 'mitra', role: 'applicant' }),
     });
     const token = signup.payload.data.token;
     for (let index = 0; index < 30; index += 1) {

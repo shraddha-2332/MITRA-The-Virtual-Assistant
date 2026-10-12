@@ -7,7 +7,7 @@ services:
       NODE_ENV: production
       CORS_ORIGIN: http://127.0.0.1:8080,http://localhost:8080
       TOKEN_SECRET: ${TOKEN_SECRET:?Set TOKEN_SECRET before running Docker Compose}
-      DATABASE_FILE: /app/data/campusguard.sqlite
+      DATABASE_FILE: /app/data/mitra.sqlite
     expose:
       - "4000"
     healthcheck:
@@ -17,9 +17,9 @@ services:
       retries: 5
       start_period: 10s
     volumes:
-      - campusguard_backend_data:/app/data
-      - campusguard_uploads:/app/uploads
-      - campusguard_official_sources:/app/official-sources
+      - mitra_backend_data:/app/data
+      - mitra_uploads:/app/uploads
+      - mitra_official_sources:/app/official-sources
 
   frontend:
     build:
@@ -33,6 +33,6 @@ services:
         condition: service_healthy
 
 volumes:
-  campusguard_backend_data:
-  campusguard_uploads:
-  campusguard_official_sources:
+  mitra_backend_data:
+  mitra_uploads:
+  mitra_official_sources:

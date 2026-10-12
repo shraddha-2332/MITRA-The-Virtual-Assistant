@@ -11,13 +11,10 @@ npm run dev
 
 Default URL: `http://127.0.0.1:4000`
 
-## Demo Accounts
+## Maintainer Account
 
-All seed users use password `campusguard`.
+Seed maintainer account uses password `mitra`.
 
-- `applicant@example.com`
-- `parent@example.com`
-- `staff@mitcorer.edu.in`
 - `admin@mitcorer.edu.in`
 
 ## API Summary

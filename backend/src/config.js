@@ -17,9 +17,9 @@ export const config = {
   host: process.env.HOST || (nodeEnv === 'production' ? '0.0.0.0' : '127.0.0.1'),
   corsOrigins: configuredCorsOrigins.split(',').map((origin) => origin.trim()).filter(Boolean),
   // A development fallback keeps the local academic demo runnable. Production must supply a secret.
-  tokenSecret: configuredTokenSecret || 'campusguard-development-only-secret',
+  tokenSecret: configuredTokenSecret || 'mitra-development-only-secret',
   dataFile: path.resolve(rootDir, process.env.DATA_FILE || './data/db.json'),
-  databaseFile: path.resolve(rootDir, process.env.DATABASE_FILE || './data/campusguard.sqlite'),
+  databaseFile: path.resolve(rootDir, process.env.DATABASE_FILE || './data/mitra.sqlite'),
   geminiApiKey: process.env.GEMINI_API_KEY || '',
   geminiModel: process.env.GEMINI_MODEL || 'gemini-2.5-flash',
   maxBodyBytes: 15 * 1024 * 1024,
