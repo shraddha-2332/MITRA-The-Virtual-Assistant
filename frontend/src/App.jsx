@@ -836,24 +836,29 @@ function needsHumanEscalation(message) {
 
 function PublicEscalationNote({ message }) {
   const lang = message.requestedLanguage || 'en';
-  if (lang === 'mr') {
-    return (
-      <p className="publicEscalationNote">
-        काही प्रश्न आहेत का? <a href="tel:+918459967882" className="publicPhoneLink">+91 84599 67882</a> वर कॉल करा किंवा <a href="https://www.mitcorer.edu.in/Admissions-Open-2026-27.html" target="_blank" rel="noreferrer">प्रवेश चौकशी डेस्क <ArrowRight size={11} /></a> ला भेट द्या.
-      </p>
-    );
-  }
-  if (lang === 'hi') {
-    return (
-      <p className="publicEscalationNote">
-        कोई प्रश्न है? <a href="tel:+918459967882" className="publicPhoneLink">+91 84599 67882</a> पर कॉल करें या <a href="https://www.mitcorer.edu.in/Admissions-Open-2026-27.html" target="_blank" rel="noreferrer">प्रवेश पूछताछ डेस्क <ArrowRight size={11} /></a> पर जाएँ।
-      </p>
-    );
-  }
+  const prompt = lang === 'mr'
+    ? 'काही प्रश्न आहेत का?'
+    : lang === 'hi'
+      ? 'कोई प्रश्न है?'
+      : 'Have any questions?';
+  const deskLabel = lang === 'mr'
+    ? 'प्रवेश चौकशी कक्ष'
+    : lang === 'hi'
+      ? 'प्रवेश पूछताछ डेस्क'
+      : 'Admission Enquiry Desk';
+
   return (
-    <p className="publicEscalationNote">
-      Have any questions? Call <a href="tel:+918459967882" className="publicPhoneLink">+91 84599 67882</a> or visit our <a href="https://www.mitcorer.edu.in/Admissions-Open-2026-27.html" target="_blank" rel="noreferrer">Admission Enquiry Desk <ArrowRight size={11} /></a>.
-    </p>
+    <div className="publicEscalationOption3">
+      <p className="escalationPromptText">{prompt}</p>
+      <div className="escalationChipRow">
+        <a href="tel:+918459967882" className="escalationChip phoneChip" title="Call Helpline">
+          <Phone size={12} aria-hidden="true" /> +91 84599 67882
+        </a>
+        <a href="https://www.mitcorer.edu.in/Admissions-Open-2026-27.html" target="_blank" rel="noreferrer" className="escalationChip deskChip" title="Admission Enquiry Desk">
+          <FileText size={12} aria-hidden="true" /> {deskLabel} <ArrowRight size={12} aria-hidden="true" />
+        </a>
+      </div>
+    </div>
   );
 }
 
