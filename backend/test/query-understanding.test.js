@@ -108,6 +108,20 @@ test('public queries interpret plurals, paraphrases, typos, native conjunctions 
     const alumni = await ask('How many alumni does MITCORER have?');
     assert.equal(alumni.evidence[0]?.id, 'KB-35');
     assert.match(alumni.answer, /900\+ graduates/);
+
+    const affiliation = await ask('Which university is MITCORER affiliated to?');
+    assert.equal(affiliation.evidence[0]?.id, 'KB-37');
+    assert.match(affiliation.answer, /Punyashlok Ahilyadevi Holkar Solapur University/);
+    assert.match(affiliation.answer, /06901/);
+
+    const hod = await ask('Who is the HOD of Computer Science?');
+    assert.equal(hod.evidence[0]?.id, 'KB-38');
+    assert.match(hod.answer, /Prof\. Somnath Mule/);
+
+    const nss = await ask('Tell me about NSS and Rail-MIT technical events');
+    assert.equal(nss.evidence[0]?.id, 'KB-39');
+    assert.match(nss.answer, /National Service Scheme/);
+    assert.match(nss.answer, /Rail-MIT/);
   } finally {
     closeDb();
     if (path.dirname(directory) !== path.resolve(os.tmpdir()) || !path.basename(directory).startsWith('mitra-query-test-')) throw new Error('Unsafe cleanup path');

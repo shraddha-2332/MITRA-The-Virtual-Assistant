@@ -362,6 +362,50 @@ export const seedKnowledge = [
     text: 'The official MITCORER brochure lists hostels, mess and canteen, transportation, solar water heating, parking, guest houses, railway model room, security, computer labs, sports, library, laboratories, Wi-Fi, RO water, and a gym. The Admissions FAQ also lists classrooms, a seminar hall, and workshops.',
     status: 'Published',
   },
+  {
+    id: 'KB-37',
+    title: 'MITCORER institutional affiliations, approvals, and DTE Code',
+    category: 'About MITCORER',
+    source: 'MITCORER official portal and AICTE Mandatory Disclosure',
+    sourceUrl: 'https://mitcorer.edu.in/',
+    tags: [
+      'affiliation', 'affiliated university', 'solapur university', 'pah solapur',
+      'punyashlok ahilyadevi holkar', 'dte code', 'institute code', '06901', 'aicte approval',
+      'approved by aicte', 'government of maharashtra', 'maeer mit pune', 'principal',
+      'madhukar lengare', 'leadership',
+    ],
+    text: 'MIT College of Railway Engineering and Research (MITCORER), Barshi operates under the aegis of MAEER\'s MIT Pune. The institute is affiliated to Punyashlok Ahilyadevi Holkar Solapur University (PAHSU) for degree engineering and MSBTE for polytechnic diplomas. It is approved by the All India Council for Technical Education (AICTE), New Delhi, and recognized by the Government of Maharashtra and Directorate of Technical Education (DTE), Mumbai under DTE Institute Code 06901. The Principal is Dr. Madhukar J. Lengare.',
+    status: 'Published',
+  },
+  {
+    id: 'KB-38',
+    title: 'MITCORER department heads, honors degrees, and specialized laboratories',
+    category: 'Programs',
+    source: 'MITCORER official department portals and brochure',
+    sourceUrl: 'https://mitcorer.edu.in/computer-science-engineering.php',
+    tags: [
+      'hod', 'head of department', 'hod cse', 'hod computer science', 'hod civil',
+      'hod mechanical', 'somnath mule', 'amit shinde', 'sanjay mane', 'honors degree',
+      'minor degree', 'ai ml honors', 'cybersecurity honors', 'department labs',
+      'computer labs', 'civil labs', 'mechanical labs',
+    ],
+    text: 'MITCORER departmental leadership and academic specializations include:\n\n- Computer Science & Engineering (CSE): Head of Department is Prof. Somnath Mule. Offers B.Tech with Honor Degrees in Artificial Intelligence (AI), Machine Learning (ML), and Cybersecurity, backed by high-performance programming, AI/ML, and computational laboratories.\n- Civil Engineering: Head of Department is Prof. Amit Raosaheb Shinde (established 2017). Offers B.Tech with Minor Degrees in AI & Data Science and Software Engineering, with specialized Strength of Materials, Surveying, Concrete Technology, Environmental, and CAD laboratories.\n- Mechanical & Rail Engineering: Head of Department is Dr. Sanjay Pandurang Mane. Focuses on railway technology, robotics, and automotive engineering, featuring CAD/CAM, Robotics, Heat Transfer, and Central Workshop fabrication facilities.',
+    status: 'Published',
+  },
+  {
+    id: 'KB-39',
+    title: 'MITCORER campus life, NSS unit, Rail-MIT technical symposium, and sports',
+    category: 'Facilities',
+    source: 'MITCORER Campus Life portal and official brochure',
+    sourceUrl: 'https://mitcorer.edu.in/technical-events-rail-mit.php',
+    tags: [
+      'campus life', 'nss', 'national service scheme', 'rail mit', 'rail-mit',
+      'technical events', 'technical symposium', 'asimit', 'student associations',
+      'sports', 'campus sports', 'sports ground', 'gym', 'cultural events', 'extracurricular',
+    ],
+    text: 'MITCORER campus life and co-curricular opportunities include:\n\n- National Service Scheme (NSS): An active NSS unit affiliated with PAH Solapur University organizing community service, blood donation camps, environmental initiatives, and youth leadership projects.\n- Rail-MIT Technical Symposium: Annual flagship national-level technical event featuring technical paper presentations, model competitions, coding contests, and robotics.\n- Student Associations: Departmental bodies (ASIMIT, CESA, MESA) hosting coding bootcamps, technical workshops, and industrial expert sessions.\n- Sports & Cultural Life: Campus grounds and indoor facilities for student sports, alongside a campus gymnasium and annual cultural festivities.',
+    status: 'Published',
+  },
 ];
 
 for (const record of seedKnowledge) {

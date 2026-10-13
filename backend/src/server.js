@@ -744,6 +744,21 @@ function getOfficialExperienceLinks(question) {
     links.push({ label: 'Official AICTE Mandatory Disclosure (Complete Faculty Roster)', url: 'https://mitcorer.edu.in/pdf/Mandatory-Disclousure.pdf' });
     links.push({ label: 'MITCORER College Brochure', url: 'https://mitcorer.edu.in/pdf/MITCORER_Brochure-26-27.pdf' });
   }
+  if (/affiliation|solapur university|pahsu|dte code|aicte|principal/.test(normalized)) {
+    links.push({ label: 'Punyashlok Ahilyadevi Holkar Solapur University', url: 'https://www.sus.ac.in/' });
+    links.push({ label: 'DTE Maharashtra Official Portal', url: 'https://www.dtemaharashtra.gov.in/' });
+  }
+  if (/nss|national service scheme/.test(normalized)) {
+    links.push({ label: 'MITCORER NSS Unit', url: 'https://mitcorer.edu.in/nss.php' });
+  }
+  if (/rail-mit|rail mit|technical event|asimit/.test(normalized)) {
+    links.push({ label: 'Rail-MIT Technical Events', url: 'https://mitcorer.edu.in/technical-events-rail-mit.php' });
+  }
+  if (/hod|head of department|computer science|civil|mechanical|somnath mule|amit shinde|sanjay mane/.test(normalized)) {
+    links.push({ label: 'Computer Science & Engineering Department', url: 'https://mitcorer.edu.in/computer-science-engineering.php' });
+    links.push({ label: 'Civil Engineering Department', url: 'https://mitcorer.edu.in/civil-engineering.php' });
+    links.push({ label: 'Mechanical & Rail Engineering Department', url: 'https://mitcorer.edu.in/mechanical-engineering.php' });
+  }
   return links;
 }
 
@@ -760,6 +775,30 @@ function getOfficialFeeLinks(question) {
 
 function buildCollegeProfileAnswer(question) {
   const normalized = normalizeIntentText(question);
+  if (/\b(?:affiliation|affiliated|which university|what university|solapur university|pahsu|aicte approval|approved by aicte|aicte approved|dte code|institute code|code 06901|who is the principal|principal of|college principal)\b/.test(normalized)) {
+    return {
+      source: 'MITCORER official portal and AICTE Mandatory Disclosure',
+      sourceUrl: 'https://mitcorer.edu.in/',
+      answer: 'MIT College of Railway Engineering and Research (MITCORER), Barshi:\n\n- Parent Trust: Under the aegis of MAEER\'s MIT Pune\n- Affiliation: Affiliated to Punyashlok Ahilyadevi Holkar Solapur University (PAHSU) for degree engineering and MSBTE for polytechnic diplomas\n- Approvals: Approved by AICTE, New Delhi, and recognized by Govt. of Maharashtra & DTE Mumbai\n- DTE Institute Code: 06901\n- Principal: Dr. Madhukar J. Lengare',
+      next: '', actionView: 'programs', actionLabel: 'Explore programmes',
+    };
+  }
+  if (/\b(?:hod|head of department|department head|somnath mule|amit shinde|sanjay mane|honor degrees?|minor degrees?|cybersecurity honors|ai ml honors)\b/.test(normalized) || (/\b(?:labs?|laborator(?:y|ies))\b/.test(normalized) && /\b(?:cse|computer|civil|mechanical)\b/.test(normalized))) {
+    return {
+      source: 'MITCORER official department portals and brochure',
+      sourceUrl: 'https://mitcorer.edu.in/computer-science-engineering.php',
+      answer: 'MITCORER Department Leadership & Academic Specializations:\n\n- Computer Science & Engineering (CSE): Head of Department is Prof. Somnath Mule. Offers B.Tech with Honor Degrees in Artificial Intelligence (AI), Machine Learning (ML), and Cybersecurity, backed by high-performance programming, AI/ML, and computational laboratories.\n- Civil Engineering: Head of Department is Prof. Amit Raosaheb Shinde (established 2017). Offers B.Tech with Minor Degrees in AI & Data Science and Software Engineering, featuring Strength of Materials, Surveying, Concrete Technology, Environmental, and CAD laboratories.\n- Mechanical & Rail Engineering: Head of Department is Dr. Sanjay Pandurang Mane. Focuses on railway technology, robotics, and automotive engineering, equipped with CAD/CAM, Robotics, Heat Transfer, and Central Workshop fabrication facilities.',
+      next: '', actionView: 'programs', actionLabel: 'View department details',
+    };
+  }
+  if (/nss|national service scheme|rail-mit|rail mit|technical event|asimit|student association/.test(normalized)) {
+    return {
+      source: 'MITCORER Campus Life portal and official brochure',
+      sourceUrl: 'https://mitcorer.edu.in/technical-events-rail-mit.php',
+      answer: 'MITCORER Co-curricular and Campus Life:\n\n- National Service Scheme (NSS): Active NSS unit affiliated with PAH Solapur University organizing community service, blood donation camps, environmental initiatives, and youth leadership projects.\n- Rail-MIT Technical Symposium: Annual flagship national-level technical event featuring technical paper presentations, working model competitions, coding contests, and robotics.\n- Student Associations: Departmental bodies (ASIMIT, CESA, MESA) conducting coding bootcamps, technical workshops, and expert industrial sessions.\n- Sports & Culture: Campus grounds and facilities for student sports, alongside a campus gymnasium and annual cultural festivities.',
+      next: '', actionView: 'visit', actionLabel: 'Explore campus life',
+    };
+  }
   if (/faculty|teacher|professor|teaching staff/.test(normalized)) {
     return {
       source: 'MITCORER Admissions FAQ and official website',
@@ -935,6 +974,9 @@ function buildFacilityAnswer(question) {
 export function retrieveKnowledge(question) {
   const normalizedQuestion = normalizeIntentText(question);
   const rawQuestion = String(question || '').normalize('NFKC').toLocaleLowerCase();
+  if (/\b(?:personal\s*(?:whatsapp|phone|number|mobile|contact)|private\s*(?:number|phone|mobile|contact)|student\s*(?:phone|mobile|number|record)|personal record)\b/i.test(rawQuestion)) {
+    return [];
+  }
   const intentText = `${normalizedQuestion} ${rawQuestion}`;
   const stopWords = new Set(['the', 'and', 'for', 'with', 'then', 'that', 'this', 'from', 'into', 'got', 'have', 'has', 'are', 'was', 'what', 'which', 'can']);
   const words = new Set(tokenize(normalizedQuestion).filter((word) => !stopWords.has(word)));
@@ -1007,6 +1049,18 @@ export function retrieveKnowledge(question) {
   if (['faculty', 'faculties', 'teacher', 'teachers', 'professor', 'professors', 'teaching staff', 'staff', 'alumni'].some((term) => rawQuestion.includes(term) || normalizedQuestion.includes(term))) {
     targetedRecordIds.add('KB-35');
     primaryRecordIds.add('KB-35');
+  }
+  if (['affiliation', 'affiliated', 'solapur university', 'pahsu', 'aicte', 'dte code', 'institute code', '06901', 'who is the principal', 'college principal', 'principal of', 'principal name', 'madhukar lengare'].some((term) => rawQuestion.includes(term) || normalizedQuestion.includes(term))) {
+    targetedRecordIds.add('KB-37');
+    primaryRecordIds.add('KB-37');
+  }
+  if (['hod', 'head of department', 'department head', 'somnath mule', 'amit shinde', 'sanjay mane', 'honors degree', 'minor degree'].some((term) => rawQuestion.includes(term) || normalizedQuestion.includes(term)) || (normalizedQuestion.includes('lab') && (normalizedQuestion.includes('cse') || normalizedQuestion.includes('civil') || normalizedQuestion.includes('mechanical')))) {
+    targetedRecordIds.add('KB-38');
+    primaryRecordIds.add('KB-38');
+  }
+  if (['nss', 'national service scheme', 'rail-mit', 'rail mit', 'technical event', 'technical events', 'asimit'].some((term) => rawQuestion.includes(term) || normalizedQuestion.includes(term))) {
+    targetedRecordIds.add('KB-39');
+    primaryRecordIds.add('KB-39');
   }
   if (/campus facilit|college facilit|facilities available|campus infrastructure/.test(normalizedQuestion)) {
     targetedRecordIds.add('KB-36');
@@ -1115,7 +1169,7 @@ export async function answerAdmissionQuestion(body, user) {
   const retrievedEvidence = retrieveKnowledge(question);
   // Do not attach a loosely matched MITCORER record to an unrelated question.
   let evidence = retrievedEvidence[0]?.score >= 15 ? retrievedEvidence : [];
-  const answer = (user && (buildAdmissionReadinessAnswer(question, user) || buildDocumentStatusAnswer(question, user))) || buildCompoundAnswer(question, normalized, records) || buildClarificationAnswer(normalized) || buildReviewedPassage(normalized, language, records) || buildContextualPassage(normalized, records) || guard(buildFacilityAnswer(question), /hostel/.test(normalized) ? 'KB-23' : /labs|laborator|workshop/.test(normalized) ? 'KB-22' : /bus|transport/.test(normalized) ? 'KB-19' : /library/.test(normalized) ? 'KB-20' : 'KB-36') || guard(buildCollegeProfileAnswer(question), /why|faculty|teacher|professor|staff|alumni/.test(normalized) ? 'KB-35' : 'KB-34') || guard(buildCampusFacilitiesAnswer(question), 'KB-36') || guard(buildPlacementAnswer(question), 'KB-16') || guard(buildDeadlineAnswer(question), 'KB-30') || guard(buildAttendanceAnswer(question), ['KB-31', 'KB-32']) || buildMaintainedAnswer(question, normalized, records) || guard(buildEligibilityAnswer(question), 'KB-5') || guard(buildScholarshipAnswer(question), /pragati/.test(normalized) ? 'KB-33' : 'KB-18') || (fallbackRule ? guard(fallbackRule, ruleRecords[fallbackRule.source] || 'KB-15', false) : null) || {
+  const answer = (user && (buildAdmissionReadinessAnswer(question, user) || buildDocumentStatusAnswer(question, user))) || buildCompoundAnswer(question, normalized, records) || buildClarificationAnswer(normalized) || buildReviewedPassage(normalized, language, records) || buildContextualPassage(normalized, records) || guard(buildFacilityAnswer(question), /hostel/.test(normalized) ? 'KB-23' : /labs|laborator|workshop/.test(normalized) ? 'KB-22' : /bus|transport/.test(normalized) ? 'KB-19' : /library/.test(normalized) ? 'KB-20' : 'KB-36') || guard(buildCollegeProfileAnswer(question), /\b(?:affiliation|affiliated|which university|what university|solapur university|pahsu|aicte|dte code|institute code|06901|principal|madhukar lengare)\b/.test(normalized) ? 'KB-37' : /\b(?:hod|head of department|somnath mule|amit shinde|sanjay mane|honor|minor degree)\b/.test(normalized) || (/\blabs?\b/.test(normalized) && /\b(?:cse|computer|civil|mechanical)\b/.test(normalized)) ? 'KB-38' : /\b(?:nss|rail-mit|rail mit|technical event|asimit)\b/.test(normalized) ? 'KB-39' : /\b(?:why|faculty|teacher|professor|staff|alumni)\b/.test(normalized) ? 'KB-35' : 'KB-34') || guard(buildCampusFacilitiesAnswer(question), 'KB-36') || guard(buildPlacementAnswer(question), 'KB-16') || guard(buildDeadlineAnswer(question), 'KB-30') || guard(buildAttendanceAnswer(question), ['KB-31', 'KB-32']) || buildMaintainedAnswer(question, normalized, records) || guard(buildEligibilityAnswer(question), 'KB-5') || guard(buildScholarshipAnswer(question), /pragati/.test(normalized) ? 'KB-33' : 'KB-18') || (fallbackRule ? guard(fallbackRule, ruleRecords[fallbackRule.source] || 'KB-15', false) : null) || {
     source: 'No verified record',
     answer: 'I could not find an official answer for that question. Please ask about a specific programme, fee, scholarship, admission step, or campus facility.',
     next: '',
