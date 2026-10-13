@@ -406,6 +406,21 @@ export const seedKnowledge = [
     text: 'MITCORER campus life and co-curricular opportunities include:\n\n- National Service Scheme (NSS): An active NSS unit affiliated with PAH Solapur University organizing community service, blood donation camps, environmental initiatives, and youth leadership projects.\n- Rail-MIT Technical Symposium: Annual flagship national-level technical event featuring technical paper presentations, model competitions, coding contests, and robotics.\n- Student Associations: Departmental bodies (ASIMIT, CESA, MESA) hosting coding bootcamps, technical workshops, and industrial expert sessions.\n- Sports & Cultural Life: Campus grounds and indoor facilities for student sports, alongside a campus gymnasium and annual cultural festivities.',
     status: 'Published',
   },
+  {
+    id: 'KB-40',
+    title: 'MITCORER transit directions, nearest railway station, and bus stand',
+    category: 'Contact',
+    source: 'MITCORER Contact Us portal and campus transit directions',
+    sourceUrl: 'https://mitcorer.edu.in/contact.php',
+    tags: [
+      'nearest railway station', 'railway station', 'barshi town', 'kurduwadi junction',
+      'nearest bus stop', 'nearest bus stand', 'barshi bus stand', 'how to reach',
+      'how to reach college', 'transit', 'directions', 'reach mitcorer',
+      'distance from railway station', 'distance from bus stand', 'reach by train', 'reach by bus',
+    ],
+    text: 'MITCORER campus location and transit access details:\n\n- Campus Location: Industrial Estate No. 03, Barshi, Dist. Solapur, Maharashtra - 413401.\n- Nearest Railway Station: Barshi Town Station is 4.7 km from the campus (via Bhosale Chowk – Cancer Chowk – Industrial Road). Major long-distance train connectivity is accessible at Kurduwadi Junction (~38 km).\n- Nearest Bus Stop: MSRTC Bus Stand Barshi is 5.7 km away (Route-I: via Cancer Chowk & Industrial Road; Route-II: via Bypass Agalgaon Chowk – Shukla Automobile – Industrial Road).\n- Daily College Bus Network: The college operates dedicated daily bus routes across Barshi, Kurduwadi, and Solapur for commuting students and staff.',
+    status: 'Published',
+  },
 ];
 
 for (const record of seedKnowledge) {

@@ -122,6 +122,17 @@ test('public queries interpret plurals, paraphrases, typos, native conjunctions 
     assert.equal(nss.evidence[0]?.id, 'KB-39');
     assert.match(nss.answer, /National Service Scheme/);
     assert.match(nss.answer, /Rail-MIT/);
+
+    const station = await ask('What is the nearest railway station to MITCORER?');
+    assert.equal(station.evidence[0]?.id, 'KB-40');
+    assert.match(station.answer, /Barshi Town/);
+    assert.match(station.answer, /4\.7 km/);
+    assert.match(station.answer, /Kurduwadi/);
+
+    const busStand = await ask('How far is the college from Barshi bus stand?');
+    assert.equal(busStand.evidence[0]?.id, 'KB-40');
+    assert.match(busStand.answer, /5\.7 km/);
+    assert.match(busStand.answer, /MSRTC Bus Stand/);
   } finally {
     closeDb();
     if (path.dirname(directory) !== path.resolve(os.tmpdir()) || !path.basename(directory).startsWith('mitra-query-test-')) throw new Error('Unsafe cleanup path');

@@ -759,6 +759,10 @@ function getOfficialExperienceLinks(question) {
     links.push({ label: 'Civil Engineering Department', url: 'https://mitcorer.edu.in/civil-engineering.php' });
     links.push({ label: 'Mechanical & Rail Engineering Department', url: 'https://mitcorer.edu.in/mechanical-engineering.php' });
   }
+  if (/transit|nearest railway station|nearest station|nearest bus|railway station|bus stand|how to reach/.test(normalized)) {
+    links.push({ label: 'MITCORER Contact & Transit Directions', url: 'https://mitcorer.edu.in/contact.php' });
+    links.push({ label: 'MITCORER Bus Facility', url: 'https://mitcorer.edu.in/bus-facility.php' });
+  }
   return links;
 }
 
@@ -775,6 +779,14 @@ function getOfficialFeeLinks(question) {
 
 function buildCollegeProfileAnswer(question) {
   const normalized = normalizeIntentText(question);
+  if (/\b(?:nearest railway station|nearest station|which railway station|station to college|barshi town station|kurduwadi junction|nearest bus (?:stop|stand)|barshi bus stand|how to reach (?:mitcorer|the college|barshi college)|distance from (?:station|bus stand)|reach (?:by train|by bus))\b/.test(normalized)) {
+    return {
+      source: 'MITCORER Contact Us portal and campus transit directions',
+      sourceUrl: 'https://mitcorer.edu.in/contact.php',
+      answer: 'MITCORER Transit Directions & Commuting Access:\n\n- Campus Location: Industrial Estate No. 03, Barshi, Dist. Solapur, Maharashtra - 413401.\n- Nearest Railway Station: Barshi Town Station is 4.7 km from campus (via Bhosale Chowk – Cancer Chowk – Industrial Road). Major long-distance train connectivity is accessible at Kurduwadi Junction (~38 km).\n- Nearest Bus Stand: MSRTC Bus Stand Barshi is 5.7 km away (Route-I: via Cancer Chowk & Industrial Road; Route-II: via Bypass Agalgaon Chowk – Shukla Automobile – Industrial Road).\n- Daily College Bus Network: The college operates dedicated daily bus routes across Barshi, Kurduwadi, and Solapur for commuting students and staff.',
+      next: '', actionView: 'visit', actionLabel: 'View campus location',
+    };
+  }
   if (/\b(?:affiliation|affiliated|which university|what university|solapur university|pahsu|aicte approval|approved by aicte|aicte approved|dte code|institute code|code 06901|who is the principal|principal of|college principal)\b/.test(normalized)) {
     return {
       source: 'MITCORER official portal and AICTE Mandatory Disclosure',
@@ -926,7 +938,7 @@ function buildFacilityAnswer(question) {
       next: '', actionView: 'visit', actionLabel: 'Explore facilities',
     };
   }
-  if (/\bbus\b|transport facility|bus facility|bus route|bus stop|bus fee|bus timing/.test(normalized)) {
+  if ((/\bbus\b|transport facility|bus facility|bus route|bus stop|bus fee|bus timing/.test(normalized)) && !/\b(?:nearest|distance|how far|bus stand|railway station|barshi town|kurduwadi)\b/.test(normalized)) {
     return {
       source: 'MITCORER Bus Facility page',
       sourceUrl: 'https://mitcorer.edu.in/bus-facility.php',
@@ -1062,6 +1074,10 @@ export function retrieveKnowledge(question) {
     targetedRecordIds.add('KB-39');
     primaryRecordIds.add('KB-39');
   }
+  if (['nearest railway station', 'railway station', 'barshi town', 'kurduwadi', 'nearest bus stop', 'nearest bus stand', 'barshi bus stand', 'how to reach the college', 'reach mitcorer', 'transit direction', 'distance from station', 'distance from bus stand', 'reach by train', 'reach by bus'].some((term) => rawQuestion.includes(term) || normalizedQuestion.includes(term))) {
+    targetedRecordIds.add('KB-40');
+    primaryRecordIds.add('KB-40');
+  }
   if (/campus facilit|college facilit|facilities available|campus infrastructure/.test(normalizedQuestion)) {
     targetedRecordIds.add('KB-36');
     primaryRecordIds.add('KB-36');
@@ -1169,7 +1185,7 @@ export async function answerAdmissionQuestion(body, user) {
   const retrievedEvidence = retrieveKnowledge(question);
   // Do not attach a loosely matched MITCORER record to an unrelated question.
   let evidence = retrievedEvidence[0]?.score >= 15 ? retrievedEvidence : [];
-  const answer = (user && (buildAdmissionReadinessAnswer(question, user) || buildDocumentStatusAnswer(question, user))) || buildCompoundAnswer(question, normalized, records) || buildClarificationAnswer(normalized) || buildReviewedPassage(normalized, language, records) || buildContextualPassage(normalized, records) || guard(buildFacilityAnswer(question), /hostel/.test(normalized) ? 'KB-23' : /labs|laborator|workshop/.test(normalized) ? 'KB-22' : /bus|transport/.test(normalized) ? 'KB-19' : /library/.test(normalized) ? 'KB-20' : 'KB-36') || guard(buildCollegeProfileAnswer(question), /\b(?:affiliation|affiliated|which university|what university|solapur university|pahsu|aicte|dte code|institute code|06901|principal|madhukar lengare)\b/.test(normalized) ? 'KB-37' : /\b(?:hod|head of department|somnath mule|amit shinde|sanjay mane|honor|minor degree)\b/.test(normalized) || (/\blabs?\b/.test(normalized) && /\b(?:cse|computer|civil|mechanical)\b/.test(normalized)) ? 'KB-38' : /\b(?:nss|rail-mit|rail mit|technical event|asimit)\b/.test(normalized) ? 'KB-39' : /\b(?:why|faculty|teacher|professor|staff|alumni)\b/.test(normalized) ? 'KB-35' : 'KB-34') || guard(buildCampusFacilitiesAnswer(question), 'KB-36') || guard(buildPlacementAnswer(question), 'KB-16') || guard(buildDeadlineAnswer(question), 'KB-30') || guard(buildAttendanceAnswer(question), ['KB-31', 'KB-32']) || buildMaintainedAnswer(question, normalized, records) || guard(buildEligibilityAnswer(question), 'KB-5') || guard(buildScholarshipAnswer(question), /pragati/.test(normalized) ? 'KB-33' : 'KB-18') || (fallbackRule ? guard(fallbackRule, ruleRecords[fallbackRule.source] || 'KB-15', false) : null) || {
+  const answer = (user && (buildAdmissionReadinessAnswer(question, user) || buildDocumentStatusAnswer(question, user))) || buildCompoundAnswer(question, normalized, records) || buildClarificationAnswer(normalized) || buildReviewedPassage(normalized, language, records) || buildContextualPassage(normalized, records) || guard(buildFacilityAnswer(question), /hostel/.test(normalized) ? 'KB-23' : /labs|laborator|workshop/.test(normalized) ? 'KB-22' : /bus|transport/.test(normalized) ? 'KB-19' : /library/.test(normalized) ? 'KB-20' : 'KB-36') || guard(buildCollegeProfileAnswer(question), /\b(?:nearest railway station|nearest station|which railway station|station to college|barshi town station|kurduwadi junction|nearest bus|barshi bus stand|how to reach|reach by train|reach by bus)\b/.test(normalized) ? 'KB-40' : /\b(?:affiliation|affiliated|which university|what university|solapur university|pahsu|aicte|dte code|institute code|06901|principal|madhukar lengare)\b/.test(normalized) ? 'KB-37' : /\b(?:hod|head of department|somnath mule|amit shinde|sanjay mane|honor|minor degree)\b/.test(normalized) || (/\blabs?\b/.test(normalized) && /\b(?:cse|computer|civil|mechanical)\b/.test(normalized)) ? 'KB-38' : /\b(?:nss|rail-mit|rail mit|technical event|asimit)\b/.test(normalized) ? 'KB-39' : /\b(?:why|faculty|teacher|professor|staff|alumni)\b/.test(normalized) ? 'KB-35' : 'KB-34') || guard(buildCampusFacilitiesAnswer(question), 'KB-36') || guard(buildPlacementAnswer(question), 'KB-16') || guard(buildDeadlineAnswer(question), 'KB-30') || guard(buildAttendanceAnswer(question), ['KB-31', 'KB-32']) || buildMaintainedAnswer(question, normalized, records) || guard(buildEligibilityAnswer(question), 'KB-5') || guard(buildScholarshipAnswer(question), /pragati/.test(normalized) ? 'KB-33' : 'KB-18') || (fallbackRule ? guard(fallbackRule, ruleRecords[fallbackRule.source] || 'KB-15', false) : null) || {
     source: 'No verified record',
     answer: 'I could not find an official answer for that question. Please ask about a specific programme, fee, scholarship, admission step, or campus facility.',
     next: '',

@@ -58,7 +58,7 @@ export function buildContextualPassage(normalized, records) {
   if (/\b(?:document\w*|certificate\w*)\b/.test(normalized) && /\bst\b|scheduled tribe|\bsc\b|scheduled caste/.test(normalized)) id = 'KB-26';
   else if (/\b(?:document\w*|certificate\w*)\b/.test(normalized) && /\bobc\b|\bews\b|\bvjnt\b|\bsbc\b/.test(normalized)) id = 'KB-27';
   else if (/non-cap|acap|institute.level|applying after\s+cap/.test(normalized) && /scholarship|concession/.test(normalized)) id = 'KB-14';
-  else if (services.includes('transport') && !services.some(service => ['hostel', 'mess'].includes(service))) id = 'KB-19';
+  else if (services.includes('transport') && !services.some(service => ['hostel', 'mess'].includes(service)) && !/\b(?:nearest|distance|how far|bus stand|railway station|barshi town|kurduwadi)\b/.test(normalized)) id = 'KB-19';
   else if (services.includes('library') || /digital resources/.test(normalized)) id = 'KB-20';
   if (!id) return null;
   const response = directPassage(id, normalized, records);
