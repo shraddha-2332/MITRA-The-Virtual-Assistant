@@ -770,6 +770,10 @@ function getOfficialExperienceLinks(question) {
   if (/railway model|railway practical|railway lab/.test(normalized)) {
     links.push({ label: 'MITCORER Railway Model Room', url: 'https://www.mitcorer.edu.in/railway-model-room.php' });
   }
+  if (/mou|mous|corporate readiness|industry partner|industry tie-?up|aptitude training|soft skills training/.test(normalized)) {
+    links.push({ label: 'MITCORER Industry MoUs', url: 'https://mitcorer.edu.in/our-mou.php' });
+    links.push({ label: 'Training and Placement Cell', url: 'https://mitcorer.edu.in/training-and-placement-cell.php' });
+  }
   return links;
 }
 
@@ -786,6 +790,14 @@ function getOfficialFeeLinks(question) {
 
 function buildCollegeProfileAnswer(question) {
   const normalized = normalizeIntentText(question);
+  if (/\b(?:mous?|industry mou|industry mous|corporate readiness|collaborations?|industry partners?|industry tie-?ups?|aptitude training|soft skills training|mock interviews?|bvg india|aptron)\b/.test(normalized)) {
+    return {
+      source: 'MITCORER Training & Placement Cell and Official MoU Portal',
+      sourceUrl: 'https://mitcorer.edu.in/our-mou.php',
+      answer: 'MITCORER Industry MoUs & Corporate Readiness Program:\n\n- Active Industry MoUs: Formal memorandums of understanding (MoUs) signed with organizations including APTRON Solutions, Bulls Eye, Earth Solutions Pvt. Ltd., Increpe Technologies, E-Construct, Khambe Sangli, DTL, E-Kida, and BVG India.\n- Practical Industry Exposure: MoUs facilitate student internships, sponsored live projects, guest lecture series, industrial visits, and hands-on technical workshops.\n- Corporate Readiness Program (CRP): Dedicated training organized by the Training & Placement Cell covering quantitative aptitude, logical reasoning, verbal ability, resume preparation, and domain technical skills.\n- Professional Grooming: Personality development workshops, soft skills training, group discussion rounds, and mock interviews by industry HR specialists to ensure campus placement readiness.',
+      next: '', actionView: 'placements', actionLabel: 'View placement support',
+    };
+  }
   if (/\b(?:same as mit pune|mitcorer (?:barshi )?(?:and|or) mit pune|connection (?:with|between) mit pune|relationship (?:with|to) mit pune|part of mit pune|branch of mit pune|under mit pune|mit wpu|maeer('s)? mit pune|parent trust|difference between mitcorer and mit pune)\b/.test(normalized)) {
     return {
       source: 'MITCORER Admissions FAQ and official website',
@@ -1101,6 +1113,10 @@ export function retrieveKnowledge(question) {
     targetedRecordIds.add('KB-42');
     primaryRecordIds.add('KB-42');
   }
+  if (['mou', 'mous', 'industry mou', 'corporate readiness', 'industry partner', 'industry tie-up', 'aptitude training', 'soft skills training', 'mock interview', 'bvg india', 'aptron'].some((term) => rawQuestion.includes(term) || normalizedQuestion.includes(term))) {
+    targetedRecordIds.add('KB-43');
+    primaryRecordIds.add('KB-43');
+  }
   if (/campus facilit|college facilit|facilities available|campus infrastructure/.test(normalizedQuestion)) {
     targetedRecordIds.add('KB-36');
     primaryRecordIds.add('KB-36');
@@ -1208,7 +1224,7 @@ export async function answerAdmissionQuestion(body, user) {
   const retrievedEvidence = retrieveKnowledge(question);
   // Do not attach a loosely matched MITCORER record to an unrelated question.
   let evidence = retrievedEvidence[0]?.score >= 15 ? retrievedEvidence : [];
-  const answer = (user && (buildAdmissionReadinessAnswer(question, user) || buildDocumentStatusAnswer(question, user))) || buildCompoundAnswer(question, normalized, records) || buildClarificationAnswer(normalized) || buildReviewedPassage(normalized, language, records) || buildContextualPassage(normalized, records) || guard(buildFacilityAnswer(question), /hostel/.test(normalized) ? 'KB-23' : /labs|laborator|workshop/.test(normalized) ? 'KB-22' : /bus|transport/.test(normalized) ? 'KB-19' : /library/.test(normalized) ? 'KB-20' : /railway model/.test(normalized) ? 'KB-42' : 'KB-36') || guard(buildCollegeProfileAnswer(question), /\b(?:is mitcorer (?:the )?same as mit pune|mit pune|maeer|parent trust|mit wpu)\b/.test(normalized) ? 'KB-41' : /\b(?:nearest railway station|nearest station|which railway station|station to college|barshi town station|kurduwadi junction|nearest bus|barshi bus stand|how to reach|reach by train|reach by bus)\b/.test(normalized) ? 'KB-40' : /\b(?:affiliation|affiliated|which university|what university|solapur university|pahsu|aicte|dte code|institute code|06901|principal|madhukar lengare)\b/.test(normalized) ? 'KB-37' : /\b(?:hod|head of department|somnath mule|amit shinde|sanjay mane|honor|minor degree)\b/.test(normalized) || (/\blabs?\b/.test(normalized) && /\b(?:cse|computer|civil|mechanical)\b/.test(normalized)) ? 'KB-38' : /\b(?:nss|rail-mit|rail mit|technical event|asimit)\b/.test(normalized) ? 'KB-39' : /\b(?:why|faculty|teacher|professor|staff|alumni)\b/.test(normalized) ? 'KB-35' : 'KB-34') || guard(buildCampusFacilitiesAnswer(question), 'KB-36') || guard(buildPlacementAnswer(question), 'KB-16') || guard(buildDeadlineAnswer(question), 'KB-30') || guard(buildAttendanceAnswer(question), ['KB-31', 'KB-32']) || buildMaintainedAnswer(question, normalized, records) || guard(buildEligibilityAnswer(question), 'KB-5') || guard(buildScholarshipAnswer(question), /pragati/.test(normalized) ? 'KB-33' : 'KB-18') || (fallbackRule ? guard(fallbackRule, ruleRecords[fallbackRule.source] || 'KB-15', false) : null) || {
+  const answer = (user && (buildAdmissionReadinessAnswer(question, user) || buildDocumentStatusAnswer(question, user))) || buildCompoundAnswer(question, normalized, records) || buildClarificationAnswer(normalized) || buildReviewedPassage(normalized, language, records) || buildContextualPassage(normalized, records) || guard(buildFacilityAnswer(question), /hostel/.test(normalized) ? 'KB-23' : /labs|laborator|workshop/.test(normalized) ? 'KB-22' : /bus|transport/.test(normalized) ? 'KB-19' : /library/.test(normalized) ? 'KB-20' : /railway model/.test(normalized) ? 'KB-42' : 'KB-36') || guard(buildCollegeProfileAnswer(question), /\b(?:mous?|corporate readiness|industry partner|aptitude training|soft skills training)\b/.test(normalized) ? 'KB-43' : /\b(?:is mitcorer (?:the )?same as mit pune|mit pune|maeer|parent trust|mit wpu)\b/.test(normalized) ? 'KB-41' : /\b(?:nearest railway station|nearest station|which railway station|station to college|barshi town station|kurduwadi junction|nearest bus|barshi bus stand|how to reach|reach by train|reach by bus)\b/.test(normalized) ? 'KB-40' : /\b(?:affiliation|affiliated|which university|what university|solapur university|pahsu|aicte|dte code|institute code|06901|principal|madhukar lengare)\b/.test(normalized) ? 'KB-37' : /\b(?:hod|head of department|somnath mule|amit shinde|sanjay mane|honor|minor degree)\b/.test(normalized) || (/\blabs?\b/.test(normalized) && /\b(?:cse|computer|civil|mechanical)\b/.test(normalized)) ? 'KB-38' : /\b(?:nss|rail-mit|rail mit|technical event|asimit)\b/.test(normalized) ? 'KB-39' : /\b(?:why|faculty|teacher|professor|staff|alumni)\b/.test(normalized) ? 'KB-35' : 'KB-34') || guard(buildCampusFacilitiesAnswer(question), 'KB-36') || guard(buildPlacementAnswer(question), 'KB-16') || guard(buildDeadlineAnswer(question), 'KB-30') || guard(buildAttendanceAnswer(question), ['KB-31', 'KB-32']) || buildMaintainedAnswer(question, normalized, records) || guard(buildEligibilityAnswer(question), 'KB-5') || guard(buildScholarshipAnswer(question), /pragati/.test(normalized) ? 'KB-33' : 'KB-18') || (fallbackRule ? guard(fallbackRule, ruleRecords[fallbackRule.source] || 'KB-15', false) : null) || {
     source: 'No verified record',
     answer: 'I could not find an official answer for that question. Please ask about a specific programme, fee, scholarship, admission step, or campus facility.',
     next: '',

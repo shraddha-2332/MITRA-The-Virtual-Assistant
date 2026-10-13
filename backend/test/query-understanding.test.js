@@ -145,6 +145,14 @@ test('public queries interpret plurals, paraphrases, typos, native conjunctions 
     assert.match(modelRoom.answer, /signaling/i);
     assert.match(modelRoom.answer, /scale/i);
     assert.ok(modelRoom.officialLinks.some(link => link.url.includes('railway-model-room.php')));
+
+    const mous = await ask('What Industry MoUs and corporate readiness programs does MITCORER offer?');
+    assert.equal(mous.evidence[0]?.id, 'KB-43');
+    assert.match(mous.answer, /Industry MoUs/);
+    assert.match(mous.answer, /Corporate Readiness Program/);
+    assert.match(mous.answer, /APTRON/);
+    assert.ok(mous.officialLinks.some(link => link.url.includes('our-mou.php')));
+    assert.ok(mous.officialLinks.some(link => link.url.includes('training-and-placement-cell.php')));
   } finally {
     closeDb();
     if (path.dirname(directory) !== path.resolve(os.tmpdir()) || !path.basename(directory).startsWith('mitra-query-test-')) throw new Error('Unsafe cleanup path');

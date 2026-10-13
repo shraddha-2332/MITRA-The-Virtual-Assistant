@@ -449,6 +449,21 @@ export const seedKnowledge = [
     text: 'MITCORER Railway Model Room and practical railway training facilities:\n\n- Dedicated Railway Model Room: An advanced practical demonstration facility equipped with working scale railway track layouts, signaling setups, and rolling stock models.\n- Practical Demonstration Systems: Features functional point-and-crossing mechanisms, electronic signaling demonstration boards, interlocking simulations, and track technology cross-sections.\n- Interdisciplinary Training: Serves students across Civil Engineering (track design, alignment, structural permanent way), Mechanical & Rail Engineering (locomotive systems, rolling stock, braking mechanisms), and Computer/Electronics Engineering (railway signaling, automation, SCADA systems).\n- Industry Orientation: Bridges classroom engineering theory with hands-on exposure to modern railway transportation systems, metro operations, and railway safety standards.',
     status: 'Published',
   },
+  {
+    id: 'KB-43',
+    title: 'MITCORER Industry MoUs, Corporate Readiness Program, and Skill Development',
+    category: 'Placement',
+    source: 'MITCORER Training & Placement Cell and Official MoU Portal',
+    sourceUrl: 'https://mitcorer.edu.in/our-mou.php',
+    tags: [
+      'mou', 'mous', 'industry mou', 'industry mous', 'collaborations', 'corporate readiness',
+      'corporate readiness program', 'skill development', 'aptitude training',
+      'soft skills', 'mock interviews', 'industry partners', 'industry tie-ups',
+      'internships', 'industrial visits', 'bvg india', 'aptron',
+    ],
+    text: 'MITCORER Industry MoUs and Corporate Readiness Program:\n\n- Active Industry MoUs: Formal memorandums of understanding (MoUs) signed with organizations including APTRON Solutions, Bulls Eye, Earth Solutions Pvt. Ltd., Increpe Technologies, E-Construct, Khambe Sangli, DTL, E-Kida, and BVG India.\n- Practical Industry Exposure: MoUs facilitate student internships, sponsored live projects, guest lecture series, industrial visits, and hands-on technical workshops.\n- Corporate Readiness Program (CRP): Dedicated training organized by the Training & Placement Cell covering quantitative aptitude, logical reasoning, verbal ability, resume preparation, and domain technical skills.\n- Professional Grooming: Personality development workshops, soft skills training, group discussion rounds, and mock interviews by industry HR specialists to ensure campus placement readiness.',
+    status: 'Published',
+  },
 ];
 
 for (const record of seedKnowledge) {

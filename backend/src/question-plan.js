@@ -13,7 +13,7 @@ function facet(text) {
   if (/\b(?:bus|transport)\b/.test(text)) return 'transport';
   if (/\b(?:library|libraries|journals)\b|digital resources/.test(text)) return 'library';
   if (/\b(?:hostel|mess|accommodation)\b/.test(text)) return 'hostel';
-  if (/\b(?:intake|choice code|program\w*|course\w*|branch\w*)\b/.test(text)) return 'programmes';
+  if (/\b(?:intake|choice code|program\w*|course\w*|branch\w*)\b/.test(text) && !/corporate readiness|training program/.test(text)) return 'programmes';
   return 'unknown';
 }
 const titles = { seatMatrix: 'Historical seat matrix', programmes: 'Programmes and intake', academicFees: 'Academic fees', accommodationFees: 'Hostel and mess fees',
@@ -68,6 +68,7 @@ export function buildContextualPassage(normalized, records) {
 export function buildCompoundAnswer(question, normalized, records) {
   // Existing admission progress/checklist logic must retain its personal workflow semantics.
   if (/admission|allotment|reporting|\bcap\b/.test(normalized) && /remaining|pending|checklist|last step|final step|what.*next/.test(normalized)) return null;
+  if (/mou|corporate readiness/.test(normalized)) return null;
   let parts = clauses(normalized);
   if (parts.length < 2) return null;
   // Hostel + mess is one cost topic, not two unrelated queries.
