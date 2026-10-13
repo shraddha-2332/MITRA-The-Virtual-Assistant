@@ -233,6 +233,21 @@ test('public queries interpret plurals, paraphrases, typos, native conjunctions 
     assert.equal(polyEligibility.evidence[0]?.id, 'KB-12');
     assert.match(polyEligibility.answer, /10th Standard \(SSC\)/i);
     assert.match(polyEligibility.answer, /35%/);
+
+    const workshop = await ask('What facilities are available in the central workshop at MITCORER?');
+    assert.equal(workshop.evidence[0]?.id, 'KB-49');
+    assert.match(workshop.answer, /Machine Shop/i);
+    assert.match(workshop.answer, /Fitting Shop/i);
+    assert.match(workshop.answer, /Welding Shop/i);
+    assert.match(workshop.answer, /Carpentry Shop/i);
+    assert.ok(workshop.officialLinks.some(link => link.url.includes('workshops.php')));
+
+    const computingAndSeminar = await ask('Tell me about the central computing center and seminar halls');
+    assert.equal(computingAndSeminar.evidence[0]?.id, 'KB-49');
+    assert.match(computingAndSeminar.answer, /100\+/i);
+    assert.match(computingAndSeminar.answer, /audio-visual/i);
+    assert.ok(computingAndSeminar.officialLinks.some(link => link.url.includes('computer-center.php')));
+    assert.ok(computingAndSeminar.officialLinks.some(link => link.url.includes('seminar-hall.php')));
   } finally {
     closeDb();
     if (path.dirname(directory) !== path.resolve(os.tmpdir()) || !path.basename(directory).startsWith('mitra-query-test-')) throw new Error('Unsafe cleanup path');

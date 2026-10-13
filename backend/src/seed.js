@@ -546,6 +546,21 @@ export const seedKnowledge = [
     text: 'MITCORER sports infrastructure, gymnasium, and campus cultural life:\n\n- Sports Facilities: Outdoor grounds for cricket, box cricket, and volleyball, accompanied by badminton facilities, indoor games (table tennis, chess, carrom), and a campus gymnasium for student fitness.\n- Sports Meets: Organizes an annual inter-departmental sports week and supports student participation in university and zonal tournaments.\n- Cultural Life: Grand celebrations of the Annual Cultural Gathering featuring dance, drama, and musical performances. Actively commemorates Chhatrapati Shivaji Maharaj Jayanti (Shiv Jayanti), Ganesh Utsav, National Engineer\'s Day, and Teachers\' Day.\n- Co-curricular Balance: Promotes physical health, leadership qualities, and cultural heritage alongside core railway and engineering academics.',
     status: 'Published',
   },
+  {
+    id: 'KB-49',
+    title: 'MITCORER Central Workshop, Computing Center, and Seminar Halls',
+    category: 'Facilities',
+    source: 'MITCORER Facilities portals',
+    sourceUrl: 'https://mitcorer.edu.in/workshops.php',
+    tags: [
+      'central workshop', 'workshop', 'workshops', 'machine shop', 'fitting shop',
+      'welding shop', 'carpentry shop', 'smithy', 'sheet metal',
+      'computer center', 'computing center', 'seminar hall', 'seminar halls',
+      'av projection', 'audiovisual', 'multimedia hall',
+    ],
+    text: 'MITCORER Central Workshop, Computing Center, and Seminar Halls:\n\n- Central Workshop: Fully equipped fabrication and practical training facility featuring specialized sections: Machine Shop (lathes, shapers, drilling, and milling equipment), Fitting Shop, Welding Shop (electric arc & oxy-acetylene gas welding), Carpentry Shop, and Sheet Metal/Smithy for hands-on fabrication and railway prototype modeling.\n- Central Computing Center: Air-conditioned facility equipped with 100+ high-performance networked desktop systems, dedicated high-speed optical fiber internet connectivity, and licensed engineering software suites for CAD/CAM, numerical computation, and programming.\n- Seminar Halls: Acoustically treated halls with ergonomic seating, multimedia audio-visual projection equipment, and high-fidelity sound systems hosting guest lectures, academic symposia, corporate seminars, and placement sessions.',
+    status: 'Published',
+  },
 ];
 
 for (const record of seedKnowledge) {
