@@ -511,6 +511,20 @@ export const seedKnowledge = [
     text: 'MITCORER college administrative office and admission enquiry desk schedule:\n\n- Working Days: Monday to Saturday (closed on Sundays and public holidays).\n- Operating Hours: 9:30 AM to 5:30 PM.\n- Admission Enquiry Desk: Functional throughout college working hours in the Administrative Building for counseling, campus tours, document verification checks, and admission assistance.\n- Official Helpdesk Lines: +91 84599 67882, +91 86696 62106; Email: info.mitcorer@mitpune.edu.in.',
     status: 'Published',
   },
+  {
+    id: 'KB-47',
+    title: 'MITCORER professional diplomas and specialized value-added railway engineering modules',
+    category: 'About MITCORER',
+    source: 'MITCORER Professional Railway Diploma portal and syllabus records',
+    sourceUrl: 'https://mitcorer.edu.in/about-professional-diploma-railway.php',
+    tags: [
+      'railway diploma', 'railway specializations', 'professional diploma',
+      'railway signaling', 'railway track technology', 'rolling stocks', 'railway software',
+      'railway courses', 'railway syllabus', 'railway modules', 'signaling and telecommunication',
+    ],
+    text: 'MITCORER Value-Added Professional Railway Engineering Diplomas:\n\n- Railway Signaling and Telecommunication: Professional Diploma for E&TC, Electrical, and allied students covering railway signaling, track circuits, train detection, electronic interlocking, and telecommunication systems.\n- Railway Track Technology: Professional Diploma for Civil Engineering students covering permanent way alignment, track maintenance, ballastless high-speed tracks, rail geometric design, and track safety.\n- Rolling Stocks and Operations: Professional Diploma for Mechanical and Automobile engineering students covering locomotive mechanics, coach/wagon structural design, train braking systems, and train traffic operations.\n- Software Technology in Railway Sector: Professional Diploma for Computer Science and IT students focusing on automated train control systems, signaling software safety, traffic management systems, and smart railway analytics.\n\nThese specialized diploma modules are conducted concurrently with degree programs to build core railway industry competencies.',
+    status: 'Published',
+  },
 ];
 
 for (const record of seedKnowledge) {

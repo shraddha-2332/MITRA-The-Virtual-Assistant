@@ -192,6 +192,18 @@ test('public queries interpret plurals, paraphrases, typos, native conjunctions 
     const admissionDesk = await ask('When is the admission enquiry desk open?');
     assert.equal(admissionDesk.evidence[0]?.id, 'KB-46');
     assert.match(admissionDesk.answer, /Admission Enquiry Desk/);
+
+    const railwayDiplomas = await ask('What professional diplomas or specialized railway courses does MITCORER offer?');
+    assert.equal(railwayDiplomas.evidence[0]?.id, 'KB-47');
+    assert.match(railwayDiplomas.answer, /Railway Signaling & Telecommunication/i);
+    assert.match(railwayDiplomas.answer, /Railway Track Technology/i);
+    assert.match(railwayDiplomas.answer, /Rolling Stocks and Operations/i);
+    assert.match(railwayDiplomas.answer, /Software Technology in Railway/i);
+    assert.ok(railwayDiplomas.officialLinks.some(link => link.url.includes('about-professional-diploma-railway.php')));
+
+    const trackTech = await ask('Tell me about the professional diploma in Railway Track Technology');
+    assert.equal(trackTech.evidence[0]?.id, 'KB-47');
+    assert.match(trackTech.answer, /Civil Engineering/i);
   } finally {
     closeDb();
     if (path.dirname(directory) !== path.resolve(os.tmpdir()) || !path.basename(directory).startsWith('mitra-query-test-')) throw new Error('Unsafe cleanup path');
