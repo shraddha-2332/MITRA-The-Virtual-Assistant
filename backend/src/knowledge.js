@@ -171,7 +171,7 @@ export function buildMaintainedAnswer(question, normalized, records) {
       managedRecordId: 'unsupported-fee-route', source: 'No verified record', evidence: [], next: '',
       answer: 'I could not find a verified fee amount for that admission route or transport service. B.Tech academic fees must not be used for Polytechnic or bus fees. Please check the applicable notice with the college.' };
     [id, actionView] = query.topics.includes('accommodationFees') ? ['KB-3', 'visit'] : ['KB-2', 'fees'];
-  } else if (/intake|choice code|program|course/.test(normalized) && !/polytechnic|diploma|direct second|\bdse\b|lateral/.test(normalized)) {
+  } else if ((/intake|choice code|program|course|branch/.test(normalized) || (/\b(?:offer|have|available)\b/.test(normalized) && (query.branch.positive.length > 0 || /engineering|b\.?tech/.test(normalized)))) && !/polytechnic|diploma|direct second|\bdse\b|lateral/.test(normalized)) {
     [id, actionView] = ['KB-10', 'programs'];
   } else return null;
   const record = records.find((item) => item.id === id && usableKnowledge(item));

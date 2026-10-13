@@ -101,7 +101,12 @@ export const seedKnowledge = [
     title: 'MITCORER First Year B.Tech programs, intake and choice codes',
     category: 'Programs',
     source: 'MITCORER First Year B.Tech admissions page',
-    tags: ['btech programs', 'cse intake', 'cse choice code', 'first year btech', 'computer science intake'],
+    tags: [
+      'btech programs', 'cse intake', 'cse choice code', 'first year btech', 'computer science intake',
+      'artificial intelligence and data science', 'artificial intelligence', 'data science', 'ai and ds', 'ai ds',
+      'electronics and telecommunication', 'electronics and computer',
+      'civil engineering', 'mechanical and rail engineering', 'btech branches', 'available branches', 'courses offered',
+    ],
     sourceUrl: 'https://mitcorer.edu.in/fy-btech.php',
     status: 'Published',
   },

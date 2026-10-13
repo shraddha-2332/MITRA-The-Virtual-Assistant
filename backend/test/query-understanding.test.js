@@ -160,6 +160,18 @@ test('public queries interpret plurals, paraphrases, typos, native conjunctions 
     assert.match(ragging.answer, /Zero-Tolerance/i);
     assert.match(ragging.answer, /emergency vehicle/i);
     assert.ok(ragging.officialLinks.some(link => link.url.includes('Anti-Ragging-2025-26.pdf')));
+
+    const aids = await ask('Does MITCORER offer Artificial Intelligence and Data Science?');
+    assert.equal(aids.evidence[0]?.id, 'KB-10');
+    assert.match(aids.answer, /Artificial Intelligence and Data Science/);
+    assert.match(aids.answer, /0690126310/);
+    assert.ok(aids.officialLinks.some(link => link.url.includes('artificial-intelligence-data-science.php')));
+
+    const entc = await ask('Does MITCORER have Electronics and Telecommunication?');
+    assert.equal(entc.evidence[0]?.id, 'KB-10');
+    assert.match(entc.answer, /Electronics and Telecommunication Engineering/);
+    assert.match(entc.answer, /0690137210/);
+    assert.ok(entc.officialLinks.some(link => link.url.includes('electronics-and-tele-communication-engineering.php')));
   } finally {
     closeDb();
     if (path.dirname(directory) !== path.resolve(os.tmpdir()) || !path.basename(directory).startsWith('mitra-query-test-')) throw new Error('Unsafe cleanup path');

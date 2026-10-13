@@ -778,6 +778,15 @@ function getOfficialExperienceLinks(question) {
     links.push({ label: 'MITCORER Anti-Ragging Notification', url: 'https://mitcorer.edu.in/pdf/Anti-Ragging-2025-26.pdf' });
     links.push({ label: 'Student Grievance Redressal Cell', url: 'https://mitcorer.edu.in/grievance-redressal-cell.php' });
   }
+  if (/artificial intelligence|data science|ai ?&? ?ds|aids/.test(normalized)) {
+    links.push({ label: 'Artificial Intelligence & Data Science Department', url: 'https://mitcorer.edu.in/artificial-intelligence-data-science.php' });
+  }
+  if (/electronics and telecommunication|e&tc|entc/.test(normalized)) {
+    links.push({ label: 'Electronics & Telecommunication Engineering Department', url: 'https://mitcorer.edu.in/electronics-and-tele-communication-engineering.php' });
+  }
+  if (/electronics and computer/.test(normalized)) {
+    links.push({ label: 'Electronics & Computer Engineering Department', url: 'https://mitcorer.edu.in/electronics-and-computer-engineering.php' });
+  }
   return links;
 }
 
@@ -1142,8 +1151,10 @@ export function retrieveKnowledge(question) {
     primaryRecordIds.add('KB-14');
   }
   if (rawQuestion.includes('polytechnic') || rawQuestion.includes('polytechnic course')) targetedRecordIds.add('KB-12');
-  if (rawQuestion.includes('direct second year') || rawQuestion.includes('dse') || rawQuestion.includes('lateral entry')) targetedRecordIds.add('KB-11');
-  if (rawQuestion.includes('available b.tech programs') || rawQuestion.includes('all b.tech programs') || rawQuestion.includes('programs and choice codes')) targetedRecordIds.add('KB-10');
+  if (rawQuestion.includes('available b.tech programs') || rawQuestion.includes('all b.tech programs') || rawQuestion.includes('programs and choice codes') || ['artificial intelligence', 'data science', 'ai and ds', 'ai ds', 'electronics and telecommunication', 'electronics and computer', 'branches offered', 'courses offered', 'programs offered'].some((term) => rawQuestion.includes(term) || normalizedQuestion.includes(term))) {
+    targetedRecordIds.add('KB-10');
+    primaryRecordIds.add('KB-10');
+  }
   if (normalizedQuestion.includes('scholarship')) primaryRecordIds.add('KB-18');
   if (normalizedQuestion.includes('seat matrix')) primaryRecordIds.add('KB-6');
   if (normalizedQuestion.includes('program') && rawQuestion.includes('b.tech')) primaryRecordIds.add('KB-10');
