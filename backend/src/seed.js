@@ -525,6 +525,22 @@ export const seedKnowledge = [
     text: 'MITCORER Value-Added Professional Railway Engineering Diplomas:\n\n- Railway Signaling and Telecommunication: Professional Diploma for E&TC, Electrical, and allied students covering railway signaling, track circuits, train detection, electronic interlocking, and telecommunication systems.\n- Railway Track Technology: Professional Diploma for Civil Engineering students covering permanent way alignment, track maintenance, ballastless high-speed tracks, rail geometric design, and track safety.\n- Rolling Stocks and Operations: Professional Diploma for Mechanical and Automobile engineering students covering locomotive mechanics, coach/wagon structural design, train braking systems, and train traffic operations.\n- Software Technology in Railway Sector: Professional Diploma for Computer Science and IT students focusing on automated train control systems, signaling software safety, traffic management systems, and smart railway analytics.\n\nThese specialized diploma modules are conducted concurrently with degree programs to build core railway industry competencies.',
     status: 'Published',
   },
+  {
+    id: 'KB-48',
+    title: 'MITCORER sports grounds, gymnasium, and campus cultural events',
+    category: 'About MITCORER',
+    source: 'MITCORER Sports and Cultural Events official portals',
+    sourceUrl: 'https://mitcorer.edu.in/sports.php',
+    tags: [
+      'sports facilities', 'sports grounds', 'cricket ground', 'box cricket',
+      'volleyball court', 'volleyball ground', 'badminton court', 'gymnasium',
+      'college gym', 'campus gym', 'sports week', 'cultural events',
+      'cultural gathering', 'annual gathering', 'cultural fest', 'shiv jayanti',
+      'ganesh utsav', 'extracurricular activities',
+    ],
+    text: 'MITCORER sports infrastructure, gymnasium, and campus cultural life:\n\n- Sports Facilities: Outdoor grounds for cricket, box cricket, and volleyball, accompanied by badminton facilities, indoor games (table tennis, chess, carrom), and a campus gymnasium for student fitness.\n- Sports Meets: Organizes an annual inter-departmental sports week and supports student participation in university and zonal tournaments.\n- Cultural Life: Grand celebrations of the Annual Cultural Gathering featuring dance, drama, and musical performances. Actively commemorates Chhatrapati Shivaji Maharaj Jayanti (Shiv Jayanti), Ganesh Utsav, National Engineer\'s Day, and Teachers\' Day.\n- Co-curricular Balance: Promotes physical health, leadership qualities, and cultural heritage alongside core railway and engineering academics.',
+    status: 'Published',
+  },
 ];
 
 for (const record of seedKnowledge) {

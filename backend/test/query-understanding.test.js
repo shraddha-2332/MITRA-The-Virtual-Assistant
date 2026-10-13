@@ -204,6 +204,19 @@ test('public queries interpret plurals, paraphrases, typos, native conjunctions 
     const trackTech = await ask('Tell me about the professional diploma in Railway Track Technology');
     assert.equal(trackTech.evidence[0]?.id, 'KB-47');
     assert.match(trackTech.answer, /Civil Engineering/i);
+
+    const sports = await ask('What sports grounds and gym facilities are available at MITCORER?');
+    assert.equal(sports.evidence[0]?.id, 'KB-48');
+    assert.match(sports.answer, /cricket/i);
+    assert.match(sports.answer, /volleyball/i);
+    assert.match(sports.answer, /gymnasium/i);
+    assert.ok(sports.officialLinks.some(link => link.url.includes('sports.php')));
+
+    const cultural = await ask('What cultural events and annual gatherings take place?');
+    assert.equal(cultural.evidence[0]?.id, 'KB-48');
+    assert.match(cultural.answer, /Annual Cultural Gathering/i);
+    assert.match(cultural.answer, /Shiv Jayanti/i);
+    assert.ok(cultural.officialLinks.some(link => link.url.includes('cultural-events.php')));
   } finally {
     closeDb();
     if (path.dirname(directory) !== path.resolve(os.tmpdir()) || !path.basename(directory).startsWith('mitra-query-test-')) throw new Error('Unsafe cleanup path');

@@ -797,6 +797,10 @@ function getOfficialExperienceLinks(question) {
   if (/professional diploma|railway diploma|railway track technology|railway signaling|railway signalling|rolling stocks?|software technology in railway/.test(normalized)) {
     links.push({ label: 'MITCORER Professional Railway Diplomas', url: 'https://mitcorer.edu.in/about-professional-diploma-railway.php' });
   }
+  if (/sports|cricket|volleyball|badminton|gym|gymnasium|cultural event|cultural gathering|shiv jayanti|ganesh utsav/.test(normalized)) {
+    links.push({ label: 'MITCORER Sports Facilities', url: 'https://mitcorer.edu.in/sports.php' });
+    links.push({ label: 'MITCORER Cultural Events', url: 'https://mitcorer.edu.in/cultural-events.php' });
+  }
   return links;
 }
 
@@ -813,6 +817,14 @@ function getOfficialFeeLinks(question) {
 
 function buildCollegeProfileAnswer(question) {
   const normalized = normalizeIntentText(question);
+  if (/\b(?:sports grounds?|sports facilit\w*|box cricket|cricket ground|volleyball (?:court|ground)|badminton court|campus gym|gymnasium|cultural events?|cultural gathering|annual gathering|cultural fest|shiv jayanti|ganesh (?:utsav|festival)|traditional day)\b/.test(normalized) && !/nss|rail-mit|technical event|world cup|icc/.test(normalized)) {
+    return {
+      source: 'MITCORER Sports and Cultural Events official portals',
+      sourceUrl: 'https://mitcorer.edu.in/sports.php',
+      answer: "MITCORER Sports Infrastructure & Campus Cultural Life:\n\n- Sports Facilities: Dedicated outdoor campus grounds for cricket, box cricket, and volleyball, alongside badminton facilities, indoor recreation (chess, carrom), and a campus gymnasium for student fitness.\n- Sports Tournaments: Annual inter-departmental sports meet and participation in university/zonal athletic competitions.\n- Cultural Festivities: Annual Cultural Gathering showcasing student music, drama, and dance performances, alongside grand celebrations of Chhatrapati Shivaji Maharaj Jayanti (Shiv Jayanti), Ganesh Utsav, National Engineer's Day, and Teachers' Day.\n- Holistic Development: Encourages extracurricular excellence, cultural vitality, and physical wellness alongside technical railway engineering studies.",
+      next: '', actionView: 'visit', actionLabel: 'Explore campus life',
+    };
+  }
   if (/\b(?:professional diplomas?|railway diplomas?|railway track technology|railway signaling|railway signalling|rolling stocks?(?: and operations)?|software technology in railway|railway specializations?|railway modules?)\b/.test(normalized)) {
     return {
       source: 'MITCORER Professional Railway Diploma portal and syllabus records',
@@ -1005,11 +1017,12 @@ function buildFacilityAnswer(question) {
       next: '', actionView: 'visit', actionLabel: 'Explore facilities',
     };
   }
-  if (/sports|gym|physical fitness/.test(normalized)) {
+  if ((/\b(?:sports grounds?|sports facilit\w*|box cricket|cricket ground|volleyball court|volleyball ground|badminton court|campus gym|college gym|gymnasium|physical fitness)\b/.test(normalized) || /\b(?:sports|gym)\b/.test(normalized)) && !/\b(?:world cup|icc|olympics?)\b/.test(normalized)) {
     return {
-      source: 'MITCORER official brochure and Admissions page',
-      answer: 'MITCORER campus sports and fitness amenities include:\n\n- Dedicated sports grounds for outdoor games and athletics\n- Fully equipped student gymnasium on campus',
-      next: '', actionView: 'visit', actionLabel: 'Explore facilities',
+      source: 'MITCORER Sports and Cultural Events official portals',
+      sourceUrl: 'https://mitcorer.edu.in/sports.php',
+      answer: "MITCORER Sports Infrastructure & Campus Cultural Life:\n\n- Sports Facilities: Dedicated outdoor campus grounds for cricket, box cricket, and volleyball, alongside badminton facilities, indoor recreation (chess, carrom), and a campus gymnasium for student fitness.\n- Sports Tournaments: Annual inter-departmental sports meet and participation in university/zonal athletic competitions.\n- Cultural Festivities: Annual Cultural Gathering showcasing student music, drama, and dance performances, alongside grand celebrations of Chhatrapati Shivaji Maharaj Jayanti (Shiv Jayanti), Ganesh Utsav, National Engineer's Day, and Teachers' Day.\n- Holistic Development: Encourages extracurricular excellence, cultural vitality, and physical wellness alongside technical railway engineering studies.",
+      next: '', actionView: 'visit', actionLabel: 'Explore campus life',
     };
   }
   if (/labs|laborator|workshop/.test(normalized)) {
@@ -1188,6 +1201,10 @@ export function retrieveKnowledge(question) {
     targetedRecordIds.add('KB-47');
     primaryRecordIds.add('KB-47');
   }
+  if (['sports facility', 'sports facilities', 'sports ground', 'sports grounds', 'cricket ground', 'box cricket', 'volleyball court', 'volleyball ground', 'badminton court', 'gym', 'gymnasium', 'cultural event', 'cultural events', 'cultural gathering', 'annual gathering', 'cultural fest', 'shiv jayanti', 'ganesh utsav'].some((term) => rawQuestion.includes(term) || normalizedQuestion.includes(term)) && !['nss', 'rail-mit', 'technical event', 'world cup', 'icc'].some((term) => rawQuestion.includes(term) || normalizedQuestion.includes(term))) {
+    targetedRecordIds.add('KB-48');
+    primaryRecordIds.add('KB-48');
+  }
   if (/campus facilit|college facilit|facilities available|campus infrastructure/.test(normalizedQuestion)) {
     targetedRecordIds.add('KB-36');
     primaryRecordIds.add('KB-36');
@@ -1297,7 +1314,7 @@ export async function answerAdmissionQuestion(body, user) {
   const retrievedEvidence = retrieveKnowledge(question);
   // Do not attach a loosely matched MITCORER record to an unrelated question.
   let evidence = retrievedEvidence[0]?.score >= 15 ? retrievedEvidence : [];
-  const answer = (user && (buildAdmissionReadinessAnswer(question, user) || buildDocumentStatusAnswer(question, user))) || buildCompoundAnswer(question, normalized, records) || buildClarificationAnswer(normalized) || buildReviewedPassage(normalized, language, records) || buildContextualPassage(normalized, records) || guard(buildFacilityAnswer(question), /hostel/.test(normalized) ? 'KB-23' : /labs|laborator|workshop/.test(normalized) ? 'KB-22' : /bus|transport/.test(normalized) ? 'KB-19' : /library/.test(normalized) ? 'KB-20' : /railway model/.test(normalized) ? 'KB-42' : 'KB-36') || guard(buildCollegeProfileAnswer(question), /\b(?:professional diplomas?|railway diplomas?|railway track technology|railway signaling|railway signalling|rolling stocks?(?: and operations)?|software technology in railway|railway specializations?|railway modules?)\b/.test(normalized) ? 'KB-47' : /\b(?:office hours?|office timings?|working hours?|visiting hours?|admission desk|enquiry desk|college timings?|open on saturday)\b/.test(normalized) ? 'KB-46' : /\b(?:nep(?: 2020)?|national education policy|outcome[- ]based education|obe|medium of instruction|english medium|curriculum pattern)\b/.test(normalized) ? 'KB-45' : /\b(?:anti[- ]?ragging|ragging|campus safety|emergency vehicle|ambulance|medical emergenc\w*|student welfare)\b/.test(normalized) ? 'KB-44' : /\b(?:mous?|corporate readiness|industry partner|aptitude training|soft skills training)\b/.test(normalized) ? 'KB-43' : /\b(?:is mitcorer (?:the )?same as mit pune|mit pune|maeer|parent trust|mit wpu)\b/.test(normalized) ? 'KB-41' : /\b(?:nearest railway station|nearest station|which railway station|station to college|barshi town station|kurduwadi junction|nearest bus|barshi bus stand|how to reach|reach by train|reach by bus)\b/.test(normalized) ? 'KB-40' : /\b(?:affiliation|affiliated|which university|what university|solapur university|pahsu|aicte|dte code|institute code|06901|principal|madhukar lengare)\b/.test(normalized) ? 'KB-37' : /\b(?:hod|head of department|somnath mule|amit shinde|sanjay mane|honor|minor degree)\b/.test(normalized) || (/\blabs?\b/.test(normalized) && /\b(?:cse|computer|civil|mechanical)\b/.test(normalized)) ? 'KB-38' : /\b(?:nss|rail-mit|rail mit|technical event|asimit)\b/.test(normalized) ? 'KB-39' : /\b(?:why|faculty|teacher|professor|staff|alumni)\b/.test(normalized) ? 'KB-35' : 'KB-34') || guard(buildCampusFacilitiesAnswer(question), 'KB-36') || guard(buildPlacementAnswer(question), 'KB-16') || guard(buildDeadlineAnswer(question), 'KB-30') || guard(buildAttendanceAnswer(question), ['KB-31', 'KB-32']) || buildMaintainedAnswer(question, normalized, records) || guard(buildEligibilityAnswer(question), 'KB-5') || guard(buildScholarshipAnswer(question), /pragati/.test(normalized) ? 'KB-33' : 'KB-18') || (fallbackRule ? guard(fallbackRule, ruleRecords[fallbackRule.source] || 'KB-15', false) : null) || {
+  const answer = (user && (buildAdmissionReadinessAnswer(question, user) || buildDocumentStatusAnswer(question, user))) || buildCompoundAnswer(question, normalized, records) || buildClarificationAnswer(normalized) || buildReviewedPassage(normalized, language, records) || buildContextualPassage(normalized, records) || guard(buildFacilityAnswer(question), /hostel/.test(normalized) ? 'KB-23' : ((/\b(?:sports grounds?|sports facilit\w*|box cricket|cricket ground|volleyball court|volleyball ground|badminton court|campus gym|college gym|gymnasium|physical fitness)\b/.test(normalized) || /\b(?:sports|gym)\b/.test(normalized)) && !/\b(?:world cup|icc|olympics?)\b/.test(normalized)) ? 'KB-48' : /labs|laborator|workshop/.test(normalized) ? 'KB-22' : /bus|transport/.test(normalized) ? 'KB-19' : /library/.test(normalized) ? 'KB-20' : /railway model/.test(normalized) ? 'KB-42' : 'KB-36') || guard(buildCollegeProfileAnswer(question), (/\b(?:sports grounds?|sports facilit\w*|box cricket|cricket ground|volleyball (?:court|ground)|badminton court|campus gym|gymnasium|cultural events?|cultural gathering|annual gathering|cultural fest|shiv jayanti|ganesh (?:utsav|festival))\b/.test(normalized) && !/\b(?:world cup|icc|olympics?)\b/.test(normalized)) ? 'KB-48' : /\b(?:professional diplomas?|railway diplomas?|railway track technology|railway signaling|railway signalling|rolling stocks?(?: and operations)?|software technology in railway|railway specializations?|railway modules?)\b/.test(normalized) ? 'KB-47' : /\b(?:office hours?|office timings?|working hours?|visiting hours?|admission desk|enquiry desk|college timings?|open on saturday)\b/.test(normalized) ? 'KB-46' : /\b(?:nep(?: 2020)?|national education policy|outcome[- ]based education|obe|medium of instruction|english medium|curriculum pattern)\b/.test(normalized) ? 'KB-45' : /\b(?:anti[- ]?ragging|ragging|campus safety|emergency vehicle|ambulance|medical emergenc\w*|student welfare)\b/.test(normalized) ? 'KB-44' : /\b(?:mous?|corporate readiness|industry partner|aptitude training|soft skills training)\b/.test(normalized) ? 'KB-43' : /\b(?:is mitcorer (?:the )?same as mit pune|mit pune|maeer|parent trust|mit wpu)\b/.test(normalized) ? 'KB-41' : /\b(?:nearest railway station|nearest station|which railway station|station to college|barshi town station|kurduwadi junction|nearest bus|barshi bus stand|how to reach|reach by train|reach by bus)\b/.test(normalized) ? 'KB-40' : /\b(?:affiliation|affiliated|which university|what university|solapur university|pahsu|aicte|dte code|institute code|06901|principal|madhukar lengare)\b/.test(normalized) ? 'KB-37' : /\b(?:hod|head of department|somnath mule|amit shinde|sanjay mane|honor|minor degree)\b/.test(normalized) || (/\blabs?\b/.test(normalized) && /\b(?:cse|computer|civil|mechanical)\b/.test(normalized)) ? 'KB-38' : /\b(?:nss|rail-mit|rail mit|technical event|asimit)\b/.test(normalized) ? 'KB-39' : /\b(?:why|faculty|teacher|professor|staff|alumni)\b/.test(normalized) ? 'KB-35' : 'KB-34') || guard(buildCampusFacilitiesAnswer(question), 'KB-36') || guard(buildPlacementAnswer(question), 'KB-16') || guard(buildDeadlineAnswer(question), 'KB-30') || guard(buildAttendanceAnswer(question), ['KB-31', 'KB-32']) || buildMaintainedAnswer(question, normalized, records) || guard(buildEligibilityAnswer(question), 'KB-5') || guard(buildScholarshipAnswer(question), /pragati/.test(normalized) ? 'KB-33' : 'KB-18') || (fallbackRule ? guard(fallbackRule, ruleRecords[fallbackRule.source] || 'KB-15', false) : null) || {
     source: 'No verified record',
     answer: 'I could not find an official answer for that question. Please ask about a specific programme, fee, scholarship, admission step, or campus facility.',
     next: '',
