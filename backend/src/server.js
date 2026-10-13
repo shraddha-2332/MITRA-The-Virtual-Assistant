@@ -783,7 +783,7 @@ function getOfficialFeeLinks(question) {
 
 function buildCollegeProfileAnswer(question) {
   const normalized = normalizeIntentText(question);
-  if (/\b(?:is mitcorer (?:the )?same as mit pune|mitcorer (?:and|or) mit pune|connection (?:with|between) mit pune|relationship (?:with|to) mit pune|part of mit pune|branch of mit pune|under mit pune|mit wpu|maeer('s)? mit pune|parent trust)\b/.test(normalized)) {
+  if (/\b(?:same as mit pune|mitcorer (?:barshi )?(?:and|or) mit pune|connection (?:with|between) mit pune|relationship (?:with|to) mit pune|part of mit pune|branch of mit pune|under mit pune|mit wpu|maeer('s)? mit pune|parent trust|difference between mitcorer and mit pune)\b/.test(normalized)) {
     return {
       source: 'MITCORER Admissions FAQ and official website',
       sourceUrl: 'https://mitcorer.edu.in/faq.php',
