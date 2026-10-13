@@ -172,6 +172,16 @@ test('public queries interpret plurals, paraphrases, typos, native conjunctions 
     assert.match(entc.answer, /Electronics and Telecommunication Engineering/);
     assert.match(entc.answer, /0690137210/);
     assert.ok(entc.officialLinks.some(link => link.url.includes('electronics-and-tele-communication-engineering.php')));
+
+    const nep = await ask('Does MITCORER follow NEP 2020?');
+    assert.equal(nep.evidence[0]?.id, 'KB-45');
+    assert.match(nep.answer, /NEP 2020/);
+    assert.match(nep.answer, /Outcome-Based Education/i);
+    assert.ok(nep.officialLinks.some(link => link.url.includes('faq.php')));
+
+    const medium = await ask('What is the medium of instruction at MITCORER?');
+    assert.equal(medium.evidence[0]?.id, 'KB-45');
+    assert.match(medium.answer, /English/i);
   } finally {
     closeDb();
     if (path.dirname(directory) !== path.resolve(os.tmpdir()) || !path.basename(directory).startsWith('mitra-query-test-')) throw new Error('Unsafe cleanup path');

@@ -484,6 +484,20 @@ export const seedKnowledge = [
     text: 'MITCORER campus safety, anti-ragging compliance, and medical emergency provisions:\n\n- Zero-Tolerance Anti-Ragging: Ragging in any form inside the campus or hostels is strictly prohibited in compliance with AICTE, UGC, and Maharashtra State regulations.\n- Anti-Ragging Committee & Squad: Active statutory committee chaired by the Principal, comprising faculty members, local police officials, civil administration, parents, and student representatives, conducting routine monitoring.\n- Emergency Medical Support: A 24/7 dedicated campus vehicle / ambulance is stationed on campus to handle student medical emergencies, alongside first-aid stations and tie-ups with nearby healthcare centers.\n- Student Support Committees: Functional Internal Complaints Committee (for women safety), SC/ST Grievance Committee, and Central Student Grievance Redressal Cell ensuring an inclusive and secure environment.',
     status: 'Published',
   },
+  {
+    id: 'KB-45',
+    title: 'MITCORER curriculum framework, NEP 2020 alignment, OBE, and medium of instruction',
+    category: 'About MITCORER',
+    source: 'PAH Solapur University academic regulations and MITCORER academic portal',
+    sourceUrl: 'https://mitcorer.edu.in/faq.php',
+    tags: [
+      'nep 2020', 'nep pattern', 'national education policy', 'outcome based education',
+      'obe', 'curriculum', 'medium of instruction', 'english medium', 'credit system',
+      'course outcomes', 'evaluation pattern', 'academic framework',
+    ],
+    text: 'MITCORER academic framework, NEP 2020 compliance, and medium of instruction:\n\n- NEP 2020 Alignment: Academic curriculum is structured in accordance with the National Education Policy (NEP 2020) and PAH Solapur University (PAHSU) credit framework, facilitating multidisciplinary learning, minor degrees, and honors specializations.\n- Outcome-Based Education (OBE): Instruction follows the OBE model, systematically mapping Program Outcomes (POs), Program Specific Outcomes (PSOs), and Course Outcomes (COs) through continuous internal evaluation and university end-semester examinations.\n- Medium of Instruction: The approved medium of instruction, classroom lectures, laboratory coursework, and university examinations across all B.Tech degree programs is English.\n- Practical Credit Structure: Blends theoretical credits with extensive departmental laboratory practicals, industry internships, and minor/major engineering projects.',
+    status: 'Published',
+  },
 ];
 
 for (const record of seedKnowledge) {
