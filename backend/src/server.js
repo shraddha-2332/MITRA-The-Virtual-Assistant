@@ -763,6 +763,10 @@ function getOfficialExperienceLinks(question) {
     links.push({ label: 'MITCORER Contact & Transit Directions', url: 'https://mitcorer.edu.in/contact.php' });
     links.push({ label: 'MITCORER Bus Facility', url: 'https://mitcorer.edu.in/bus-facility.php' });
   }
+  if (/mit pune|maeer|parent trust|mit group/.test(normalized)) {
+    links.push({ label: "MAEER's MIT Group", url: 'https://mitcorer.edu.in/maeers.php' });
+    links.push({ label: 'MITCORER Admissions FAQ', url: 'https://mitcorer.edu.in/faq.php' });
+  }
   return links;
 }
 
@@ -779,6 +783,14 @@ function getOfficialFeeLinks(question) {
 
 function buildCollegeProfileAnswer(question) {
   const normalized = normalizeIntentText(question);
+  if (/\b(?:is mitcorer (?:the )?same as mit pune|mitcorer (?:and|or) mit pune|connection (?:with|between) mit pune|relationship (?:with|to) mit pune|part of mit pune|branch of mit pune|under mit pune|mit wpu|maeer('s)? mit pune|parent trust)\b/.test(normalized)) {
+    return {
+      source: 'MITCORER Admissions FAQ and official website',
+      sourceUrl: 'https://mitcorer.edu.in/faq.php',
+      answer: "MITCORER Barshi and MAEER's MIT Pune Relationship:\n\n- Parent Organization: Both MITCORER Barshi and MIT Pune operate under the same parent trust, Maharashtra Academy of Engineering and Educational Research (MAEER's MIT Group of Institutions, Pune), founded by Prof. Dr. Vishwanath D. Karad.\n- Establishment Mission: The Barshi campus was established under the MAEER group to deliver quality technical and railway engineering education to rural and regional students.\n- Operational Structure: While sharing common parent trust governance, MITCORER functions as an independent institution with its own campus facilities, courses, and affiliation to PAH Solapur University (PAHSU) and MSBTE under DTE Code 06901.",
+      next: '', actionView: 'programs', actionLabel: 'Explore programmes',
+    };
+  }
   if (/\b(?:nearest railway station|nearest station|which railway station|station to college|barshi town station|kurduwadi junction|nearest bus (?:stop|stand)|barshi bus stand|how to reach (?:mitcorer|the college|barshi college)|distance from (?:station|bus stand)|reach (?:by train|by bus))\b/.test(normalized)) {
     return {
       source: 'MITCORER Contact Us portal and campus transit directions',
@@ -1078,6 +1090,10 @@ export function retrieveKnowledge(question) {
     targetedRecordIds.add('KB-40');
     primaryRecordIds.add('KB-40');
   }
+  if (['same as mit pune', 'mit pune', 'maeer mit pune', 'mit wpu', 'parent trust', 'mit group of institutions', 'connection with mit pune', 'relationship with mit pune'].some((term) => rawQuestion.includes(term) || normalizedQuestion.includes(term))) {
+    targetedRecordIds.add('KB-41');
+    primaryRecordIds.add('KB-41');
+  }
   if (/campus facilit|college facilit|facilities available|campus infrastructure/.test(normalizedQuestion)) {
     targetedRecordIds.add('KB-36');
     primaryRecordIds.add('KB-36');
@@ -1185,7 +1201,7 @@ export async function answerAdmissionQuestion(body, user) {
   const retrievedEvidence = retrieveKnowledge(question);
   // Do not attach a loosely matched MITCORER record to an unrelated question.
   let evidence = retrievedEvidence[0]?.score >= 15 ? retrievedEvidence : [];
-  const answer = (user && (buildAdmissionReadinessAnswer(question, user) || buildDocumentStatusAnswer(question, user))) || buildCompoundAnswer(question, normalized, records) || buildClarificationAnswer(normalized) || buildReviewedPassage(normalized, language, records) || buildContextualPassage(normalized, records) || guard(buildFacilityAnswer(question), /hostel/.test(normalized) ? 'KB-23' : /labs|laborator|workshop/.test(normalized) ? 'KB-22' : /bus|transport/.test(normalized) ? 'KB-19' : /library/.test(normalized) ? 'KB-20' : 'KB-36') || guard(buildCollegeProfileAnswer(question), /\b(?:nearest railway station|nearest station|which railway station|station to college|barshi town station|kurduwadi junction|nearest bus|barshi bus stand|how to reach|reach by train|reach by bus)\b/.test(normalized) ? 'KB-40' : /\b(?:affiliation|affiliated|which university|what university|solapur university|pahsu|aicte|dte code|institute code|06901|principal|madhukar lengare)\b/.test(normalized) ? 'KB-37' : /\b(?:hod|head of department|somnath mule|amit shinde|sanjay mane|honor|minor degree)\b/.test(normalized) || (/\blabs?\b/.test(normalized) && /\b(?:cse|computer|civil|mechanical)\b/.test(normalized)) ? 'KB-38' : /\b(?:nss|rail-mit|rail mit|technical event|asimit)\b/.test(normalized) ? 'KB-39' : /\b(?:why|faculty|teacher|professor|staff|alumni)\b/.test(normalized) ? 'KB-35' : 'KB-34') || guard(buildCampusFacilitiesAnswer(question), 'KB-36') || guard(buildPlacementAnswer(question), 'KB-16') || guard(buildDeadlineAnswer(question), 'KB-30') || guard(buildAttendanceAnswer(question), ['KB-31', 'KB-32']) || buildMaintainedAnswer(question, normalized, records) || guard(buildEligibilityAnswer(question), 'KB-5') || guard(buildScholarshipAnswer(question), /pragati/.test(normalized) ? 'KB-33' : 'KB-18') || (fallbackRule ? guard(fallbackRule, ruleRecords[fallbackRule.source] || 'KB-15', false) : null) || {
+  const answer = (user && (buildAdmissionReadinessAnswer(question, user) || buildDocumentStatusAnswer(question, user))) || buildCompoundAnswer(question, normalized, records) || buildClarificationAnswer(normalized) || buildReviewedPassage(normalized, language, records) || buildContextualPassage(normalized, records) || guard(buildFacilityAnswer(question), /hostel/.test(normalized) ? 'KB-23' : /labs|laborator|workshop/.test(normalized) ? 'KB-22' : /bus|transport/.test(normalized) ? 'KB-19' : /library/.test(normalized) ? 'KB-20' : 'KB-36') || guard(buildCollegeProfileAnswer(question), /\b(?:is mitcorer (?:the )?same as mit pune|mit pune|maeer|parent trust|mit wpu)\b/.test(normalized) ? 'KB-41' : /\b(?:nearest railway station|nearest station|which railway station|station to college|barshi town station|kurduwadi junction|nearest bus|barshi bus stand|how to reach|reach by train|reach by bus)\b/.test(normalized) ? 'KB-40' : /\b(?:affiliation|affiliated|which university|what university|solapur university|pahsu|aicte|dte code|institute code|06901|principal|madhukar lengare)\b/.test(normalized) ? 'KB-37' : /\b(?:hod|head of department|somnath mule|amit shinde|sanjay mane|honor|minor degree)\b/.test(normalized) || (/\blabs?\b/.test(normalized) && /\b(?:cse|computer|civil|mechanical)\b/.test(normalized)) ? 'KB-38' : /\b(?:nss|rail-mit|rail mit|technical event|asimit)\b/.test(normalized) ? 'KB-39' : /\b(?:why|faculty|teacher|professor|staff|alumni)\b/.test(normalized) ? 'KB-35' : 'KB-34') || guard(buildCampusFacilitiesAnswer(question), 'KB-36') || guard(buildPlacementAnswer(question), 'KB-16') || guard(buildDeadlineAnswer(question), 'KB-30') || guard(buildAttendanceAnswer(question), ['KB-31', 'KB-32']) || buildMaintainedAnswer(question, normalized, records) || guard(buildEligibilityAnswer(question), 'KB-5') || guard(buildScholarshipAnswer(question), /pragati/.test(normalized) ? 'KB-33' : 'KB-18') || (fallbackRule ? guard(fallbackRule, ruleRecords[fallbackRule.source] || 'KB-15', false) : null) || {
     source: 'No verified record',
     answer: 'I could not find an official answer for that question. Please ask about a specific programme, fee, scholarship, admission step, or campus facility.',
     next: '',

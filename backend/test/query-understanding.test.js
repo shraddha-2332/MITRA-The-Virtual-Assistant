@@ -133,6 +133,11 @@ test('public queries interpret plurals, paraphrases, typos, native conjunctions 
     assert.equal(busStand.evidence[0]?.id, 'KB-40');
     assert.match(busStand.answer, /5\.7 km/);
     assert.match(busStand.answer, /MSRTC Bus Stand/);
+
+    const mitPune = await ask('Is MITCORER Barshi the same as MIT Pune?');
+    assert.equal(mitPune.evidence[0]?.id, 'KB-41');
+    assert.match(mitPune.answer, /MAEER's MIT Group of Institutions, Pune/);
+    assert.match(mitPune.answer, /Vishwanath D\. Karad/);
   } finally {
     closeDb();
     if (path.dirname(directory) !== path.resolve(os.tmpdir()) || !path.basename(directory).startsWith('mitra-query-test-')) throw new Error('Unsafe cleanup path');

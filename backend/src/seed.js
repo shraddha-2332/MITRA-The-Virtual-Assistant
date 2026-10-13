@@ -421,6 +421,20 @@ export const seedKnowledge = [
     text: 'MITCORER campus location and transit access details:\n\n- Campus Location: Industrial Estate No. 03, Barshi, Dist. Solapur, Maharashtra - 413401.\n- Nearest Railway Station: Barshi Town Station is 4.7 km from the campus (via Bhosale Chowk – Cancer Chowk – Industrial Road). Major long-distance train connectivity is accessible at Kurduwadi Junction (~38 km).\n- Nearest Bus Stop: MSRTC Bus Stand Barshi is 5.7 km away (Route-I: via Cancer Chowk & Industrial Road; Route-II: via Bypass Agalgaon Chowk – Shukla Automobile – Industrial Road).\n- Daily College Bus Network: The college operates dedicated daily bus routes across Barshi, Kurduwadi, and Solapur for commuting students and staff.',
     status: 'Published',
   },
+  {
+    id: 'KB-41',
+    title: "Relationship between MITCORER Barshi and MAEER's MIT Pune",
+    category: 'About MITCORER',
+    source: 'MITCORER Admissions FAQ and official website',
+    sourceUrl: 'https://mitcorer.edu.in/faq.php',
+    tags: [
+      'mit pune', 'same as mit pune', 'mit group', 'maeer mit pune', 'maeer group',
+      'mit wpu', 'mit pune connection', 'parent trust', 'vishwanath karad',
+      'relationship with mit pune', 'is mit barshi mit pune',
+    ],
+    text: "MITCORER Barshi and MAEER's MIT Pune institutional relationship:\n\n- Parent Trust: Both MITCORER Barshi and MIT Pune operate under the same parent trust, Maharashtra Academy of Engineering and Educational Research (MAEER's MIT Group of Institutions, Pune), founded by Prof. Dr. Vishwanath D. Karad.\n- Establishment Mission: The Barshi campus was established under the MAEER group to bring premier technical and railway-oriented engineering education to rural and regional students.\n- Operational Structure: While both campuses share common parent governance and educational philosophies, they function as distinct institutions with independent campus infrastructure, admissions, and academic affiliations (MITCORER is affiliated to PAH Solapur University and MSBTE under DTE Code 06901).",
+    status: 'Published',
+  },
 ];
 
 for (const record of seedKnowledge) {
