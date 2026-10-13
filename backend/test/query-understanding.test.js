@@ -153,6 +153,13 @@ test('public queries interpret plurals, paraphrases, typos, native conjunctions 
     assert.match(mous.answer, /APTRON/);
     assert.ok(mous.officialLinks.some(link => link.url.includes('our-mou.php')));
     assert.ok(mous.officialLinks.some(link => link.url.includes('training-and-placement-cell.php')));
+
+    const ragging = await ask('Is the campus ragging free and what anti-ragging measures are taken?');
+    assert.equal(ragging.evidence[0]?.id, 'KB-44');
+    assert.match(ragging.answer, /Anti-Ragging/i);
+    assert.match(ragging.answer, /Zero-Tolerance/i);
+    assert.match(ragging.answer, /emergency vehicle/i);
+    assert.ok(ragging.officialLinks.some(link => link.url.includes('Anti-Ragging-2025-26.pdf')));
   } finally {
     closeDb();
     if (path.dirname(directory) !== path.resolve(os.tmpdir()) || !path.basename(directory).startsWith('mitra-query-test-')) throw new Error('Unsafe cleanup path');

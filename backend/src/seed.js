@@ -464,6 +464,21 @@ export const seedKnowledge = [
     text: 'MITCORER Industry MoUs and Corporate Readiness Program:\n\n- Active Industry MoUs: Formal memorandums of understanding (MoUs) signed with organizations including APTRON Solutions, Bulls Eye, Earth Solutions Pvt. Ltd., Increpe Technologies, E-Construct, Khambe Sangli, DTL, E-Kida, and BVG India.\n- Practical Industry Exposure: MoUs facilitate student internships, sponsored live projects, guest lecture series, industrial visits, and hands-on technical workshops.\n- Corporate Readiness Program (CRP): Dedicated training organized by the Training & Placement Cell covering quantitative aptitude, logical reasoning, verbal ability, resume preparation, and domain technical skills.\n- Professional Grooming: Personality development workshops, soft skills training, group discussion rounds, and mock interviews by industry HR specialists to ensure campus placement readiness.',
     status: 'Published',
   },
+  {
+    id: 'KB-44',
+    title: 'MITCORER campus safety, anti-ragging compliance, and emergency medical services',
+    category: 'Facilities',
+    source: 'MITCORER Anti-Ragging Committee notifications and Student Welfare portal',
+    sourceUrl: 'https://mitcorer.edu.in/pdf/Anti-Ragging-2025-26.pdf',
+    tags: [
+      'anti-ragging', 'anti ragging', 'ragging', 'ragging free', 'campus safety',
+      'emergency vehicle', 'ambulance', 'medical emergency', 'medical facilities',
+      'student welfare', 'internal complaints committee', 'sc st committee',
+      'grievance redressal',
+    ],
+    text: 'MITCORER campus safety, anti-ragging compliance, and medical emergency provisions:\n\n- Zero-Tolerance Anti-Ragging: Ragging in any form inside the campus or hostels is strictly prohibited in compliance with AICTE, UGC, and Maharashtra State regulations.\n- Anti-Ragging Committee & Squad: Active statutory committee chaired by the Principal, comprising faculty members, local police officials, civil administration, parents, and student representatives, conducting routine monitoring.\n- Emergency Medical Support: A 24/7 dedicated campus vehicle / ambulance is stationed on campus to handle student medical emergencies, alongside first-aid stations and tie-ups with nearby healthcare centers.\n- Student Support Committees: Functional Internal Complaints Committee (for women safety), SC/ST Grievance Committee, and Central Student Grievance Redressal Cell ensuring an inclusive and secure environment.',
+    status: 'Published',
+  },
 ];
 
 for (const record of seedKnowledge) {

@@ -774,6 +774,10 @@ function getOfficialExperienceLinks(question) {
     links.push({ label: 'MITCORER Industry MoUs', url: 'https://mitcorer.edu.in/our-mou.php' });
     links.push({ label: 'Training and Placement Cell', url: 'https://mitcorer.edu.in/training-and-placement-cell.php' });
   }
+  if (/ragging|safety|medical|ambulance|grievance|committee/.test(normalized)) {
+    links.push({ label: 'MITCORER Anti-Ragging Notification', url: 'https://mitcorer.edu.in/pdf/Anti-Ragging-2025-26.pdf' });
+    links.push({ label: 'Student Grievance Redressal Cell', url: 'https://mitcorer.edu.in/grievance-redressal-cell.php' });
+  }
   return links;
 }
 
@@ -790,6 +794,14 @@ function getOfficialFeeLinks(question) {
 
 function buildCollegeProfileAnswer(question) {
   const normalized = normalizeIntentText(question);
+  if (/\b(?:anti[- ]?ragging|ragging|ragging[- ]free|campus safety|emergency vehicle|ambulance|medical emergenc\w*|medical facilit\w*|student welfare|internal complaints committee|grievance cell)\b/.test(normalized)) {
+    return {
+      source: 'MITCORER Anti-Ragging Committee notifications and Student Welfare portal',
+      sourceUrl: 'https://mitcorer.edu.in/pdf/Anti-Ragging-2025-26.pdf',
+      answer: "MITCORER Campus Safety, Anti-Ragging Policy & Medical Services:\n\n- Zero-Tolerance Anti-Ragging: Ragging is strictly banned across campus and hostel premises under AICTE and UGC statutory regulations.\n- Anti-Ragging Squad & Committee: A high-level committee chaired by the Principal with faculty, local police, civil authorities, parents, and student members conducts continuous monitoring.\n- Emergency Medical Support: A dedicated 24/7 campus emergency vehicle / ambulance is available on site for immediate medical transit, supported by campus first-aid facilities.\n- Welfare Bodies: Statutory committees including the Internal Complaints Committee (Women's Safety), SC/ST Committee, and Student Grievance Redressal Committee ensure a secure, respectful campus environment.",
+      next: '', actionView: 'visit', actionLabel: 'Explore student welfare',
+    };
+  }
   if (/\b(?:mous?|industry mou|industry mous|corporate readiness|collaborations?|industry partners?|industry tie-?ups?|aptitude training|soft skills training|mock interviews?|bvg india|aptron)\b/.test(normalized)) {
     return {
       source: 'MITCORER Training & Placement Cell and Official MoU Portal',
@@ -1117,6 +1129,10 @@ export function retrieveKnowledge(question) {
     targetedRecordIds.add('KB-43');
     primaryRecordIds.add('KB-43');
   }
+  if (['anti-ragging', 'anti ragging', 'ragging', 'ragging free', 'campus safety', 'emergency vehicle', 'ambulance', 'medical emergency', 'medical facility', 'student welfare', 'grievance cell'].some((term) => rawQuestion.includes(term) || normalizedQuestion.includes(term))) {
+    targetedRecordIds.add('KB-44');
+    primaryRecordIds.add('KB-44');
+  }
   if (/campus facilit|college facilit|facilities available|campus infrastructure/.test(normalizedQuestion)) {
     targetedRecordIds.add('KB-36');
     primaryRecordIds.add('KB-36');
@@ -1224,7 +1240,7 @@ export async function answerAdmissionQuestion(body, user) {
   const retrievedEvidence = retrieveKnowledge(question);
   // Do not attach a loosely matched MITCORER record to an unrelated question.
   let evidence = retrievedEvidence[0]?.score >= 15 ? retrievedEvidence : [];
-  const answer = (user && (buildAdmissionReadinessAnswer(question, user) || buildDocumentStatusAnswer(question, user))) || buildCompoundAnswer(question, normalized, records) || buildClarificationAnswer(normalized) || buildReviewedPassage(normalized, language, records) || buildContextualPassage(normalized, records) || guard(buildFacilityAnswer(question), /hostel/.test(normalized) ? 'KB-23' : /labs|laborator|workshop/.test(normalized) ? 'KB-22' : /bus|transport/.test(normalized) ? 'KB-19' : /library/.test(normalized) ? 'KB-20' : /railway model/.test(normalized) ? 'KB-42' : 'KB-36') || guard(buildCollegeProfileAnswer(question), /\b(?:mous?|corporate readiness|industry partner|aptitude training|soft skills training)\b/.test(normalized) ? 'KB-43' : /\b(?:is mitcorer (?:the )?same as mit pune|mit pune|maeer|parent trust|mit wpu)\b/.test(normalized) ? 'KB-41' : /\b(?:nearest railway station|nearest station|which railway station|station to college|barshi town station|kurduwadi junction|nearest bus|barshi bus stand|how to reach|reach by train|reach by bus)\b/.test(normalized) ? 'KB-40' : /\b(?:affiliation|affiliated|which university|what university|solapur university|pahsu|aicte|dte code|institute code|06901|principal|madhukar lengare)\b/.test(normalized) ? 'KB-37' : /\b(?:hod|head of department|somnath mule|amit shinde|sanjay mane|honor|minor degree)\b/.test(normalized) || (/\blabs?\b/.test(normalized) && /\b(?:cse|computer|civil|mechanical)\b/.test(normalized)) ? 'KB-38' : /\b(?:nss|rail-mit|rail mit|technical event|asimit)\b/.test(normalized) ? 'KB-39' : /\b(?:why|faculty|teacher|professor|staff|alumni)\b/.test(normalized) ? 'KB-35' : 'KB-34') || guard(buildCampusFacilitiesAnswer(question), 'KB-36') || guard(buildPlacementAnswer(question), 'KB-16') || guard(buildDeadlineAnswer(question), 'KB-30') || guard(buildAttendanceAnswer(question), ['KB-31', 'KB-32']) || buildMaintainedAnswer(question, normalized, records) || guard(buildEligibilityAnswer(question), 'KB-5') || guard(buildScholarshipAnswer(question), /pragati/.test(normalized) ? 'KB-33' : 'KB-18') || (fallbackRule ? guard(fallbackRule, ruleRecords[fallbackRule.source] || 'KB-15', false) : null) || {
+  const answer = (user && (buildAdmissionReadinessAnswer(question, user) || buildDocumentStatusAnswer(question, user))) || buildCompoundAnswer(question, normalized, records) || buildClarificationAnswer(normalized) || buildReviewedPassage(normalized, language, records) || buildContextualPassage(normalized, records) || guard(buildFacilityAnswer(question), /hostel/.test(normalized) ? 'KB-23' : /labs|laborator|workshop/.test(normalized) ? 'KB-22' : /bus|transport/.test(normalized) ? 'KB-19' : /library/.test(normalized) ? 'KB-20' : /railway model/.test(normalized) ? 'KB-42' : 'KB-36') || guard(buildCollegeProfileAnswer(question), /\b(?:anti[- ]?ragging|ragging|campus safety|emergency vehicle|ambulance|medical emergenc\w*|student welfare)\b/.test(normalized) ? 'KB-44' : /\b(?:mous?|corporate readiness|industry partner|aptitude training|soft skills training)\b/.test(normalized) ? 'KB-43' : /\b(?:is mitcorer (?:the )?same as mit pune|mit pune|maeer|parent trust|mit wpu)\b/.test(normalized) ? 'KB-41' : /\b(?:nearest railway station|nearest station|which railway station|station to college|barshi town station|kurduwadi junction|nearest bus|barshi bus stand|how to reach|reach by train|reach by bus)\b/.test(normalized) ? 'KB-40' : /\b(?:affiliation|affiliated|which university|what university|solapur university|pahsu|aicte|dte code|institute code|06901|principal|madhukar lengare)\b/.test(normalized) ? 'KB-37' : /\b(?:hod|head of department|somnath mule|amit shinde|sanjay mane|honor|minor degree)\b/.test(normalized) || (/\blabs?\b/.test(normalized) && /\b(?:cse|computer|civil|mechanical)\b/.test(normalized)) ? 'KB-38' : /\b(?:nss|rail-mit|rail mit|technical event|asimit)\b/.test(normalized) ? 'KB-39' : /\b(?:why|faculty|teacher|professor|staff|alumni)\b/.test(normalized) ? 'KB-35' : 'KB-34') || guard(buildCampusFacilitiesAnswer(question), 'KB-36') || guard(buildPlacementAnswer(question), 'KB-16') || guard(buildDeadlineAnswer(question), 'KB-30') || guard(buildAttendanceAnswer(question), ['KB-31', 'KB-32']) || buildMaintainedAnswer(question, normalized, records) || guard(buildEligibilityAnswer(question), 'KB-5') || guard(buildScholarshipAnswer(question), /pragati/.test(normalized) ? 'KB-33' : 'KB-18') || (fallbackRule ? guard(fallbackRule, ruleRecords[fallbackRule.source] || 'KB-15', false) : null) || {
     source: 'No verified record',
     answer: 'I could not find an official answer for that question. Please ask about a specific programme, fee, scholarship, admission step, or campus facility.',
     next: '',
