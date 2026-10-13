@@ -122,12 +122,17 @@ export const seedKnowledge = [
   },
   {
     id: 'KB-12',
-    title: 'MITCORER Polytechnic courses and intake',
+    title: 'MITCORER Polytechnic diploma programs, intake and MSBTE affiliation',
     category: 'Programs',
     source: 'MITCORER Polytechnic admissions page',
-    tags: ['polytechnic', 'diploma', 'polytechnic intake', 'polytechnic cse'],
+    tags: [
+      'polytechnic', 'diploma', 'polytechnic intake', 'polytechnic cse',
+      'msbte', 'polytechnic diploma', 'diploma engineering', 'diploma courses',
+      'post ssc diploma', 'diploma after 10th', 'diploma civil', 'diploma mechanical',
+      'diploma electronic and telecom', 'diploma entc', 'polytechnic eligibility',
+    ],
     sourceUrl: 'https://mitcorer.edu.in/fy-polytechnic.php',
-    text: 'The official Polytechnic page lists Civil Engineering, Computer Science and Engineering, Electronic and Telecom Engineering, and Mechanical Engineering, each with intake 60. Polytechnic eligibility, fees, required documents, and payment are listed separately from B.Tech admissions.',
+    text: 'MITCORER Polytechnic (Diploma in Engineering) Programs under MSBTE:\n\n- Affiliation & Approvals: Affiliated to Maharashtra State Board of Technical Education (MSBTE), Mumbai; approved by AICTE, New Delhi and DTE Maharashtra (Institute Code: 06901).\n- Branches Offered & Intake (Sanctioned Intake: 60 each, Total 240 seats):\n  1. Computer Science & Engineering (Intake: 60)\n  2. Civil Engineering (Intake: 60)\n  3. Mechanical Engineering (Intake: 60)\n  4. Electronic & Telecom Engineering (Intake: 60)\n- Program Duration: 3-Year Full-Time Diploma program (6 Semesters under MSBTE curriculum).\n- First Year (Post-SSC) Eligibility: Candidate must have passed 10th Standard (SSC) examination from Maharashtra State Board or equivalent with at least 35% aggregate marks.\n- Direct Second Year (Lateral Entry): Available for candidates who have passed 12th Science / HSC Vocational / Technical or 2-year ITI as per DTE/MSBTE norms.\n- Separate Process: Polytechnic admission cycles, CAP seat allotment, fees, and documentation are administered separately from degree B.Tech admissions.',
     status: 'Published',
   },
   {

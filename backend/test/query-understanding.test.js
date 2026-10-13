@@ -217,6 +217,22 @@ test('public queries interpret plurals, paraphrases, typos, native conjunctions 
     assert.match(cultural.answer, /Annual Cultural Gathering/i);
     assert.match(cultural.answer, /Shiv Jayanti/i);
     assert.ok(cultural.officialLinks.some(link => link.url.includes('cultural-events.php')));
+
+    const polyCourses = await ask('What polytechnic diploma courses are offered under MSBTE?');
+    assert.equal(polyCourses.evidence[0]?.id, 'KB-12');
+    assert.match(polyCourses.answer, /MSBTE/i);
+    assert.match(polyCourses.answer, /Computer Science & Engineering/i);
+    assert.match(polyCourses.answer, /Civil Engineering/i);
+    assert.match(polyCourses.answer, /Mechanical Engineering/i);
+    assert.match(polyCourses.answer, /Electronic & Telecom Engineering/i);
+    assert.match(polyCourses.answer, /60/);
+    assert.ok(polyCourses.officialLinks.some(link => link.url.includes('fy-polytechnic.php')));
+    assert.ok(polyCourses.officialLinks.some(link => link.url.includes('msbte.org.in')));
+
+    const polyEligibility = await ask('What is the eligibility for polytechnic diploma at MITCORER?');
+    assert.equal(polyEligibility.evidence[0]?.id, 'KB-12');
+    assert.match(polyEligibility.answer, /10th Standard \(SSC\)/i);
+    assert.match(polyEligibility.answer, /35%/);
   } finally {
     closeDb();
     if (path.dirname(directory) !== path.resolve(os.tmpdir()) || !path.basename(directory).startsWith('mitra-query-test-')) throw new Error('Unsafe cleanup path');
