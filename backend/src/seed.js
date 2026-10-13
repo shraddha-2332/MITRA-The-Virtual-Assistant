@@ -435,6 +435,20 @@ export const seedKnowledge = [
     text: "MITCORER Barshi and MAEER's MIT Pune institutional relationship:\n\n- Parent Trust: Both MITCORER Barshi and MIT Pune operate under the same parent trust, Maharashtra Academy of Engineering and Educational Research (MAEER's MIT Group of Institutions, Pune), founded by Prof. Dr. Vishwanath D. Karad.\n- Establishment Mission: The Barshi campus was established under the MAEER group to bring premier technical and railway-oriented engineering education to rural and regional students.\n- Operational Structure: While both campuses share common parent governance and educational philosophies, they function as distinct institutions with independent campus infrastructure, admissions, and academic affiliations (MITCORER is affiliated to PAH Solapur University and MSBTE under DTE Code 06901).",
     status: 'Published',
   },
+  {
+    id: 'KB-42',
+    title: 'MITCORER Railway Model Room and practical railway training facilities',
+    category: 'Facilities',
+    source: 'MITCORER Railway Model Room portal and official brochure',
+    sourceUrl: 'https://www.mitcorer.edu.in/railway-model-room.php',
+    tags: [
+      'railway model room', 'railway model', 'model room', 'railway practical',
+      'railway lab', 'railway laboratory', 'signaling setup', 'track engineering models',
+      'railway simulation', 'railway facilities',
+    ],
+    text: 'MITCORER Railway Model Room and practical railway training facilities:\n\n- Dedicated Railway Model Room: An advanced practical demonstration facility equipped with working scale railway track layouts, signaling setups, and rolling stock models.\n- Practical Demonstration Systems: Features functional point-and-crossing mechanisms, electronic signaling demonstration boards, interlocking simulations, and track technology cross-sections.\n- Interdisciplinary Training: Serves students across Civil Engineering (track design, alignment, structural permanent way), Mechanical & Rail Engineering (locomotive systems, rolling stock, braking mechanisms), and Computer/Electronics Engineering (railway signaling, automation, SCADA systems).\n- Industry Orientation: Bridges classroom engineering theory with hands-on exposure to modern railway transportation systems, metro operations, and railway safety standards.',
+    status: 'Published',
+  },
 ];
 
 for (const record of seedKnowledge) {

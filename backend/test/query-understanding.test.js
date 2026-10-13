@@ -138,6 +138,13 @@ test('public queries interpret plurals, paraphrases, typos, native conjunctions 
     assert.equal(mitPune.evidence[0]?.id, 'KB-41');
     assert.match(mitPune.answer, /MAEER's MIT Group of Institutions, Pune/);
     assert.match(mitPune.answer, /Vishwanath D\. Karad/);
+
+    const modelRoom = await ask('What is the Railway Model Room at MITCORER?');
+    assert.equal(modelRoom.evidence[0]?.id, 'KB-42');
+    assert.match(modelRoom.answer, /Railway Model Room/);
+    assert.match(modelRoom.answer, /signaling/i);
+    assert.match(modelRoom.answer, /scale/i);
+    assert.ok(modelRoom.officialLinks.some(link => link.url.includes('railway-model-room.php')));
   } finally {
     closeDb();
     if (path.dirname(directory) !== path.resolve(os.tmpdir()) || !path.basename(directory).startsWith('mitra-query-test-')) throw new Error('Unsafe cleanup path');

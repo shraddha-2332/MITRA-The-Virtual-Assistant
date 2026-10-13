@@ -767,6 +767,9 @@ function getOfficialExperienceLinks(question) {
     links.push({ label: "MAEER's MIT Group", url: 'https://mitcorer.edu.in/maeers.php' });
     links.push({ label: 'MITCORER Admissions FAQ', url: 'https://mitcorer.edu.in/faq.php' });
   }
+  if (/railway model|railway practical|railway lab/.test(normalized)) {
+    links.push({ label: 'MITCORER Railway Model Room', url: 'https://www.mitcorer.edu.in/railway-model-room.php' });
+  }
   return links;
 }
 
@@ -970,26 +973,26 @@ function buildFacilityAnswer(question) {
       actionLabel: 'Request library details',
     };
   }
-  if (/cafeteria|computer center|railway model room|seminar hall|classroom/.test(normalized)) {
+  if (/cafeteria|computer center|railway model|seminar hall|classroom/.test(normalized)) {
     const facility = normalized.includes('cafeteria') ? 'cafeteria'
       : normalized.includes('computer center') ? 'computer center'
         : normalized.includes('railway model') ? 'railway model room'
           : normalized.includes('seminar') ? 'seminar hall'
             : 'classrooms';
     const pointsMap = {
-      'railway model room': 'MITCORER features a specialized railway model room on campus:\n\n- Scale working models of railway tracks, locomotives, and rail equipment\n- Demonstration of railway signaling systems and infrastructure\n- Practical instructional support for the Mechanical & Rail Engineering program',
+      'railway model room': 'MITCORER features a dedicated Railway Model Room and practical demonstration facilities:\n\n- Scale Working Models: Working scale railway track layouts, signaling setups, and rolling stock models.\n- Practical Demonstration: Functional point-and-crossing mechanisms, interlocking simulations, and track technology cross-sections.\n- Interdisciplinary Training: Practical training across Civil Engineering (track design, structural permanent way), Mechanical & Rail Engineering (locomotive systems, rolling stock), and Computer/Electronics Engineering (railway signaling, automation).\n- Industry Exposure: Bridges classroom theory with real-world railway and metro transportation systems.',
       'computer center': 'MITCORER provides a dedicated computer center:\n\n- High-speed internet and networked computing systems\n- Modern software packages for engineering coursework and project work',
       'seminar hall': 'MITCORER features well-equipped seminar halls:\n\n- Audio-visual projection and presentation facilities\n- Space for guest lectures, workshops, and technical conferences',
       'classrooms': 'MITCORER provides modern classroom infrastructure:\n\n- Spacious and ventilated lecture classrooms\n- Interactive presentation tools and teaching aids',
       'cafeteria': 'MITCORER provides a campus cafeteria:\n\n- Clean and hygienic dining environment for students and staff\n- Daily snacks, refreshments, and meal options',
     };
     return {
-      source: 'MITCORER Admissions FAQ and infrastructure pages',
+      source: facility === 'railway model room' ? 'MITCORER Railway Model Room portal and official brochure' : 'MITCORER Admissions FAQ and infrastructure pages',
       ...(facility === 'railway model room' ? { sourceUrl: 'https://www.mitcorer.edu.in/railway-model-room.php' } : {}),
       answer: pointsMap[facility] || `MITCORER lists a ${facility} among its campus facilities.`,
-      next: 'Use the official contact details to confirm the current operational details before making a visit decision.',
-      actionView: 'inquiry',
-      actionLabel: 'Request facility details',
+      next: facility === 'railway model room' ? '' : 'Use the official contact details to confirm the current operational details before making a visit decision.',
+      actionView: facility === 'railway model room' ? 'visit' : 'inquiry',
+      actionLabel: facility === 'railway model room' ? 'Explore facilities' : 'Request facility details',
     };
   }
   return null;
@@ -1093,6 +1096,10 @@ export function retrieveKnowledge(question) {
   if (['same as mit pune', 'mit pune', 'maeer mit pune', 'mit wpu', 'parent trust', 'mit group of institutions', 'connection with mit pune', 'relationship with mit pune'].some((term) => rawQuestion.includes(term) || normalizedQuestion.includes(term))) {
     targetedRecordIds.add('KB-41');
     primaryRecordIds.add('KB-41');
+  }
+  if (['railway model room', 'railway model', 'model room', 'railway practical', 'signaling setup', 'railway simulation', 'track models'].some((term) => rawQuestion.includes(term) || normalizedQuestion.includes(term))) {
+    targetedRecordIds.add('KB-42');
+    primaryRecordIds.add('KB-42');
   }
   if (/campus facilit|college facilit|facilities available|campus infrastructure/.test(normalizedQuestion)) {
     targetedRecordIds.add('KB-36');
@@ -1201,7 +1208,7 @@ export async function answerAdmissionQuestion(body, user) {
   const retrievedEvidence = retrieveKnowledge(question);
   // Do not attach a loosely matched MITCORER record to an unrelated question.
   let evidence = retrievedEvidence[0]?.score >= 15 ? retrievedEvidence : [];
-  const answer = (user && (buildAdmissionReadinessAnswer(question, user) || buildDocumentStatusAnswer(question, user))) || buildCompoundAnswer(question, normalized, records) || buildClarificationAnswer(normalized) || buildReviewedPassage(normalized, language, records) || buildContextualPassage(normalized, records) || guard(buildFacilityAnswer(question), /hostel/.test(normalized) ? 'KB-23' : /labs|laborator|workshop/.test(normalized) ? 'KB-22' : /bus|transport/.test(normalized) ? 'KB-19' : /library/.test(normalized) ? 'KB-20' : 'KB-36') || guard(buildCollegeProfileAnswer(question), /\b(?:is mitcorer (?:the )?same as mit pune|mit pune|maeer|parent trust|mit wpu)\b/.test(normalized) ? 'KB-41' : /\b(?:nearest railway station|nearest station|which railway station|station to college|barshi town station|kurduwadi junction|nearest bus|barshi bus stand|how to reach|reach by train|reach by bus)\b/.test(normalized) ? 'KB-40' : /\b(?:affiliation|affiliated|which university|what university|solapur university|pahsu|aicte|dte code|institute code|06901|principal|madhukar lengare)\b/.test(normalized) ? 'KB-37' : /\b(?:hod|head of department|somnath mule|amit shinde|sanjay mane|honor|minor degree)\b/.test(normalized) || (/\blabs?\b/.test(normalized) && /\b(?:cse|computer|civil|mechanical)\b/.test(normalized)) ? 'KB-38' : /\b(?:nss|rail-mit|rail mit|technical event|asimit)\b/.test(normalized) ? 'KB-39' : /\b(?:why|faculty|teacher|professor|staff|alumni)\b/.test(normalized) ? 'KB-35' : 'KB-34') || guard(buildCampusFacilitiesAnswer(question), 'KB-36') || guard(buildPlacementAnswer(question), 'KB-16') || guard(buildDeadlineAnswer(question), 'KB-30') || guard(buildAttendanceAnswer(question), ['KB-31', 'KB-32']) || buildMaintainedAnswer(question, normalized, records) || guard(buildEligibilityAnswer(question), 'KB-5') || guard(buildScholarshipAnswer(question), /pragati/.test(normalized) ? 'KB-33' : 'KB-18') || (fallbackRule ? guard(fallbackRule, ruleRecords[fallbackRule.source] || 'KB-15', false) : null) || {
+  const answer = (user && (buildAdmissionReadinessAnswer(question, user) || buildDocumentStatusAnswer(question, user))) || buildCompoundAnswer(question, normalized, records) || buildClarificationAnswer(normalized) || buildReviewedPassage(normalized, language, records) || buildContextualPassage(normalized, records) || guard(buildFacilityAnswer(question), /hostel/.test(normalized) ? 'KB-23' : /labs|laborator|workshop/.test(normalized) ? 'KB-22' : /bus|transport/.test(normalized) ? 'KB-19' : /library/.test(normalized) ? 'KB-20' : /railway model/.test(normalized) ? 'KB-42' : 'KB-36') || guard(buildCollegeProfileAnswer(question), /\b(?:is mitcorer (?:the )?same as mit pune|mit pune|maeer|parent trust|mit wpu)\b/.test(normalized) ? 'KB-41' : /\b(?:nearest railway station|nearest station|which railway station|station to college|barshi town station|kurduwadi junction|nearest bus|barshi bus stand|how to reach|reach by train|reach by bus)\b/.test(normalized) ? 'KB-40' : /\b(?:affiliation|affiliated|which university|what university|solapur university|pahsu|aicte|dte code|institute code|06901|principal|madhukar lengare)\b/.test(normalized) ? 'KB-37' : /\b(?:hod|head of department|somnath mule|amit shinde|sanjay mane|honor|minor degree)\b/.test(normalized) || (/\blabs?\b/.test(normalized) && /\b(?:cse|computer|civil|mechanical)\b/.test(normalized)) ? 'KB-38' : /\b(?:nss|rail-mit|rail mit|technical event|asimit)\b/.test(normalized) ? 'KB-39' : /\b(?:why|faculty|teacher|professor|staff|alumni)\b/.test(normalized) ? 'KB-35' : 'KB-34') || guard(buildCampusFacilitiesAnswer(question), 'KB-36') || guard(buildPlacementAnswer(question), 'KB-16') || guard(buildDeadlineAnswer(question), 'KB-30') || guard(buildAttendanceAnswer(question), ['KB-31', 'KB-32']) || buildMaintainedAnswer(question, normalized, records) || guard(buildEligibilityAnswer(question), 'KB-5') || guard(buildScholarshipAnswer(question), /pragati/.test(normalized) ? 'KB-33' : 'KB-18') || (fallbackRule ? guard(fallbackRule, ruleRecords[fallbackRule.source] || 'KB-15', false) : null) || {
     source: 'No verified record',
     answer: 'I could not find an official answer for that question. Please ask about a specific programme, fee, scholarship, admission step, or campus facility.',
     next: '',
