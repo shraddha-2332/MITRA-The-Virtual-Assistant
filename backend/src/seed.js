@@ -498,6 +498,19 @@ export const seedKnowledge = [
     text: 'MITCORER academic framework, NEP 2020 compliance, and medium of instruction:\n\n- NEP 2020 Alignment: Academic curriculum is structured in accordance with the National Education Policy (NEP 2020) and PAH Solapur University (PAHSU) credit framework, facilitating multidisciplinary learning, minor degrees, and honors specializations.\n- Outcome-Based Education (OBE): Instruction follows the OBE model, systematically mapping Program Outcomes (POs), Program Specific Outcomes (PSOs), and Course Outcomes (COs) through continuous internal evaluation and university end-semester examinations.\n- Medium of Instruction: The approved medium of instruction, classroom lectures, laboratory coursework, and university examinations across all B.Tech degree programs is English.\n- Practical Credit Structure: Blends theoretical credits with extensive departmental laboratory practicals, industry internships, and minor/major engineering projects.',
     status: 'Published',
   },
+  {
+    id: 'KB-46',
+    title: 'MITCORER college office timings, admission enquiry desk hours, and visiting schedule',
+    category: 'Contact',
+    source: 'MITCORER Contact Us and Admissions Office portal',
+    sourceUrl: 'https://mitcorer.edu.in/contact.php',
+    tags: [
+      'office hours', 'office timings', 'working hours', 'admission desk', 'enquiry desk',
+      'visiting hours', 'college timings', 'saturday timings', 'working days', 'admission enquiry hours',
+    ],
+    text: 'MITCORER college administrative office and admission enquiry desk schedule:\n\n- Working Days: Monday to Saturday (closed on Sundays and public holidays).\n- Operating Hours: 9:30 AM to 5:30 PM.\n- Admission Enquiry Desk: Functional throughout college working hours in the Administrative Building for counseling, campus tours, document verification checks, and admission assistance.\n- Official Helpdesk Lines: +91 84599 67882, +91 86696 62106; Email: info.mitcorer@mitpune.edu.in.',
+    status: 'Published',
+  },
 ];
 
 for (const record of seedKnowledge) {

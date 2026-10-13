@@ -791,6 +791,9 @@ function getOfficialExperienceLinks(question) {
     links.push({ label: 'MITCORER Academic FAQ', url: 'https://mitcorer.edu.in/faq.php' });
     links.push({ label: 'PAH Solapur University Engineering Rules', url: 'https://www.sus.ac.in/uploads/engineering/Eng%20Revised%20Semester%20Pattern/CBCS%20UG%20Rules.pdf' });
   }
+  if (/office hours|office timings|working hours|visiting hours|admission desk|enquiry desk|college timings/.test(normalized)) {
+    links.push({ label: 'MITCORER Contact & Office Hours', url: 'https://mitcorer.edu.in/contact.php' });
+  }
   return links;
 }
 
@@ -807,6 +810,14 @@ function getOfficialFeeLinks(question) {
 
 function buildCollegeProfileAnswer(question) {
   const normalized = normalizeIntentText(question);
+  if (/\b(?:office hours?|office timings?|working hours?|visiting hours?|admission desk|enquiry desk|college timings?|working days?|visiting the college|visiting schedule|office open|office close|open on saturday)\b/.test(normalized)) {
+    return {
+      source: 'MITCORER Contact Us and Admissions Office portal',
+      sourceUrl: 'https://mitcorer.edu.in/contact.php',
+      answer: 'MITCORER Administrative Office & Admission Enquiry Desk Hours:\n\n- Working Days: Monday to Saturday (closed on Sundays and public holidays).\n- Operating Timings: 9:30 AM to 5:30 PM.\n- Admission Enquiry Desk: Open during working hours in the Administrative Building for admission counseling, document verification checks, campus visits, and seat enquiry.\n- Contact Lines: +91 84599 67882 / +91 86696 62106; Email: info.mitcorer@mitpune.edu.in.',
+      next: '', actionView: 'visit', actionLabel: 'View office details',
+    };
+  }
   if (/\b(?:nep(?: 2020)?|national education policy|outcome[- ]based education|obe|medium of instruction|english medium|curriculum pattern|evaluation pattern)\b/.test(normalized)) {
     return {
       source: 'PAH Solapur University academic regulations and MITCORER academic portal',
@@ -1158,6 +1169,10 @@ export function retrieveKnowledge(question) {
     targetedRecordIds.add('KB-45');
     primaryRecordIds.add('KB-45');
   }
+  if (['office hour', 'office hours', 'office timing', 'office timings', 'working hour', 'working hours', 'admission desk', 'enquiry desk', 'visiting hour', 'visiting hours', 'college timing', 'college timings', 'working days', 'open on saturday'].some((term) => rawQuestion.includes(term) || normalizedQuestion.includes(term))) {
+    targetedRecordIds.add('KB-46');
+    primaryRecordIds.add('KB-46');
+  }
   if (/campus facilit|college facilit|facilities available|campus infrastructure/.test(normalizedQuestion)) {
     targetedRecordIds.add('KB-36');
     primaryRecordIds.add('KB-36');
@@ -1267,7 +1282,7 @@ export async function answerAdmissionQuestion(body, user) {
   const retrievedEvidence = retrieveKnowledge(question);
   // Do not attach a loosely matched MITCORER record to an unrelated question.
   let evidence = retrievedEvidence[0]?.score >= 15 ? retrievedEvidence : [];
-  const answer = (user && (buildAdmissionReadinessAnswer(question, user) || buildDocumentStatusAnswer(question, user))) || buildCompoundAnswer(question, normalized, records) || buildClarificationAnswer(normalized) || buildReviewedPassage(normalized, language, records) || buildContextualPassage(normalized, records) || guard(buildFacilityAnswer(question), /hostel/.test(normalized) ? 'KB-23' : /labs|laborator|workshop/.test(normalized) ? 'KB-22' : /bus|transport/.test(normalized) ? 'KB-19' : /library/.test(normalized) ? 'KB-20' : /railway model/.test(normalized) ? 'KB-42' : 'KB-36') || guard(buildCollegeProfileAnswer(question), /\b(?:nep(?: 2020)?|national education policy|outcome[- ]based education|obe|medium of instruction|english medium|curriculum pattern)\b/.test(normalized) ? 'KB-45' : /\b(?:anti[- ]?ragging|ragging|campus safety|emergency vehicle|ambulance|medical emergenc\w*|student welfare)\b/.test(normalized) ? 'KB-44' : /\b(?:mous?|corporate readiness|industry partner|aptitude training|soft skills training)\b/.test(normalized) ? 'KB-43' : /\b(?:is mitcorer (?:the )?same as mit pune|mit pune|maeer|parent trust|mit wpu)\b/.test(normalized) ? 'KB-41' : /\b(?:nearest railway station|nearest station|which railway station|station to college|barshi town station|kurduwadi junction|nearest bus|barshi bus stand|how to reach|reach by train|reach by bus)\b/.test(normalized) ? 'KB-40' : /\b(?:affiliation|affiliated|which university|what university|solapur university|pahsu|aicte|dte code|institute code|06901|principal|madhukar lengare)\b/.test(normalized) ? 'KB-37' : /\b(?:hod|head of department|somnath mule|amit shinde|sanjay mane|honor|minor degree)\b/.test(normalized) || (/\blabs?\b/.test(normalized) && /\b(?:cse|computer|civil|mechanical)\b/.test(normalized)) ? 'KB-38' : /\b(?:nss|rail-mit|rail mit|technical event|asimit)\b/.test(normalized) ? 'KB-39' : /\b(?:why|faculty|teacher|professor|staff|alumni)\b/.test(normalized) ? 'KB-35' : 'KB-34') || guard(buildCampusFacilitiesAnswer(question), 'KB-36') || guard(buildPlacementAnswer(question), 'KB-16') || guard(buildDeadlineAnswer(question), 'KB-30') || guard(buildAttendanceAnswer(question), ['KB-31', 'KB-32']) || buildMaintainedAnswer(question, normalized, records) || guard(buildEligibilityAnswer(question), 'KB-5') || guard(buildScholarshipAnswer(question), /pragati/.test(normalized) ? 'KB-33' : 'KB-18') || (fallbackRule ? guard(fallbackRule, ruleRecords[fallbackRule.source] || 'KB-15', false) : null) || {
+  const answer = (user && (buildAdmissionReadinessAnswer(question, user) || buildDocumentStatusAnswer(question, user))) || buildCompoundAnswer(question, normalized, records) || buildClarificationAnswer(normalized) || buildReviewedPassage(normalized, language, records) || buildContextualPassage(normalized, records) || guard(buildFacilityAnswer(question), /hostel/.test(normalized) ? 'KB-23' : /labs|laborator|workshop/.test(normalized) ? 'KB-22' : /bus|transport/.test(normalized) ? 'KB-19' : /library/.test(normalized) ? 'KB-20' : /railway model/.test(normalized) ? 'KB-42' : 'KB-36') || guard(buildCollegeProfileAnswer(question), /\b(?:office hours?|office timings?|working hours?|visiting hours?|admission desk|enquiry desk|college timings?|open on saturday)\b/.test(normalized) ? 'KB-46' : /\b(?:nep(?: 2020)?|national education policy|outcome[- ]based education|obe|medium of instruction|english medium|curriculum pattern)\b/.test(normalized) ? 'KB-45' : /\b(?:anti[- ]?ragging|ragging|campus safety|emergency vehicle|ambulance|medical emergenc\w*|student welfare)\b/.test(normalized) ? 'KB-44' : /\b(?:mous?|corporate readiness|industry partner|aptitude training|soft skills training)\b/.test(normalized) ? 'KB-43' : /\b(?:is mitcorer (?:the )?same as mit pune|mit pune|maeer|parent trust|mit wpu)\b/.test(normalized) ? 'KB-41' : /\b(?:nearest railway station|nearest station|which railway station|station to college|barshi town station|kurduwadi junction|nearest bus|barshi bus stand|how to reach|reach by train|reach by bus)\b/.test(normalized) ? 'KB-40' : /\b(?:affiliation|affiliated|which university|what university|solapur university|pahsu|aicte|dte code|institute code|06901|principal|madhukar lengare)\b/.test(normalized) ? 'KB-37' : /\b(?:hod|head of department|somnath mule|amit shinde|sanjay mane|honor|minor degree)\b/.test(normalized) || (/\blabs?\b/.test(normalized) && /\b(?:cse|computer|civil|mechanical)\b/.test(normalized)) ? 'KB-38' : /\b(?:nss|rail-mit|rail mit|technical event|asimit)\b/.test(normalized) ? 'KB-39' : /\b(?:why|faculty|teacher|professor|staff|alumni)\b/.test(normalized) ? 'KB-35' : 'KB-34') || guard(buildCampusFacilitiesAnswer(question), 'KB-36') || guard(buildPlacementAnswer(question), 'KB-16') || guard(buildDeadlineAnswer(question), 'KB-30') || guard(buildAttendanceAnswer(question), ['KB-31', 'KB-32']) || buildMaintainedAnswer(question, normalized, records) || guard(buildEligibilityAnswer(question), 'KB-5') || guard(buildScholarshipAnswer(question), /pragati/.test(normalized) ? 'KB-33' : 'KB-18') || (fallbackRule ? guard(fallbackRule, ruleRecords[fallbackRule.source] || 'KB-15', false) : null) || {
     source: 'No verified record',
     answer: 'I could not find an official answer for that question. Please ask about a specific programme, fee, scholarship, admission step, or campus facility.',
     next: '',

@@ -182,6 +182,16 @@ test('public queries interpret plurals, paraphrases, typos, native conjunctions 
     const medium = await ask('What is the medium of instruction at MITCORER?');
     assert.equal(medium.evidence[0]?.id, 'KB-45');
     assert.match(medium.answer, /English/i);
+
+    const officeHours = await ask('What are the office hours and timings at MITCORER?');
+    assert.equal(officeHours.evidence[0]?.id, 'KB-46');
+    assert.match(officeHours.answer, /9:30 AM to 5:30 PM/);
+    assert.match(officeHours.answer, /Monday to Saturday/);
+    assert.ok(officeHours.officialLinks.some(link => link.url.includes('contact.php')));
+
+    const admissionDesk = await ask('When is the admission enquiry desk open?');
+    assert.equal(admissionDesk.evidence[0]?.id, 'KB-46');
+    assert.match(admissionDesk.answer, /Admission Enquiry Desk/);
   } finally {
     closeDb();
     if (path.dirname(directory) !== path.resolve(os.tmpdir()) || !path.basename(directory).startsWith('mitra-query-test-')) throw new Error('Unsafe cleanup path');
