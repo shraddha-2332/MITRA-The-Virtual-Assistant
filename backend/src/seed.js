@@ -348,7 +348,7 @@ export const seedKnowledge = [
     category: 'About MITCORER',
     source: 'MITCORER Admissions FAQ and official website',
     sourceUrl: 'https://mitcorer.edu.in/faq.php',
-    tags: ['why mitcorer', 'why choose mitcorer', 'why us', 'college highlights'],
+    tags: ['why mitcorer', 'why choose mitcorer', 'why us', 'college highlights', 'faculty', '60+ faculty', 'faculty members', 'teaching staff', 'professors', 'teachers', 'alumni', '900+ alumni'],
     text: 'MITCORER offers railway-oriented engineering courses, practical projects, interactive classes, and industry engagement. The college website lists 60+ faculty, 900+ alumni, 100+ companies visiting, 300+ total placed, and a highest published package of 21 LPA. Facilities include laboratories, a railway model room, library, workshops, computer labs, sports, and separate boys and girls hostels.',
     status: 'Published',
   },

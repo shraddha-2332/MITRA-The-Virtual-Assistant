@@ -57,7 +57,15 @@ function normalizeDb(nextDb) {
     assistantAttachments: nextDb.assistantAttachments || [],
     admissionWorkspaces: nextDb.admissionWorkspaces || [],
     conversations: nextDb.conversations || [],
-    knowledge: nextDb.knowledge || [],
+    knowledge: (nextDb.knowledge || []).map((item) => {
+      if (item.id === 'KB-35' && !item.tags?.includes('faculty')) {
+        return {
+          ...item,
+          tags: [...new Set([...(item.tags || []), 'faculty', '60+ faculty', 'faculty members', 'teaching staff', 'professors', 'teachers', 'alumni', '900+ alumni'])],
+        };
+      }
+      return item;
+    }),
     officialSources: existingOfficialSources,
   };
 }

@@ -100,6 +100,14 @@ test('public queries interpret plurals, paraphrases, typos, native conjunctions 
       assert.match(messOnly.answer, /42,000/);
       assert.doesNotMatch(messOnly.answer, /35,000/);
     }
+    const faculty = await ask('How many faculty are there at MITCORER?');
+    assert.equal(faculty.evidence[0]?.id, 'KB-35');
+    assert.match(faculty.answer, /60\+ experienced faculty members/);
+    assert.ok(faculty.officialLinks.some(l => l.url.includes('Mandatory-Disclousure.pdf')));
+
+    const alumni = await ask('How many alumni does MITCORER have?');
+    assert.equal(alumni.evidence[0]?.id, 'KB-35');
+    assert.match(alumni.answer, /900\+ graduates/);
   } finally {
     closeDb();
     if (path.dirname(directory) !== path.resolve(os.tmpdir()) || !path.basename(directory).startsWith('mitra-query-test-')) throw new Error('Unsafe cleanup path');

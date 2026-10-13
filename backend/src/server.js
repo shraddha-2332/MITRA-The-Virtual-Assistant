@@ -740,6 +740,10 @@ function getOfficialExperienceLinks(question) {
   if (/about mitcorer|about us|why mitcorer|why choose mitcorer/.test(normalized)) {
     links.push({ label: 'About MITCORER', url: 'https://www.mitcorer.edu.in/mit-corer.php' });
   }
+  if (/faculty|teacher|professor|staff|mandatory disclosure|brochure/.test(normalized)) {
+    links.push({ label: 'Official AICTE Mandatory Disclosure (Complete Faculty Roster)', url: 'https://mitcorer.edu.in/pdf/Mandatory-Disclousure.pdf' });
+    links.push({ label: 'MITCORER College Brochure', url: 'https://mitcorer.edu.in/pdf/MITCORER_Brochure-26-27.pdf' });
+  }
   return links;
 }
 
@@ -756,6 +760,22 @@ function getOfficialFeeLinks(question) {
 
 function buildCollegeProfileAnswer(question) {
   const normalized = normalizeIntentText(question);
+  if (/faculty|teacher|professor|teaching staff/.test(normalized)) {
+    return {
+      source: 'MITCORER Admissions FAQ and official website',
+      sourceUrl: 'https://mitcorer.edu.in/faq.php',
+      answer: 'MITCORER features 60+ experienced faculty members across engineering and polytechnic disciplines, supporting students with interactive classes, practical assignments, and industry-oriented railway engineering projects.\n\nFor the complete department-wise roster of faculty names, designations, and qualifications, refer to the official AICTE Mandatory Disclosure on the college website.',
+      next: '', actionView: 'inquiry', actionLabel: 'View official disclosure',
+    };
+  }
+  if (/alumni|alumnus/.test(normalized)) {
+    return {
+      source: 'MITCORER Admissions FAQ and official website',
+      sourceUrl: 'https://mitcorer.edu.in/faq.php',
+      answer: 'MITCORER has an alumni network of 900+ graduates working in railway engineering, core engineering, and technology domains across India.',
+      next: '', actionView: 'programs', actionLabel: 'Explore programmes',
+    };
+  }
   if (/why should i choose mitcorer|why mitcorer|why choose mitcorer/.test(normalized)) {
     return {
       source: 'MITCORER Admissions FAQ and official website',
@@ -931,6 +951,7 @@ export function retrieveKnowledge(question) {
     [['polytechnic', 'diploma', 'program', 'course', 'branch', 'choice code', 'intake'], 'programs'],
     [['acap', 'non cap', 'non-cap', 'institute level', 'management quota', 'vacancy', 'merit list'], 'admissions'],
     [['attendance', 'absence', 'detained', 'biometric', 'condonation'], 'university rules'],
+    [['faculty', 'teacher', 'professor', 'teaching staff', 'alumni', 'why choose'], 'About MITCORER'],
   ];
   const preferredCategory = categoryHints.find(([terms]) => terms.some((term) => matchesIntent(rawQuestion, term) || matchesIntent(normalizedQuestion, term)))?.[1] || '';
   const targetedRecordIds = new Set();
@@ -980,6 +1001,10 @@ export function retrieveKnowledge(question) {
     primaryRecordIds.add('KB-34');
   }
   if (rawQuestion.includes('why should i choose mitcorer') || rawQuestion.includes('why mitcorer') || rawQuestion.includes('why choose mitcorer')) {
+    targetedRecordIds.add('KB-35');
+    primaryRecordIds.add('KB-35');
+  }
+  if (['faculty', 'faculties', 'teacher', 'teachers', 'professor', 'professors', 'teaching staff', 'staff', 'alumni'].some((term) => rawQuestion.includes(term) || normalizedQuestion.includes(term))) {
     targetedRecordIds.add('KB-35');
     primaryRecordIds.add('KB-35');
   }
@@ -1090,7 +1115,7 @@ export async function answerAdmissionQuestion(body, user) {
   const retrievedEvidence = retrieveKnowledge(question);
   // Do not attach a loosely matched MITCORER record to an unrelated question.
   let evidence = retrievedEvidence[0]?.score >= 15 ? retrievedEvidence : [];
-  const answer = (user && (buildAdmissionReadinessAnswer(question, user) || buildDocumentStatusAnswer(question, user))) || buildCompoundAnswer(question, normalized, records) || buildClarificationAnswer(normalized) || buildReviewedPassage(normalized, language, records) || buildContextualPassage(normalized, records) || guard(buildFacilityAnswer(question), /hostel/.test(normalized) ? 'KB-23' : /labs|laborator|workshop/.test(normalized) ? 'KB-22' : /bus|transport/.test(normalized) ? 'KB-19' : /library/.test(normalized) ? 'KB-20' : 'KB-36') || guard(buildCollegeProfileAnswer(question), /why/.test(normalized) ? 'KB-35' : 'KB-34') || guard(buildCampusFacilitiesAnswer(question), 'KB-36') || guard(buildPlacementAnswer(question), 'KB-16') || guard(buildDeadlineAnswer(question), 'KB-30') || guard(buildAttendanceAnswer(question), ['KB-31', 'KB-32']) || buildMaintainedAnswer(question, normalized, records) || guard(buildEligibilityAnswer(question), 'KB-5') || guard(buildScholarshipAnswer(question), /pragati/.test(normalized) ? 'KB-33' : 'KB-18') || (fallbackRule ? guard(fallbackRule, ruleRecords[fallbackRule.source] || 'KB-15', false) : null) || {
+  const answer = (user && (buildAdmissionReadinessAnswer(question, user) || buildDocumentStatusAnswer(question, user))) || buildCompoundAnswer(question, normalized, records) || buildClarificationAnswer(normalized) || buildReviewedPassage(normalized, language, records) || buildContextualPassage(normalized, records) || guard(buildFacilityAnswer(question), /hostel/.test(normalized) ? 'KB-23' : /labs|laborator|workshop/.test(normalized) ? 'KB-22' : /bus|transport/.test(normalized) ? 'KB-19' : /library/.test(normalized) ? 'KB-20' : 'KB-36') || guard(buildCollegeProfileAnswer(question), /why|faculty|teacher|professor|staff|alumni/.test(normalized) ? 'KB-35' : 'KB-34') || guard(buildCampusFacilitiesAnswer(question), 'KB-36') || guard(buildPlacementAnswer(question), 'KB-16') || guard(buildDeadlineAnswer(question), 'KB-30') || guard(buildAttendanceAnswer(question), ['KB-31', 'KB-32']) || buildMaintainedAnswer(question, normalized, records) || guard(buildEligibilityAnswer(question), 'KB-5') || guard(buildScholarshipAnswer(question), /pragati/.test(normalized) ? 'KB-33' : 'KB-18') || (fallbackRule ? guard(fallbackRule, ruleRecords[fallbackRule.source] || 'KB-15', false) : null) || {
     source: 'No verified record',
     answer: 'I could not find an official answer for that question. Please ask about a specific programme, fee, scholarship, admission step, or campus facility.',
     next: '',
