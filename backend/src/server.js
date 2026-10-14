@@ -9,7 +9,7 @@ import { validateKnowledgeFields, buildMaintainedAnswer, academicFeeSelection, p
 import { selectLanguage, localizeResponse, buildReviewedPassage } from './language.js';
 import { buildClarificationAnswer, buildCompoundAnswer, buildContextualPassage } from './question-plan.js';
 import { publicEvidence } from './evidence.js';
-import { normalizeQuery, matchesIntent, understandQuery } from './query-understanding.js';
+import { normalizeQuery, matchesIntent, understandQuery, isEmploymentQuery } from './query-understanding.js';
 import { resolveSourceUrl, sourceRecord, uniqueSourceLinks } from './source-links.js';
 import { availability, usableKnowledge, validateProvenance, validateSupersession, confirmSourceReview, splitPassage } from './provenance.js';
 import { createRefreshToken, createToken, getBearerToken, hashPassword, hashToken, requireAuth, requireRole, verifyPassword, verifyToken, canAccessApplicantRecord } from './auth.js';
@@ -969,7 +969,7 @@ function buildCollegeProfileAnswer(question) {
       next: '', actionView: 'visit', actionLabel: 'Explore campus life',
     };
   }
-  if (/faculty|teacher|professor|teaching staff/.test(normalized)) {
+  if (/\b(?:faculty|teacher|professor|teaching staff)\b/.test(normalized) && !/\b(?:hiring|recruitment|vacancy|vacancies|job|jobs|career|careers|opening|openings|employment|apply for job|work with us)\b/.test(normalized)) {
     return {
       source: 'MITCORER Admissions FAQ and official website',
       sourceUrl: 'https://mitcorer.edu.in/faq.php',
@@ -1008,7 +1008,7 @@ function buildCollegeProfileAnswer(question) {
       next: '', actionView: 'fees', actionLabel: 'Explore fee details',
     };
   }
-  if (/\b(?:campus interview|interview process|recruitment process|selection process)\b/.test(normalized)) {
+  if (/\b(?:campus interview|placement interview process|campus recruitment process|student recruitment process|placement selection process)\b/.test(normalized) || (/\b(?:recruitment process|interview process|selection process)\b/.test(normalized) && !/\b(?:faculty|teacher|professor|staff|employee)\b/.test(normalized))) {
     return {
       source: 'MITCORER Training and Placement Cell',
       sourceUrl: 'https://mitcorer.edu.in/placement-cell.php',
@@ -1046,6 +1046,14 @@ function buildCollegeProfileAnswer(question) {
       sourceUrl: 'https://mitcorer.edu.in/contact.php',
       answer: 'MITCORER Barshi to Solapur Transit & Commute:\n\n- Road Distance: Approximately 70 km from Solapur city to MITCORER campus in Barshi (about 1.5 to 2 hours via NH-52 / state highway).\n- College Bus Network: The college runs dedicated daily bus routes between Barshi, Kurduwadi, and Solapur for commuting day scholars and staff.\n- Rail Transit: Barshi Town railway station is 4.7 km from campus, while Kurduwadi Junction (~38 km) offers extensive rail connections across Solapur and Maharashtra.',
       next: '', actionView: 'visit', actionLabel: 'Explore campus transit',
+    };
+  }
+  if (/\b(?:contact details?|contact number|contact email|phone number|email address|helpline number|contact us|college address|official contact|email and phone|how to contact)\b/.test(normalized) || (/\b(?:contact|phone|telephone|email|address)\b/.test(normalized) && /\b(?:mitcorer|college|barshi|solapur)\b/.test(normalized))) {
+    return {
+      source: 'MITCORER Contact Us page',
+      sourceUrl: 'https://mitcorer.edu.in/contact.php',
+      answer: 'MITCORER, Industrial Estate No. 03, Barshi, Dist. Solapur, Maharashtra 413401.\n\nEmail: info.mitcorer@mitpune.edu.in.\n\nPhone: +91 84599 67882, +91 86696 62106.\n\nWebsite: https://mitcorer.edu.in/.',
+      next: '', actionView: 'visit', actionLabel: 'View contact details',
     };
   }
   if (/^(?:mitcorer|mit college|mitcorer barshi|mit college barshi|engineering college barshi|railway engineering college)$|tell me about mitcorer|about mitcorer|about us|about the college/.test(normalized)) {
@@ -1212,6 +1220,9 @@ export function retrieveKnowledge(question) {
   if (/\b(?:personal\s*(?:whatsapp|phone|number|mobile|contact)|private\s*(?:number|phone|mobile|contact)|student\s*(?:phone|mobile|number|record)|personal record)\b/i.test(rawQuestion)) {
     return [];
   }
+  if (isEmploymentQuery(question) || isEmploymentQuery(normalizedQuestion)) {
+    return [];
+  }
   const intentText = `${normalizedQuestion} ${rawQuestion}`;
   const stopWords = new Set(['the', 'and', 'for', 'with', 'then', 'that', 'this', 'from', 'into', 'got', 'have', 'has', 'are', 'was', 'what', 'which', 'can']);
   const words = new Set(tokenize(normalizedQuestion).filter((word) => !stopWords.has(word)));
@@ -1286,8 +1297,11 @@ export function retrieveKnowledge(question) {
     primaryRecordIds.add('KB-35');
   }
   if (['faculty', 'faculties', 'teacher', 'teachers', 'professor', 'professors', 'teaching staff', 'staff', 'alumni'].some((term) => rawQuestion.includes(term) || normalizedQuestion.includes(term))) {
-    targetedRecordIds.add('KB-35');
-    primaryRecordIds.add('KB-35');
+    const isJobOrHiringQuery = /\b(?:hiring|recruitment|vacancy|vacancies|job|jobs|career|careers|vacancy notice|opening|openings|employment|apply for job|work with us)\b/i.test(rawQuestion);
+    if (!isJobOrHiringQuery) {
+      targetedRecordIds.add('KB-35');
+      primaryRecordIds.add('KB-35');
+    }
   }
   if (['affiliation', 'affiliated', 'solapur university', 'pahsu', 'aicte', 'dte code', 'institute code', '06901', 'who is the principal', 'college principal', 'principal of', 'principal name', 'madhukar lengare'].some((term) => rawQuestion.includes(term) || normalizedQuestion.includes(term))) {
     targetedRecordIds.add('KB-37');
@@ -1530,6 +1544,38 @@ export async function answerAdmissionQuestion(body, user) {
   const question = body.question.trim();
   const language = selectLanguage(question, body.language);
   const normalized = normalizeIntentText(question);
+  if (isEmploymentQuery(question) || isEmploymentQuery(normalized)) {
+    const unverifiedAnswer = {
+      source: 'No verified record',
+      answer: 'I could not find an official answer for that question. Please ask about a specific programme, fee, scholarship, admission step, or campus facility.',
+      next: '',
+      actionView: 'inquiry',
+      actionLabel: 'Request verified information',
+      evidence: [],
+      officialLinks: [],
+      model: 'deterministic-rag-fallback',
+      outcomeStatus: 'INSUFFICIENT_EVIDENCE',
+      escalation: {
+        available: true,
+        reason: 'UNVERIFIED_INFORMATION',
+        message: 'This question does not have a verified published record. You can escalate directly to our human admissions counselors.',
+        helplines: [
+          { label: 'Admissions Office Desk 1', number: '+91 84599 67882', tel: '+918459967882' },
+          { label: 'Admissions Office Desk 2', number: '+91 86696 62106', tel: '+918669662106' },
+        ],
+        email: 'info.mitcorer@mitpune.edu.in',
+        officeHours: 'Monday to Saturday, 9:30 AM to 5:30 PM IST',
+        actionLabel: 'Escalate to Admissions Staff',
+      },
+      suggestions: [
+        { label: 'Connect with Admissions Staff', question: 'What is the MITCORER admission helpline number?' },
+        { label: 'College Timings & Office Hours', question: 'What are the MITCORER office hours and college timings?' },
+        { label: 'Campus Address & Directions', question: 'Where is MITCORER located and what is the address?' },
+      ],
+    };
+    audit('assistant.asked', 'assistant', generateId('ASK'), user, unverifiedAnswer.source);
+    return localizeResponse(unverifiedAnswer, language, normalized, [], academicFeeSelection, parseLegacyFactText);
+  }
   const records = getDb().knowledge;
   const guard = (result, id, anchor = true) => {
     if (!result) return null;
@@ -1546,7 +1592,7 @@ export async function answerAdmissionQuestion(body, user) {
   const retrievedEvidence = retrieveKnowledge(question);
   // Do not attach a loosely matched MITCORER record to an unrelated question.
   let evidence = retrievedEvidence[0]?.score >= 15 ? retrievedEvidence : [];
-  const answer = (user && (buildAdmissionReadinessAnswer(question, user) || buildDocumentStatusAnswer(question, user))) || buildCompoundAnswer(question, normalized, records) || buildClarificationAnswer(normalized) || buildReviewedPassage(normalized, language, records) || buildContextualPassage(normalized, records) || guard(buildFacilityAnswer(question), /hostel/.test(normalized) ? 'KB-23' : ((/\b(?:sports grounds?|sports facilit\w*|box cricket|cricket ground|volleyball court|volleyball ground|badminton court|campus gym|college gym|gymnasium|physical fitness)\b/.test(normalized) || /\b(?:sports|gym)\b/.test(normalized)) && !/\b(?:world cup|icc|olympics?)\b/.test(normalized)) ? 'KB-48' : /\b(?:central workshop|machine shop|fitting shop|welding shop|carpentry shop|smithy|sheet metal|computer center|computing center|seminar halls?|audiovisual hall)\b/.test(normalized) ? 'KB-49' : /labs|laborator|workshop/.test(normalized) ? 'KB-22' : /bus|transport/.test(normalized) ? 'KB-19' : /library/.test(normalized) ? 'KB-20' : /railway model/.test(normalized) ? 'KB-42' : 'KB-36') || guard(buildCollegeProfileAnswer(question), (/\b(?:sports grounds?|sports facilit\w*|box cricket|cricket ground|volleyball (?:court|ground)|badminton court|campus gym|gymnasium|cultural events?|cultural gathering|annual gathering|cultural fest|shiv jayanti|ganesh (?:utsav|festival))\b/.test(normalized) && !/\b(?:world cup|icc|olympics?)\b/.test(normalized)) ? 'KB-48' : /\b(?:professional diplomas?|railway diplomas?|railway track technology|railway signaling|railway signalling|rolling stocks?(?: and operations)?|software technology in railway|railway specializations?|railway modules?)\b/.test(normalized) ? 'KB-47' : (/\b(?:polytechnic|msbte|diploma)\b/.test(normalized) && !/\b(?:professional diploma|railway diploma|direct second|dse|lateral|fees?|cost|charges?)\b/.test(normalized)) ? 'KB-12' : /\b(?:office hours?|office timings?|working hours?|visiting hours?|admission desk|enquiry desk|college timings?|open on saturday|admission helpline|helpline number|campus visit|visit booking)\b/.test(normalized) ? 'KB-46' : /\b(?:nep(?: 2020)?|national education policy|outcome[- ]based education|obe|medium of instruction|english medium|curriculum pattern)\b/.test(normalized) ? 'KB-45' : /\b(?:anti[- ]?ragging|ragging|campus safety|emergency vehicle|ambulance|medical emergenc\w*|student welfare)\b/.test(normalized) ? 'KB-44' : /\b(?:mous?|corporate readiness|industry partner|aptitude training|soft skills training|campus interview|interview process|recruitment process)\b/.test(normalized) ? 'KB-43' : /\b(?:is mitcorer (?:the )?same as mit pune|mit pune|maeer|parent trust|mit wpu)\b/.test(normalized) ? 'KB-41' : /\b(?:nearest railway station|nearest station|which railway station|station to college|barshi town station|kurduwadi junction|nearest bus|barshi bus stand|how to reach|reach by train|reach by bus|barshi to solapur|solapur to barshi|solapur distance)\b/.test(normalized) ? 'KB-40' : /\b(?:affiliation|affiliated|which university|what university|solapur university|pahsu|aicte|dte code|institute code|06901|principal|madhukar lengare)\b/.test(normalized) ? 'KB-37' : /\b(?:hod|head of department|somnath mule|amit shinde|sanjay mane|honor|minor degree)\b/.test(normalized) || (/\blabs?\b/.test(normalized) && /\b(?:cse|computer|civil|mechanical)\b/.test(normalized)) || /^(?:mechanical engineering|computer engineering|civil engineering)$/.test(normalized) || /\b(?:computer engineering syllabus|mechanical engineering syllabus)\b/.test(normalized) ? 'KB-38' : /\b(?:nss|rail-mit|rail mit|technical event|asimit)\b/.test(normalized) ? 'KB-39' : /\b(?:why|faculty|teacher|professor|staff|alumni|reviews?|ratings?)\b/.test(normalized) ? 'KB-35' : /\b(?:b\.?tech admission|engineering admission|admission process|how to apply|admission 2026)\b/.test(normalized) ? 'KB-29' : /\b(?:education loan|bank loan|loan assistance)\b/.test(normalized) ? 'KB-1' : 'KB-34') || guard(buildCampusFacilitiesAnswer(question), 'KB-36') || guard(buildPlacementAnswer(question), 'KB-16') || guard(buildDeadlineAnswer(question), 'KB-30') || guard(buildAttendanceAnswer(question), ['KB-31', 'KB-32']) || buildMaintainedAnswer(question, normalized, records) || guard(buildEligibilityAnswer(question), 'KB-5') || guard(buildScholarshipAnswer(question), /pragati/.test(normalized) ? 'KB-33' : 'KB-18') || (fallbackRule ? guard(fallbackRule, ruleRecords[fallbackRule.source] || 'KB-15', false) : null) || {
+  const answer = (user && (buildAdmissionReadinessAnswer(question, user) || buildDocumentStatusAnswer(question, user))) || buildCompoundAnswer(question, normalized, records) || buildClarificationAnswer(normalized) || buildReviewedPassage(normalized, language, records) || buildContextualPassage(normalized, records) || guard(buildFacilityAnswer(question), /hostel/.test(normalized) ? 'KB-23' : ((/\b(?:sports grounds?|sports facilit\w*|box cricket|cricket ground|volleyball court|volleyball ground|badminton court|campus gym|college gym|gymnasium|physical fitness)\b/.test(normalized) || /\b(?:sports|gym)\b/.test(normalized)) && !/\b(?:world cup|icc|olympics?)\b/.test(normalized)) ? 'KB-48' : /\b(?:central workshop|machine shop|fitting shop|welding shop|carpentry shop|smithy|sheet metal|computer center|computing center|seminar halls?|audiovisual hall)\b/.test(normalized) ? 'KB-49' : /labs|laborator|workshop/.test(normalized) ? 'KB-22' : /bus|transport/.test(normalized) ? 'KB-19' : /library/.test(normalized) ? 'KB-20' : /railway model/.test(normalized) ? 'KB-42' : 'KB-36') || guard(buildCollegeProfileAnswer(question), (/\b(?:sports grounds?|sports facilit\w*|box cricket|cricket ground|volleyball (?:court|ground)|badminton court|campus gym|gymnasium|cultural events?|cultural gathering|annual gathering|cultural fest|shiv jayanti|ganesh (?:utsav|festival))\b/.test(normalized) && !/\b(?:world cup|icc|olympics?)\b/.test(normalized)) ? 'KB-48' : /\b(?:professional diplomas?|railway diplomas?|railway track technology|railway signaling|railway signalling|rolling stocks?(?: and operations)?|software technology in railway|railway specializations?|railway modules?)\b/.test(normalized) ? 'KB-47' : (/\b(?:polytechnic|msbte|diploma)\b/.test(normalized) && !/\b(?:professional diploma|railway diploma|direct second|dse|lateral|fees?|cost|charges?)\b/.test(normalized)) ? 'KB-12' : /\b(?:office hours?|office timings?|working hours?|visiting hours?|admission desk|enquiry desk|college timings?|open on saturday|admission helpline|helpline number|campus visit|visit booking)\b/.test(normalized) ? 'KB-46' : /\b(?:nep(?: 2020)?|national education policy|outcome[- ]based education|obe|medium of instruction|english medium|curriculum pattern)\b/.test(normalized) ? 'KB-45' : /\b(?:anti[- ]?ragging|ragging|campus safety|emergency vehicle|ambulance|medical emergenc\w*|student welfare)\b/.test(normalized) ? 'KB-44' : /\b(?:mous?|corporate readiness|industry partner|aptitude training|soft skills training|campus interview|interview process|recruitment process)\b/.test(normalized) ? 'KB-43' : /\b(?:is mitcorer (?:the )?same as mit pune|mit pune|maeer|parent trust|mit wpu)\b/.test(normalized) ? 'KB-41' : /\b(?:nearest railway station|nearest station|which railway station|station to college|barshi town station|kurduwadi junction|nearest bus|barshi bus stand|how to reach|reach by train|reach by bus|barshi to solapur|solapur to barshi|solapur distance)\b/.test(normalized) ? 'KB-40' : /\b(?:affiliation|affiliated|which university|what university|solapur university|pahsu|aicte|dte code|institute code|06901|principal|madhukar lengare)\b/.test(normalized) ? 'KB-37' : /\b(?:hod|head of department|somnath mule|amit shinde|sanjay mane|honor|minor degree)\b/.test(normalized) || (/\blabs?\b/.test(normalized) && /\b(?:cse|computer|civil|mechanical)\b/.test(normalized)) || /^(?:mechanical engineering|computer engineering|civil engineering)$/.test(normalized) || /\b(?:computer engineering syllabus|mechanical engineering syllabus)\b/.test(normalized) ? 'KB-38' : /\b(?:nss|rail-mit|rail mit|technical event|asimit)\b/.test(normalized) ? 'KB-39' : /\b(?:why|faculty|teacher|professor|staff|alumni|reviews?|ratings?)\b/.test(normalized) && !/\b(?:hiring|recruitment|vacancy|vacancies|job|jobs|career|careers|opening|openings|employment|apply for job|work with us)\b/.test(normalized) ? 'KB-35' : /\b(?:b\.?tech admission|engineering admission|admission process|how to apply|admission 2026)\b/.test(normalized) ? 'KB-29' : /\b(?:education loan|bank loan|loan assistance)\b/.test(normalized) ? 'KB-1' : /\b(?:contact details?|contact number|contact email|phone number|email address|helpline number|contact us|college address|official contact|email and phone|how to contact)\b/.test(normalized) || (/\b(?:contact|phone|telephone|email|address)\b/.test(normalized) && /\b(?:mitcorer|college|barshi|solapur)\b/.test(normalized)) ? 'KB-17' : 'KB-34') || guard(buildCampusFacilitiesAnswer(question), 'KB-36') || guard(buildPlacementAnswer(question), 'KB-16') || guard(buildDeadlineAnswer(question), 'KB-30') || guard(buildAttendanceAnswer(question), ['KB-31', 'KB-32']) || buildMaintainedAnswer(question, normalized, records) || guard(buildEligibilityAnswer(question), 'KB-5') || guard(buildScholarshipAnswer(question), /pragati/.test(normalized) ? 'KB-33' : 'KB-18') || (fallbackRule ? guard(fallbackRule, ruleRecords[fallbackRule.source] || 'KB-15', false) : null) || {
     source: 'No verified record',
     answer: 'I could not find an official answer for that question. Please ask about a specific programme, fee, scholarship, admission step, or campus facility.',
     next: '',
@@ -1594,6 +1640,7 @@ export async function answerAdmissionQuestion(body, user) {
     return localizeResponse({ source: 'No verified record', answer: 'Source validity changed while answering. Please check with the college for current verified information.', evidence: [], officialLinks: [], model: 'deterministic-rag-fallback', outcomeStatus: 'OUTDATED_EVIDENCE' }, language, normalized, [], academicFeeSelection, parseLegacyFactText);
   }
   const outcomeStatus = classifyAnswerOutcome(answer, evidence, freshnessAt);
+  const effectiveOutcome = answer.source === 'No verified record' && evidence.length ? 'ANSWERED' : outcomeStatus;
   const groundedAnswer = evidence.length
     ? {
         ...answer,
@@ -1603,7 +1650,7 @@ export async function answerAdmissionQuestion(body, user) {
         evidence: evidence.map(record => publicEvidence(record, freshnessAt)),
         officialLinks,
         model: generated ? config.geminiModel : 'deterministic-rag-fallback',
-        outcomeStatus,
+        outcomeStatus: effectiveOutcome,
       }
     : { ...answer, answer: answer.answer.replace(/CampusGuard/gi, 'the assistant'), evidence: [], officialLinks, model: 'deterministic-rag-fallback', outcomeStatus };
   audit('assistant.asked', 'assistant', generateId('ASK'), user, answer.source);
@@ -1630,7 +1677,11 @@ export async function answerAdmissionQuestion(body, user) {
   if (contextPrefix) {
     groundedAnswer.answer = contextPrefix + groundedAnswer.answer;
   }
-  const isUnverified = groundedAnswer.source === 'No verified record' || (!evidence.length && ['UNSUPPORTED_TOPIC', 'OUTDATED_EVIDENCE'].includes(outcomeStatus));
+  const isUnverified = groundedAnswer.source === 'No verified record'
+    || (!evidence.length && ['UNSUPPORTED_TOPIC', 'OUTDATED_EVIDENCE', 'INSUFFICIENT_EVIDENCE', 'CONFLICTING_EVIDENCE'].includes(effectiveOutcome))
+    || (!evidence.length && !groundedAnswer.anchored && groundedAnswer.source !== 'Verified admission checklist' && groundedAnswer.source !== 'My document records')
+    || groundedAnswer.answer.includes('could not find an official answer')
+    || groundedAnswer.answer.includes('could not find a published official record');
   if (isUnverified) {
     groundedAnswer.escalation = {
       available: true,

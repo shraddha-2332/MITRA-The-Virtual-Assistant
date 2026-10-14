@@ -17,6 +17,21 @@ function oneEdit(left, right) {
   while (shorter[index] === longer[index] && index < shorter.length) index++;
   return shorter.slice(index) === longer.slice(index + 1);
 }
+export function isEmploymentQuery(text) {
+  const norm = String(text || '').normalize('NFKC').toLowerCase();
+  const hasJobTerms = /\b(?:hiring|recruitment|recruiting|vacancy|vacancies|job openings?|work with us|careers? at (?:mitcorer|mit|the college)|faculty recruitment|staff recruitment|teacher recruitment)\b/i.test(norm)
+    || /\b(?:भरती|नोकरीसाठी अर्ज|रिक्त\s*जागा|प्राध्यापक\s*भरती|शिक्षक\s*भरती|कर्मचारी\s*भरती|नौकरी\s*के\s*लिए|शिक्षक\s*भर्ती)\b/iu.test(norm);
+  const hasStaffRole = /\b(?:faculty|teacher|teachers|professor|professors|staff|teaching|non[- ]teaching|lecturer|lecturers|assistant professor|instructor|clerk|peon|employee|employees)\b/i.test(norm);
+  const hasEmploymentAction = /\b(?:apply for (?:a )?(?:job|post)|apply for teaching|apply for faculty|apply for staff|how to apply for.*(?:job|post|vacancy)|job application|staff hiring|faculty hiring|teacher hiring|recruitment process of (?:faculty|staff|teachers?)|staff recruitment)\b/i.test(norm);
+
+  if (hasEmploymentAction) return true;
+  if (hasJobTerms && hasStaffRole) return true;
+  if (/\b(?:staff|faculty|teacher|professor)\s+(?:hiring|recruitment|vacancy|vacancies|jobs?|openings?)\b/i.test(norm)) return true;
+  if (/\b(?:hiring|recruitment|vacancy|vacancies|jobs?|openings?)\s+(?:for|of|in)\s+(?:staff|faculty|teacher|professor|assistant professor)\b/i.test(norm)) return true;
+  if (/^(?:staff hiring|faculty recruitment|teacher recruitment|job openings for teachers|careers at mitcorer|careers at mit)$/i.test(norm.trim())) return true;
+  return false;
+}
+
 export function matchesIntent(text, phrase) {
   const escaped = phrase.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   return new RegExp(`(?<![\\p{L}\\p{M}\\p{N}_])${escaped}(?![\\p{L}\\p{M}\\p{N}_])`, 'iu').test(text);
@@ -55,7 +70,8 @@ export function normalizeQuery(input) {
     [/\b(?:proofs|papers)\b/g, 'document'],
     [/\b(?:electronic reading resources|reading resources|borrowed book|borrow books|book borrowing)\b/g, 'library'],
     [/\beligibility\b|\byogya\b|\bpatra\b/g, 'eligible'],
-    [/\bcut[- ]?off\b/g, 'cutoff'], [/\bjob\b/g, 'placement'],
+    [/\bcut[- ]?off\b/g, 'cutoff'],
+    ...(!isEmploymentQuery(input) ? [[/\bjob\b/g, 'placement']] : []),
     [/\b(cse|computer science|civil engineering|mechanical engineering) capacity\b/g, '$1 intake'],
     [/\bseat\s+(?:and\s+intake|intake\s+matrix|matrix)\b/g, 'seat matrix'],
     [/\b(?:also|plus|as well as)\b/g, 'and'],

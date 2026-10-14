@@ -1467,4 +1467,36 @@ test('human escalation is triggered when information is unverified and creates h
   });
 });
 
+test('staff hiring and employment queries are treated as unverified and trigger human escalation', async () => {
+  await withServer(async (base) => {
+    const hiringQueries = [
+      'staff hiring process of mit',
+      'faculty recruitment process',
+      'job openings for teachers',
+      'careers at mitcorer',
+      'is there any vacancy for assistant professor?',
+      'how to apply for teaching job at mit',
+    ];
+
+    for (const question of hiringQueries) {
+      resetRuntimeStateForTests();
+      const { response, payload } = await request(base, '/api/public-assistant/ask', {
+        method: 'POST',
+        body: JSON.stringify({ question }),
+      });
+      assert.equal(response.status, 200);
+      assert.equal(payload.data.source, 'No verified record', `Source should be No verified record for: ${question}`);
+      assert.match(payload.data.answer, /could not find an official answer/i);
+      assert.doesNotMatch(payload.data.answer, /MITCORER offers railway-oriented engineering courses/i);
+      assert.doesNotMatch(payload.data.answer, /100\+ companies visiting/i);
+      assert.equal(payload.data.outcomeStatus, 'INSUFFICIENT_EVIDENCE');
+      assert.ok(payload.data.escalation, `Escalation should be attached for: ${question}`);
+      assert.equal(payload.data.escalation.available, true);
+      assert.equal(payload.data.escalation.reason, 'UNVERIFIED_INFORMATION');
+      assert.ok(payload.data.escalation.helplines?.length > 0);
+    }
+  });
+});
+
+
 
