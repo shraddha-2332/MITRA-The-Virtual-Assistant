@@ -1249,3 +1249,128 @@ test('api responses return production security headers and support proxy-aware r
     assert.equal(reqB.response.status, 200);
   });
 });
+
+test('developer short-tail and long-tail keywords resolve with grounded verified evidence', async () => {
+  const developerQueries = [
+    // Short-Tail Keywords
+    'MITCORER',
+    'MITCORER Barshi',
+    'MIT College Barshi',
+    'Railway Engineering College',
+    'Engineering College Barshi',
+    'Engineering Admission',
+    'B.Tech Admission',
+    'Diploma Admission',
+    'MHT CET Admission',
+    'JEE Admission',
+    'Engineering Courses',
+    'Railway Engineering',
+    'Mechanical Engineering',
+    'Computer Engineering',
+    'Civil Engineering',
+    'AI and Data Science',
+    'College Fees',
+    'Hostel Facility',
+    'Placement',
+    'Contact MITCORER',
+
+    // Long-Tail Keywords: प्रवेश आणि अर्ज
+    'MITCORER Barshi admission 2026',
+    'MITCORER B.Tech admission process',
+    'How to apply for MITCORER engineering admission',
+    'MITCORER admission eligibility criteria',
+    'MITCORER admission through MHT CET',
+    'MITCORER admission through JEE Main',
+    'MITCORER direct second year engineering admission',
+    'MITCORER diploma admission process',
+    'MITCORER railway engineering diploma admission',
+    'MITCORER admission helpline number',
+    'MITCORER admission documents required',
+    'MITCORER CAP round admission details',
+    'MITCORER institute level seats admission',
+    'MITCORER admission form last date',
+    'MITCORER admission fees structure',
+
+    // अभ्यासक्रम आणि शाखा
+    'MITCORER B.Tech courses list',
+    'MITCORER Computer Science and Engineering course',
+    'MITCORER Mechanical and Rail Engineering course',
+    'MITCORER AI and Data Science course',
+    'MITCORER Electronics and Telecommunication Engineering course',
+    'MITCORER Civil Engineering course details',
+    'MITCORER railway engineering diploma specialisations',
+    'Best railway engineering college in Maharashtra',
+    'Engineering college with railway specialization in India',
+    'MITCORER B.Tech lateral entry admission',
+    'MITCORER course eligibility after 12th',
+    'MITCORER course eligibility after diploma',
+    'MITCORER AI and Data Science admission eligibility',
+    'MITCORER mechanical engineering syllabus',
+    'MITCORER computer engineering syllabus',
+
+    // फी, शिष्यवृत्ती आणि हॉस्टेल
+    'MITCORER B.Tech fees per year',
+    'MITCORER hostel fees and facilities',
+    'MITCORER hostel accommodation for boys and girls',
+    'MITCORER scholarship for engineering students',
+    'MITCORER fee structure for diploma',
+    'MITCORER education loan assistance',
+    'MITCORER hostel admission process',
+    'MITCORER hostel facility near Barshi',
+    'MITCORER fees for AI and Data Science',
+    'MITCORER fees for mechanical engineering',
+    'MITCORER fees for computer science engineering',
+    'MITCORER scholarship through MHT CET',
+    'MITCORER fee payment process',
+    'MITCORER hostel food and mess facility',
+    'MITCORER hostel safety and security',
+
+    // प्लेसमेंट आणि करिअर
+    'MITCORER placement record',
+    'MITCORER placement companies list',
+    'MITCORER highest package details',
+    'MITCORER internship opportunities',
+    'MITCORER training and placement cell',
+    'Railway engineering career opportunities after MITCORER',
+    'Jobs after railway engineering diploma',
+    'Career after AI and Data Science engineering',
+    'MITCORER placement support for students',
+    'MITCORER industry tie-ups and internships',
+    'MITCORER campus interview process',
+    'MITCORER placement preparation support',
+    'Best engineering college in Barshi for placement',
+    'Railway sector jobs after engineering',
+    'MITCORER alumni career success stories',
+
+    // कॉलेज माहिती आणि संपर्क
+    'MITCORER college location in Barshi',
+    'MITCORER college address Solapur',
+    'MITCORER official website',
+    'MITCORER contact number',
+    'MITCORER email address',
+    'MITCORER campus facilities',
+    'MITCORER library and lab facilities',
+    'MITCORER faculty details',
+    'MITCORER college reviews',
+    'MITCORER admission enquiry',
+    'MITCORER chatbot support',
+    'MITCORER college timings',
+    'MITCORER campus visit booking',
+    'MITCORER Barshi to Solapur distance.',
+  ];
+
+  await withServer(async (base) => {
+    for (const question of developerQueries) {
+      resetRuntimeStateForTests();
+      const { response, payload } = await request(base, '/api/public-assistant/ask', {
+        method: 'POST',
+        body: JSON.stringify({ question }),
+      });
+      assert.equal(response.status, 200, `Failed status for: ${question}`);
+      assert.notEqual(payload.data.source, 'No verified record', `Unverified source for: ${question}`);
+      assert.ok(Array.isArray(payload.data.evidence) && payload.data.evidence.length > 0, `Missing evidence for: ${question}`);
+      assert.ok(typeof payload.data.answer === 'string' && payload.data.answer.trim().length > 20, `Empty answer for: ${question}`);
+    }
+  });
+});
+
