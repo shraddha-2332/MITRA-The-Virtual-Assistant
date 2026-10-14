@@ -1387,6 +1387,99 @@ async function generateWithGemini(question, routedAnswer, evidence) {
   }
 }
 
+export function generateQuerySuggestions(question, normalized) {
+  const norm = String(normalized || '').toLocaleLowerCase();
+  if (/\b(?:placement|recruiter|package|internship)\b/.test(norm)) {
+    return [
+      { label: 'Highest Package (21 LPA)', question: 'What is the highest package at MITCORER?' },
+      { label: 'Top Recruiters List', question: 'Which companies visit MITCORER for campus placement?' },
+      { label: 'T&P Cell MoUs', question: 'What industry MoUs does MITCORER have?' },
+      { label: 'Interview Process', question: 'What is the MITCORER campus interview process?' },
+    ];
+  }
+  if (/\b(?:fee|fees|cost|charge|tuition|installment)\b/.test(norm) && !/\bhostel\b/.test(norm)) {
+    return [
+      { label: 'B.Tech Open Category Fee', question: 'What are the first-year B.Tech engineering fees for Open category?' },
+      { label: 'OBC / EBC Concession', question: 'What are the B.Tech engineering fees for OBC category?' },
+      { label: 'SC / ST Concession', question: 'What are the B.Tech engineering fees for SC category?' },
+      { label: 'Direct Second Year Fee', question: 'What are the Direct Second Year engineering fees?' },
+    ];
+  }
+  if (/\b(?:hostel|mess|accommodation)\b/.test(norm)) {
+    return [
+      { label: 'Hostel & Mess Annual Cost', question: 'What are the hostel and mess fees at MITCORER?' },
+      { label: 'Boys & Girls Hostel Amenities', question: 'What facilities are available in the hostel?' },
+      { label: 'Hostel Food & Security', question: 'Tell me about MITCORER hostel food and safety' },
+      { label: 'Hostel Admission Steps', question: 'What is the MITCORER hostel admission process?' },
+    ];
+  }
+  if (/\b(?:b\.?tech admission|engineering admission|admission process|how to apply|admission 2026)\b/.test(norm)) {
+    return [
+      { label: 'CAP Round Process', question: 'What is the CAP round engineering admission process?' },
+      { label: 'Required Documents', question: 'What are the required admission documents?' },
+      { label: 'Entrance Exams Accepted', question: 'Which exams are accepted for engineering admission?' },
+      { label: 'Institute-Level (ACAP) Seats', question: 'What is ACAP and institute-level admission?' },
+    ];
+  }
+  if (/\b(?:courses?|programmes?|branches?)\b/.test(norm)) {
+    return [
+      { label: 'B.Tech Courses List', question: 'Which B.Tech courses are offered at MITCORER?' },
+      { label: 'Computer Science & Engineering', question: 'Tell me about Computer Science and Engineering at MITCORER' },
+      { label: 'Mechanical & Rail Engineering', question: 'Tell me about Mechanical and Rail Engineering' },
+      { label: 'Polytechnic Diploma', question: 'Which Polytechnic diploma courses are offered?' },
+    ];
+  }
+  if (/\b(?:computer science|computer engineering|cse)\b/.test(norm)) {
+    return [
+      { label: 'CSE Intake & Choice Code', question: 'What is the choice code and intake for Computer Science and Engineering?' },
+      { label: 'Honors in AI/ML & Cyber Security', question: 'What honor degrees are offered in CSE?' },
+      { label: 'CSE Labs & Infrastructure', question: 'What laboratories does Computer Science Department have?' },
+      { label: 'CSE Placement Highlights', question: 'What are the placement opportunities after Computer Engineering?' },
+    ];
+  }
+  if (/\b(?:mechanical|rail engineering)\b/.test(norm)) {
+    return [
+      { label: 'Rail Engineering Scope', question: 'What are the career opportunities in railway engineering?' },
+      { label: 'Railway Model Room', question: 'Tell me about the Railway Model Room at MITCORER' },
+      { label: 'Professional Railway Diplomas', question: 'What are the professional railway diplomas at MITCORER?' },
+      { label: 'Central Workshop Facilities', question: 'Tell me about the central workshop and labs' },
+    ];
+  }
+  if (/\b(?:ai and data science|ai & ds|data science)\b/.test(norm)) {
+    return [
+      { label: 'AI & DS Eligibility & Intake', question: 'What is the eligibility and intake for AI and Data Science?' },
+      { label: 'Career Scope after AI & DS', question: 'What is the career after AI and Data Science engineering?' },
+      { label: 'AI & Data Science Labs', question: 'What computing facilities support AI and Data Science?' },
+      { label: 'B.Tech Program Details', question: 'Which B.Tech courses are offered at MITCORER?' },
+    ];
+  }
+  if (/\b(?:civil engineering)\b/.test(norm)) {
+    return [
+      { label: 'Civil Engineering Intake', question: 'What is the intake for Civil Engineering?' },
+      { label: 'Railway Track Specialization', question: 'Tell me about railway track technology specialization' },
+      { label: 'Civil Department Labs', question: 'What laboratories are available in Civil Engineering?' },
+      { label: 'Minor Degree in Software', question: 'Can Civil students take a minor degree in Software Engineering?' },
+    ];
+  }
+  if (/\b(?:contact|helpline|phone|address|location|reach|distance|timings?)\b/.test(norm)) {
+    return [
+      { label: 'Admission Helpline & Office Hours', question: 'What are the office timings and admission helpline?' },
+      { label: 'College Address & Map', question: 'Where is MITCORER located and what is the address?' },
+      { label: 'Solapur to Barshi Distance', question: 'What is the distance from Solapur to MITCORER Barshi?' },
+      { label: 'Official Website & Email', question: 'What is the official website and email address?' },
+    ];
+  }
+  if (/\b(?:scholarship|pragati|mahadbt|concession)\b/.test(norm)) {
+    return [
+      { label: 'Government Scholarships (MahaDBT)', question: 'What scholarship support is available?' },
+      { label: 'AICTE Pragati for Girls', question: 'Tell me about the AICTE Pragati scholarship for girl students' },
+      { label: 'Education Loan Assistance', question: 'What education loan assistance is provided?' },
+      { label: 'Category Fee Concessions', question: 'What are the engineering fees for OBC and SC categories?' },
+    ];
+  }
+  return [];
+}
+
 export async function answerAdmissionQuestion(body, user) {
   if (typeof body?.question !== 'string' || !body.question.trim() || body.question.trim().length > 1000) {
     throw badRequest('Enter a question of up to 1000 characters.');
@@ -1476,6 +1569,25 @@ export async function answerAdmissionQuestion(body, user) {
     ...officialLinks,
     ...evidence.filter(record => record.sourceUrl).map(record => ({ label: record.title, url: record.sourceUrl })),
   ]);
+  const context = (body && typeof body.context === 'object' && body.context) ? body.context : {};
+  let contextPrefix = '';
+  if (context.category && /\b(?:fee|fees|cost|tuition|shulka)\b/i.test(normalized) && !/\b(?:open|obc|sc|st|vj\/?nt|nt|sbc|ebc|ews|tfws)\b/i.test(normalized)) {
+    if (context.category === 'OBC') {
+      contextPrefix = '📌 Profile Note (OBC Category): 50% tuition fee concession applies (Total: ₹54,582/yr — Tuition: ₹44,000 + Development: ₹10,582 with valid caste & non-creamy layer certificate).\n\n';
+    } else if (context.category === 'SC' || context.category === 'ST') {
+      contextPrefix = `📌 Profile Note (${context.category} Category): 100% tuition fee concession applies (Development fee only: ₹10,582/yr with valid caste and validity certificate).\n\n`;
+    } else if (context.category === 'VJNT' || context.category === 'SBC') {
+      contextPrefix = `📌 Profile Note (${context.category} Category): 100% tuition fee concession applies (Development fee only: ₹10,582/yr with valid documents).\n\n`;
+    } else if (context.category === 'EWS') {
+      contextPrefix = '📌 Profile Note (EWS / EBC): 50% tuition fee concession applies through MahaDBT (Total: ₹54,582/yr with income < 8 LPA).\n\n';
+    } else if (context.quota === 'TFWS') {
+      contextPrefix = '📌 Profile Note (TFWS Quota): 100% tuition waiver (Development fee only: ₹10,582/yr).\n\n';
+    }
+  }
+  if (contextPrefix) {
+    groundedAnswer.answer = contextPrefix + groundedAnswer.answer;
+  }
+  groundedAnswer.suggestions = generateQuerySuggestions(question, normalized);
   return localizeResponse(groundedAnswer, language, normalized, evidence, academicFeeSelection, parseLegacyFactText);
 }
 

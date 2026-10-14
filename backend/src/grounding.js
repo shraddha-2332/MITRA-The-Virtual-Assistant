@@ -26,6 +26,7 @@ export function extractFactualTokens(text) {
     intakes: new Set(),
     helplineNumbers: new Set(),
     instituteCodes: new Set(),
+    salaries: new Set(),
   };
 
   // 1. Academic years (e.g. 2026-27, 2024-25)
@@ -80,6 +81,11 @@ export function extractFactualTokens(text) {
     tokens.instituteCodes.add(match[1]);
   }
 
+  // 9. Packages and salaries (e.g. 21 LPA, 4.4 LPA, 21 lakhs)
+  for (const match of content.matchAll(/(\d+(?:\.\d+)?)\s*(?:lpa|lakhs?(?:\s+per\s+annum)?)\b/gi)) {
+    tokens.salaries.add(match[1]);
+  }
+
   return tokens;
 }
 
@@ -97,6 +103,9 @@ export function detectUnauthorizedClaims(text) {
     /\b100%\s+fee\s+waiver\s+guaranteed\b/,
     /\bdeadline\s+extended\s+indefinitely\b/,
     /\bdirect\s+admission\s+without\s+merit\b/,
+    /(?<!\b(?:not|cannot|does\s+not|do\s+not|did\s+not|will\s+not|no|never)\s+)guaranteed?\s+(?:placement|job|internship|scholarship|seat|admission)\b/,
+    /\b100%\s+(?:placement|scholarship|pass)\b/,
+    /\blowest\s+fee\s+guaranteed\b/,
   ];
 
   for (const pattern of prohibitedPatterns) {
@@ -118,6 +127,7 @@ export function extractEvidenceTokens(evidenceList) {
     intakes: new Set(),
     helplineNumbers: new Set(),
     instituteCodes: new Set(['06901', '6901']),
+    salaries: new Set(),
   };
 
   const addTokens = (tokens) => {
@@ -129,6 +139,7 @@ export function extractEvidenceTokens(evidenceList) {
     for (const item of tokens.intakes) allTokens.intakes.add(item);
     for (const item of tokens.helplineNumbers) allTokens.helplineNumbers.add(item);
     for (const item of tokens.instituteCodes) allTokens.instituteCodes.add(item);
+    for (const item of tokens.salaries || []) allTokens.salaries.add(item);
   };
 
   for (const record of evidenceList || []) {
@@ -254,6 +265,13 @@ export function verifyGeneratedAnswer(generatedText, evidenceList) {
   for (const code of generatedTokens.instituteCodes) {
     if (!evidenceTokens.instituteCodes.has(code) && code !== '06901' && code !== '6901') {
       unsupported.push({ type: 'instituteCode', value: code });
+    }
+  }
+
+  // Check packages and salaries
+  for (const sal of generatedTokens.salaries) {
+    if (!evidenceTokens.salaries.has(sal) && !evidenceTokens.numbers.has(sal)) {
+      unsupported.push({ type: 'salary', value: `${sal} LPA` });
     }
   }
 

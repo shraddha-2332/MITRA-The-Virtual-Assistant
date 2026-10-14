@@ -45,6 +45,10 @@ export function normalizeQuery(input) {
   });
   const phrases = [
     [/\b(?:tuition bill|teaching fee|tuition|price|pricing|payable)\b/g, 'academic fee'],
+    [/\b(?:hosstl|hostal|hustel)\b/g, 'hostel'],
+    [/\b(?:admision|addmission)\b/g, 'admission'],
+    [/\b(?:placment|plcmnt)\b/g, 'placement'],
+    [/\b(?:sylabus|sylbus)\b/g, 'syllabus'],
     [/\bjoining year two\b/g, 'direct second year'], [/\bjoining year one\b/g, 'first year'],
     [/\bfirst[- ]year\b/g, 'first year'], [/\baccommodation\b/g, 'hostel'], [/\bdining\b/g, 'mess'],
     [/\btransportation\b|\binstitute-operated vehicle\b/g, 'bus transport'],

@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { cleanHtml, hashContent, syncMonitoredWebsiteSources } from '../src/website-sync.js';
+import { cleanHtml, hashContent, syncMonitoredWebsiteSources, analyzeContentDrift } from '../src/website-sync.js';
 import { createServer } from '../src/server.js';
 import { config } from '../src/config.js';
 import { resetDbForTests } from '../src/store.js';
@@ -153,5 +153,24 @@ test('POST /api/official-sources/sync enforces admin authorization and executes 
     assert.ok(typeof adminSync.payload.data.unchanged === 'number');
     assert.ok(typeof adminSync.payload.data.changed === 'number');
   });
+});
+
+test('analyzeContentDrift detects metric changes, academic year updates, and character deltas', () => {
+  const prevText = 'First Year B.Tech Intake for AY 2025-26: Computer Engineering is 60 seats, Mechanical is 60 seats.';
+  const newText = 'First Year B.Tech Intake for AY 2026-27: Computer Engineering is 120 seats, Mechanical is 60 seats, AI & DS is 60 seats.';
+
+  const drift = analyzeContentDrift(prevText, newText);
+  assert.equal(drift.type, 'drift_detected');
+  assert.ok(drift.lengthDelta > 0);
+  assert.match(drift.summary, /Content drift detected/);
+
+  const numMetric = drift.metricChanges.find((m) => m.metric === 'numeric_values');
+  assert.ok(numMetric);
+  assert.ok(numMetric.added.includes('120') || numMetric.added.includes('2026'));
+
+  const yearMetric = drift.metricChanges.find((m) => m.metric === 'academic_years');
+  assert.ok(yearMetric);
+  assert.deepEqual(yearMetric.previous, ['2025-26']);
+  assert.deepEqual(yearMetric.current, ['2026-27']);
 });
 

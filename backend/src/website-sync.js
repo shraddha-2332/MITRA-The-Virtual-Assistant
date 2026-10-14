@@ -96,6 +96,59 @@ export async function defaultFetcher(url, timeoutMs = 8000) {
   }
 }
 
+export function analyzeContentDrift(previousText, newText) {
+  const prev = String(previousText || '');
+  const curr = String(newText || '');
+  if (!prev) {
+    return {
+      type: 'initial_capture',
+      lengthDelta: curr.length,
+      previousLength: 0,
+      newLength: curr.length,
+      summary: `Initial official source capture: ${curr.length} characters staged for review.`,
+      metricChanges: [],
+    };
+  }
+
+  const prevNumbers = new Set(prev.match(/\b\d+(?:[.,]\d+)?\b/g) || []);
+  const currNumbers = new Set(curr.match(/\b\d+(?:[.,]\d+)?\b/g) || []);
+  const addedNumbers = [...currNumbers].filter((n) => !prevNumbers.has(n));
+  const removedNumbers = [...prevNumbers].filter((n) => !currNumbers.has(n));
+
+  const prevYears = [...new Set(prev.match(/20\d{2}[-–/]\d{2,4}/g) || [])];
+  const currYears = [...new Set(curr.match(/20\d{2}[-–/]\d{2,4}/g) || [])];
+
+  const lengthDelta = curr.length - prev.length;
+  const metricChanges = [];
+
+  if (addedNumbers.length > 0 || removedNumbers.length > 0) {
+    metricChanges.push({
+      metric: 'numeric_values',
+      added: addedNumbers.slice(0, 10),
+      removed: removedNumbers.slice(0, 10),
+    });
+  }
+
+  if (JSON.stringify(prevYears) !== JSON.stringify(currYears)) {
+    metricChanges.push({
+      metric: 'academic_years',
+      previous: prevYears,
+      current: currYears,
+    });
+  }
+
+  const summary = `Content drift detected: ${lengthDelta >= 0 ? '+' : ''}${lengthDelta} chars. ${addedNumbers.length} new figures, ${removedNumbers.length} removed figures.`;
+
+  return {
+    type: 'drift_detected',
+    lengthDelta,
+    previousLength: prev.length,
+    newLength: curr.length,
+    summary,
+    metricChanges,
+  };
+}
+
 export async function syncMonitoredWebsiteSources({
   db,
   user = { email: 'system:website-sync', role: 'admin' },
@@ -112,6 +165,7 @@ export async function syncMonitoredWebsiteSources({
     unchanged: 0,
     errors: [],
     stagedSources: [],
+    driftReports: [],
   };
 
   db.officialSources = db.officialSources || [];
@@ -143,6 +197,8 @@ export async function syncMonitoredWebsiteSources({
       }
     }
 
+    const drift = analyzeContentDrift(existing?.extractedText || '', cleaned);
+
     let stagedRecord;
     if (existing && existing.status === 'Review') {
       existing.extractedText = cleaned;
@@ -150,6 +206,7 @@ export async function syncMonitoredWebsiteSources({
       existing.extractionStatus = `Automated website sync updated — pending maintainer review (${cleaned.length} chars)`;
       existing.updatedAt = now;
       existing.syncMeta = { syncedAt: now, sourceUrl: source.url, length: cleaned.length };
+      existing.driftAnalysis = drift;
       stagedRecord = existing;
     } else {
       const id = `SRC-SYNC-${Math.random().toString(36).slice(2, 8).toUpperCase()}`;
@@ -179,12 +236,18 @@ export async function syncMonitoredWebsiteSources({
         createdAt: now,
         updatedAt: now,
         syncMeta: { syncedAt: now, sourceUrl: source.url, length: cleaned.length },
+        driftAnalysis: drift,
       };
       db.officialSources.unshift(stagedRecord);
     }
 
     summary.changed += 1;
     summary.stagedSources.push(stagedRecord);
+    summary.driftReports.push({
+      url: source.url,
+      title: source.title,
+      drift,
+    });
     if (auditFn) {
       auditFn('official_source.synced', 'official_source', stagedRecord.id, user, `${source.title} (${source.url})`);
     }

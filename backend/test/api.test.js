@@ -1374,3 +1374,50 @@ test('developer short-tail and long-tail keywords resolve with grounded verified
   });
 });
 
+test('strategic improvement options: multi-turn session context, suggestions chips, fuzzy retrieval, and promissory guardrails', async () => {
+  await withServer(async (base) => {
+    const token = await login(base, 'applicant@example.com');
+    const headers = { Authorization: `Bearer ${token}` };
+
+    // Option E: Multi-turn session context memory
+    const turn1 = await request(base, '/api/conversations/ask', {
+      method: 'POST',
+      headers,
+      body: JSON.stringify({ question: 'I belong to OBC category and scored well in CET' }),
+    });
+    assert.equal(turn1.response.status, 200);
+    const chat = turn1.payload.data.conversation;
+    assert.equal(chat.context?.category, 'OBC');
+
+    const turn2 = await request(base, '/api/conversations/ask', {
+      method: 'POST',
+      headers,
+      body: JSON.stringify({ question: 'What are the engineering fees?', conversationId: chat.id }),
+    });
+    assert.equal(turn2.response.status, 200);
+    const chat2 = turn2.payload.data.conversation;
+    assert.equal(chat2.context?.category, 'OBC');
+    const assistantReply = chat2.messages[chat2.messages.length - 1];
+    assert.match(assistantReply.text, /Profile Note \(OBC Category\)/);
+    assert.match(assistantReply.text, /54,582/);
+
+    // Option B: Bare short-tail queries provide quick-action suggestion chips
+    resetRuntimeStateForTests();
+    const placementAsk = await request(base, '/api/public-assistant/ask', {
+      method: 'POST',
+      body: JSON.stringify({ question: 'Placement' }),
+    });
+    assert.equal(placementAsk.response.status, 200);
+    assert.ok(Array.isArray(placementAsk.payload.data.suggestions));
+    assert.ok(placementAsk.payload.data.suggestions.some((s) => s.label.includes('21 LPA')));
+
+    // Option A: Fuzzy retrieval resolves student typos
+    const typoAsk = await request(base, '/api/public-assistant/ask', {
+      method: 'POST',
+      body: JSON.stringify({ question: 'mitcorer hosstl fees' }),
+    });
+    assert.equal(typoAsk.response.status, 200);
+    assert.match(typoAsk.payload.data.answer, /39,000|hostel/i);
+  });
+});
+
