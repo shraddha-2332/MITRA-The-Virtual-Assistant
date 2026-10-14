@@ -81,7 +81,7 @@ export async function askWithHistory(body, user, answerQuestion) {
   conversation.context = updatedContext;
   conversation.messages.push(
     { id: generateId('MSG'), type: 'user', text: question, createdAt: now },
-    { id: generateId('MSG'), type: 'assistant', text: answer.answer, ...pick(answer, ['source', 'sourceUrl', 'officialLinks', 'next', 'actionView', 'actionLabel', 'sections', 'evidence', 'requestedLanguage', 'responseLanguage', 'localizationStatus', 'languageReviewStatus', 'suggestions']), createdAt: now },
+    { id: generateId('MSG'), type: 'assistant', text: answer.answer, ...pick(answer, ['source', 'sourceUrl', 'officialLinks', 'next', 'actionView', 'actionLabel', 'sections', 'evidence', 'requestedLanguage', 'responseLanguage', 'localizationStatus', 'languageReviewStatus', 'suggestions', 'escalation']), createdAt: now },
   );
   conversation.updatedAt = now;
   if (!chat) getDb().conversations.push(conversation);

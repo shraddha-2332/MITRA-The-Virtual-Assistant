@@ -68,6 +68,7 @@ export const api = {
     return upload('/api/assistant/attachments/upload', { token, formData });
   },
   openAssistantAttachment: (token, id) => openProtectedFile(`/api/assistant/attachments/${id}/file`, token),
+  escalateInquiry: (body) => request('/api/public/escalate', { method: 'POST', body }),
   createInquiry: (token, body) => request('/api/inquiries', { token, method: 'POST', body }),
   updateInquiryStatus: (token, id, updates) => request(`/api/inquiries/${id}/status`, { token, method: 'PATCH', body: updates }),
   getAdmissionWorkspace: (token) => request('/api/admission-workspace', { token }),

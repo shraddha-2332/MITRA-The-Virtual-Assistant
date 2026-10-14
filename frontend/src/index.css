@@ -86,6 +86,124 @@ button { border: 0; }
 .publicQuickReplies button, .publicQuickReplies a { flex: 0 0 auto; display: inline-flex; align-items: center; gap: 4px; min-height: 32px; padding: 0 11px; border: 1px solid #174d68; border-radius: 999px; background: #fff; color: #174d68; font-size: 11px; font-weight: 800; text-decoration: none; cursor: pointer; }
 .publicQuickReplies button:hover:not(:disabled), .publicQuickReplies button:focus-visible, .publicQuickReplies a:hover, .publicQuickReplies a:focus-visible { background: #eaf4f6; outline: none; }
 .publicQuickReplies button:disabled { opacity: .55; cursor: wait; }
+
+.escalationCard {
+  margin-top: 10px;
+  padding: 12px 14px;
+  border-radius: 8px;
+  border: 1px solid #fed7aa;
+  background: #fffbf5;
+  color: #7c2d12;
+  box-shadow: 0 2px 8px rgba(124, 45, 18, 0.05);
+}
+.escalationCardHeader {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 800;
+  color: #c2410c;
+  margin-bottom: 6px;
+}
+.escalationCardPrompt {
+  margin: 0 0 10px;
+  font-size: 11.5px;
+  line-height: 1.45;
+  color: #9a3412;
+}
+.escalationActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+}
+.escalationBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  min-height: 30px;
+  padding: 0 10px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 800;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.escalationBtn.callBtn {
+  background: #fff;
+  border: 1px solid #ea580c;
+  color: #c2410c;
+}
+.escalationBtn.callBtn:hover {
+  background: #ffedd5;
+}
+.escalationBtn.staffBtn {
+  background: #ea580c;
+  border: 1px solid #ea580c;
+  color: #fff;
+}
+.escalationBtn.staffBtn:hover {
+  background: #c2410c;
+}
+.escalationSuccess {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  border-radius: 6px;
+  background: #ecfdf5;
+  border: 1px solid #6ee7b7;
+  color: #065f46;
+  font-size: 11px;
+  font-weight: 750;
+}
+.escalationForm {
+  display: grid;
+  gap: 6px;
+  width: 100%;
+  margin-top: 6px;
+  padding: 10px;
+  border-radius: 6px;
+  background: #fff;
+  border: 1px solid #fdba74;
+}
+.escalationForm input {
+  width: 100%;
+  height: 32px;
+  padding: 0 8px;
+  border: 1px solid #fed7aa;
+  border-radius: 5px;
+  font-size: 12px;
+  color: var(--ink);
+  outline: none;
+}
+.escalationForm input:focus {
+  border-color: #ea580c;
+}
+.escalationFormBtns {
+  display: flex;
+  gap: 6px;
+  margin-top: 4px;
+}
+.escalationFormBtns button {
+  height: 30px;
+  padding: 0 10px;
+  border-radius: 5px;
+  font-size: 11px;
+  font-weight: 800;
+  cursor: pointer;
+}
+.escalationFormBtns button[type="submit"] {
+  background: #ea580c;
+  color: #fff;
+  border: 0;
+}
+.escalationFormBtns button[type="button"] {
+  background: #f3f4f6;
+  color: #4b5563;
+  border: 1px solid #d1d5db;
+}
 .publicComposer { display: grid; grid-template-columns: minmax(0, 1fr) 45px; gap: 8px; align-items: center; padding: 10px 12px; border-top: 1px solid #e1e7e3; background: #fff; }
 .publicComposer textarea { width: 100%; max-height: 92px; resize: none; border: 0; outline: 0; color: var(--ink); font-size: 15px; line-height: 1.45; }
 .publicComposer button { width: 42px; height: 42px; display: grid; place-items: center; border-radius: 8px; background: #0d2639; color: #fff; cursor: pointer; }.publicComposer button:disabled { opacity: .45; cursor: default; }

@@ -27,6 +27,8 @@ const publicRoutes = new Set([
   'POST /api/auth/refresh',
   'POST /api/auth/logout',
   'POST /api/public-assistant/ask',
+  'POST /api/public/inquiries',
+  'POST /api/public/escalate',
 ]);
 const allowedRoles = ['applicant', 'parent', 'staff', 'admin'];
 const authAttempts = new Map();
@@ -360,6 +362,47 @@ function createInquiry(body, user) {
   saveDb();
   audit('inquiry.created', 'inquiry', record.id, user, record.topic);
   return record;
+}
+
+export function createPublicEscalatedInquiry(body) {
+  const db = getDb();
+  const now = nowIso();
+  const contact = requireString(body?.contact, 'contact', 160);
+  const question = requireString(body?.question, 'question', 1000);
+  const name = typeof body?.name === 'string' && body.name.trim() ? body.name.trim().slice(0, 120) : 'Prospective Student';
+  const topic = typeof body?.topic === 'string' && body.topic.trim() ? body.topic.trim().slice(0, 80) : 'Human Escalation';
+
+  const record = {
+    id: generateId('INQ'),
+    name,
+    role: 'applicant',
+    topic,
+    priority: 'High',
+    status: 'Needs reply',
+    city: typeof body?.city === 'string' && body.city.trim() ? body.city.trim().slice(0, 80) : 'Not provided',
+    contact,
+    programmeInterest: typeof body?.programmeInterest === 'string' ? body.programmeInterest.trim().slice(0, 160) : '',
+    leadConsent: true,
+    consentRecordedAt: now,
+    question,
+    ownerEmail: contact.includes('@') ? contact : 'public-escalation@mitcorer.edu.in',
+    assignedTo: '',
+    messages: [
+      {
+        id: generateId('MSG'),
+        text: `[Human Escalation from Mitra Assistant]: Question was not found in verified knowledge base. Applicant Question: "${question}"`,
+        authorName: 'Mitra Assistant',
+        authorRole: 'system',
+        createdAt: now,
+      },
+    ],
+    createdAt: now,
+    updatedAt: now,
+  };
+  db.inquiries.unshift(record);
+  saveDb();
+  audit('inquiry.escalated', 'inquiry', record.id, { email: record.ownerEmail, role: 'applicant' }, record.topic);
+  return { success: true, inquiryId: record.id, message: 'Your enquiry has been escalated to MITCORER admissions staff.' };
 }
 
 function updateInquiryStatus(id, body, user) {
@@ -1587,7 +1630,29 @@ export async function answerAdmissionQuestion(body, user) {
   if (contextPrefix) {
     groundedAnswer.answer = contextPrefix + groundedAnswer.answer;
   }
+  const isUnverified = groundedAnswer.source === 'No verified record' || (!evidence.length && ['UNSUPPORTED_TOPIC', 'OUTDATED_EVIDENCE'].includes(outcomeStatus));
+  if (isUnverified) {
+    groundedAnswer.escalation = {
+      available: true,
+      reason: 'UNVERIFIED_INFORMATION',
+      message: 'This question does not have a verified published record. You can escalate directly to our human admissions counselors.',
+      helplines: [
+        { label: 'Admissions Office Desk 1', number: '+91 84599 67882', tel: '+918459967882' },
+        { label: 'Admissions Office Desk 2', number: '+91 86696 62106', tel: '+918669662106' },
+      ],
+      email: 'info.mitcorer@mitpune.edu.in',
+      officeHours: 'Monday to Saturday, 9:30 AM to 5:30 PM IST',
+      actionLabel: 'Escalate to Admissions Staff',
+    };
+  }
   groundedAnswer.suggestions = generateQuerySuggestions(question, normalized);
+  if ((!groundedAnswer.suggestions || groundedAnswer.suggestions.length === 0) && isUnverified) {
+    groundedAnswer.suggestions = [
+      { label: 'Connect with Admissions Staff', question: 'What is the MITCORER admission helpline number?' },
+      { label: 'College Timings & Office Hours', question: 'What are the MITCORER office hours and college timings?' },
+      { label: 'Campus Address & Directions', question: 'Where is MITCORER located and what is the address?' },
+    ];
+  }
   return localizeResponse(groundedAnswer, language, normalized, evidence, academicFeeSelection, parseLegacyFactText);
 }
 
@@ -1903,6 +1968,11 @@ async function handleApi(req) {
     const clientKey = getClientIp(req);
     enforceRateLimit(publicAssistantAttempts, clientKey, config.publicAssistantRateLimitMax, 60_000);
     return answerAdmissionQuestion(body, null);
+  }
+  if (req.method === 'POST' && (url.pathname === '/api/public/inquiries' || url.pathname === '/api/public/escalate')) {
+    const clientKey = getClientIp(req);
+    enforceRateLimit(publicAssistantAttempts, clientKey, config.publicAssistantRateLimitMax, 60_000);
+    return createPublicEscalatedInquiry(body);
   }
   if (req.method === 'GET' && url.pathname === '/api/conversations') return listConversations(user, url.searchParams.get('offset'));
   const conversationMatch = url.pathname.match(/^\/api\/conversations\/([^/]+)$/);

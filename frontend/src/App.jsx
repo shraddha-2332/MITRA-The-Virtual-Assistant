@@ -468,8 +468,8 @@ function PublicAssistantWidget() {
     try {
       const answer = await api.askPublicAssistant(question, language);
       setMessages((items) => [...items,
-        { type: 'assistant', text: answer.answer, next: answer.next, source: answer.source, sourceUrl: answer.sourceUrl, officialLinks: answer.officialLinks, evidence: answer.evidence, sections: answer.sections, requestedLanguage: answer.requestedLanguage, showQuickReplies: !answer.answerPart2, choices: retainedChoices || undefined, suggestions: answer.suggestions },
-        ...(answer.answerPart2 ? [{ type: 'assistant', text: answer.answerPart2, choices: retainedChoices || undefined, suggestions: answer.suggestions }] : []),
+        { type: 'assistant', text: answer.answer, next: answer.next, source: answer.source, sourceUrl: answer.sourceUrl, officialLinks: answer.officialLinks, evidence: answer.evidence, sections: answer.sections, requestedLanguage: answer.requestedLanguage, showQuickReplies: !answer.answerPart2, choices: retainedChoices || undefined, suggestions: answer.suggestions, escalation: answer.escalation, originalQuestion: question },
+        ...(answer.answerPart2 ? [{ type: 'assistant', text: answer.answerPart2, choices: retainedChoices || undefined, suggestions: answer.suggestions, escalation: answer.escalation, originalQuestion: question }] : []),
       ]);
     } catch (error) {
       const limited = /Too many requests/.test(error.message);
@@ -554,6 +554,9 @@ function PublicAssistantWidget() {
             <div>
               <PublicAnswerBody message={message} />
               {publicAnswerLinks(message, { firstYear: feeFirstYearImage, directSecondYear: feeDirectSecondYearImage, hostel: hostelMessFeeImage }).map(link => <a key={link.url} href={link.url} target="_blank" rel="noreferrer">{link.label} <ArrowRight size={13} /></a>)}
+              {message.type === 'assistant' && (message.escalation?.available || message.source === 'No verified record') && (
+                <PublicEscalationCard message={message} language={language} />
+              )}
             </div>
           </article>{message.type === 'assistant' && (message.suggestions?.length > 0 || message.showQuickReplies !== false) && <section className="publicQuickReplies publicQuickRepliesInline" aria-label="Quick questions"><div>{(message.suggestions && message.suggestions.length > 0 ? message.suggestions : (message.choices || quickReplies)).map((topic) => topic.href ? <a key={topic.label} href={topic.href} target="_blank" rel="noreferrer">{topic.label} <ArrowRight size={13} /></a> : <button key={topic.label} type="button" disabled={busy} onClick={() => selectTopic(topic)}>{topic.label}</button>)}</div></section>}</Fragment>)}
           {busy && <article className="publicBubble assistant"><div className="publicBubbleAvatar"><img src={mitcorerLogo} alt="" /></div><div className="typingDots" role="status" aria-label={language === 'mr' ? 'माहिती तपासत आहे' : language === 'hi' ? 'जानकारी जाँची जा रही है' : 'Checking information'}><i /><i /><i /></div></article>}
@@ -567,6 +570,127 @@ function PublicAssistantWidget() {
       </section>}
       <button className="assistantLauncher" type="button" onClick={() => setOpen(true)} aria-label="Open MIT Barshi admission assistant"><span className="launcherPulse" /><img src={mitcorerLogo} alt="" /></button>
     </main>
+  );
+}
+
+function PublicEscalationCard({ message, language }) {
+  const [showForm, setShowForm] = useState(false);
+  const [name, setName] = useState('');
+  const [contact, setContact] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
+  const [error, setError] = useState('');
+
+  const escalation = message.escalation || {
+    available: true,
+    helplines: [
+      { label: 'Desk 1', number: '+91 84599 67882', tel: '+918459967882' },
+      { label: 'Desk 2', number: '+91 86696 62106', tel: '+918669662106' },
+    ],
+    email: 'info.mitcorer@mitpune.edu.in',
+    officeHours: 'Monday to Saturday, 9:30 AM to 5:30 PM IST',
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!contact.trim()) return;
+    setSubmitting(true);
+    setError('');
+    try {
+      await api.escalateInquiry({
+        name: name.trim() || 'Prospective Student',
+        contact: contact.trim(),
+        question: message.originalQuestion || message.text || 'Inquiry regarding MITCORER admissions',
+        topic: 'Human Escalation',
+      });
+      setSubmitted(true);
+      setShowForm(false);
+    } catch (err) {
+      setError(err.message || 'Could not send escalation request. Please call directly.');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const headerTitle = language === 'mr'
+    ? 'मानव प्रवेश सल्लागारांशी संपर्क साधा'
+    : language === 'hi'
+      ? 'मानव प्रवेश परामर्शदाता से संपर्क करें'
+      : 'Connect with Admission Counselors';
+
+  const promptText = language === 'mr'
+    ? 'या प्रश्नाची अधिकृत माहिती खात्रीशीर नसल्यास, थेट आमच्या प्रवेश कार्यालयाशी बोला किंवा संपर्क नोंदवा:'
+    : language === 'hi'
+      ? 'यदि इस प्रश्न की आधिकारिक जानकारी सत्यापित नहीं है, तो सीधे हमारे प्रवेश कार्यालय से संपर्क करें:'
+      : 'For unverified queries or specific guidance, connect directly with MITCORER admissions staff:';
+
+  return (
+    <div className="escalationCard" role="region" aria-label="Admissions escalation">
+      <div className="escalationCardHeader">
+        <Phone size={13} aria-hidden="true" />
+        <span>{headerTitle}</span>
+      </div>
+      <p className="escalationCardPrompt">{promptText}</p>
+      {submitted ? (
+        <div className="escalationSuccess">
+          <CheckCircle2 size={14} />
+          <span>
+            {language === 'mr'
+              ? 'तुमची विनंती नोंदवली गेली आहे! आमचे प्रवेश अधिकारी लवकरच संपर्क साधतील.'
+              : language === 'hi'
+                ? 'आपका अनुरोध दर्ज कर लिया गया है! हमारे प्रवेश अधिकारी शीघ्र संपर्क करेंगे।'
+                : 'Callback requested! Our admissions counselor will contact you shortly.'}
+          </span>
+        </div>
+      ) : (
+        <>
+          <div className="escalationActions">
+            {escalation.helplines?.map((hl) => (
+              <a key={hl.tel} href={`tel:${hl.tel.replace(/[^0-9+]/g, '')}`} className="escalationBtn callBtn">
+                <Phone size={11} /> {hl.number}
+              </a>
+            ))}
+            {!showForm && (
+              <button
+                type="button"
+                className="escalationBtn staffBtn"
+                onClick={() => setShowForm(true)}
+              >
+                {language === 'mr' ? 'कॉल-बॅक विनंती करा' : language === 'hi' ? 'कॉल-बैक अनुरोध करें' : 'Request Staff Callback'}
+              </button>
+            )}
+          </div>
+          {showForm && (
+            <form className="escalationForm" onSubmit={handleSubmit}>
+              <input
+                type="text"
+                placeholder={language === 'mr' ? 'तुमचे नाव (पर्यायी)' : language === 'hi' ? 'आपका नाम (वैकल्पिक)' : 'Your Name (optional)'}
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                disabled={submitting}
+              />
+              <input
+                type="text"
+                placeholder={language === 'mr' ? 'फोन नंबर किंवा ईमेल*' : language === 'hi' ? 'फ़ोन नंबर या ईमेल*' : 'Phone number or Email*'}
+                value={contact}
+                required
+                onChange={(e) => setContact(e.target.value)}
+                disabled={submitting}
+              />
+              {error && <span style={{ color: '#b91c1c', fontSize: '11px' }}>{error}</span>}
+              <div className="escalationFormBtns">
+                <button type="submit" disabled={submitting || !contact.trim()}>
+                  {submitting ? '...' : language === 'mr' ? 'पाठवा' : language === 'hi' ? 'भेजें' : 'Submit'}
+                </button>
+                <button type="button" onClick={() => setShowForm(false)} disabled={submitting}>
+                  {language === 'mr' ? 'रद्द करा' : language === 'hi' ? 'रद्द करें' : 'Cancel'}
+                </button>
+              </div>
+            </form>
+          )}
+        </>
+      )}
+    </div>
   );
 }
 

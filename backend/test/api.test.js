@@ -1421,3 +1421,50 @@ test('strategic improvement options: multi-turn session context, suggestions chi
   });
 });
 
+test('human escalation is triggered when information is unverified and creates high-priority inquiry', async () => {
+  await withServer(async (base) => {
+    // 1. Ask a question with no verified record (unsupported medical course)
+    const askResult = await request(base, '/api/public-assistant/ask', {
+      method: 'POST',
+      body: JSON.stringify({ question: 'Does MITCORER offer MBBS or BDS medical degrees?' }),
+    });
+    assert.equal(askResult.response.status, 200);
+    assert.equal(askResult.payload.data.source, 'No verified record');
+    assert.ok(askResult.payload.data.escalation, 'Escalation object must be attached');
+    assert.equal(askResult.payload.data.escalation.available, true);
+    assert.equal(askResult.payload.data.escalation.reason, 'UNVERIFIED_INFORMATION');
+    assert.ok(Array.isArray(askResult.payload.data.escalation.helplines));
+    assert.ok(askResult.payload.data.escalation.helplines.some((h) => h.number.includes('84599 67882')));
+
+    // 2. Submit escalation inquiry via public escalation endpoint
+    const escalateResult = await request(base, '/api/public/escalate', {
+      method: 'POST',
+      body: JSON.stringify({
+        name: 'Aarav Deshmukh',
+        contact: '+919876543210',
+        question: 'Does MITCORER offer MBBS course and hospital training?',
+        topic: 'Human Escalation',
+      }),
+    });
+    assert.equal(escalateResult.response.status, 200);
+    assert.equal(escalateResult.payload.data.success, true);
+    assert.ok(escalateResult.payload.data.inquiryId);
+
+    // 3. Verify inquiry is saved in store with High priority and Needs reply status
+    const admin = await login(base, 'admin@mitcorer.edu.in');
+    const inquiriesList = await request(base, '/api/inquiries', {
+      headers: { Authorization: `Bearer ${admin}` },
+    });
+    const escalatedInquiry = inquiriesList.payload.data.items.find(
+      (item) => item.id === escalateResult.payload.data.inquiryId
+    );
+    assert.ok(escalatedInquiry, 'Inquiry must exist in staff inquiries dashboard');
+    assert.equal(escalatedInquiry.name, 'Aarav Deshmukh');
+    assert.equal(escalatedInquiry.priority, 'High');
+    assert.equal(escalatedInquiry.status, 'Needs reply');
+    assert.equal(escalatedInquiry.topic, 'Human Escalation');
+    assert.match(escalatedInquiry.messages[0].text, /Human Escalation from Mitra Assistant/);
+  });
+});
+
+
