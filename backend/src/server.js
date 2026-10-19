@@ -18,6 +18,7 @@ import { getDb, loadDb, saveDb } from './store.js';
 import { generateId, jsonResponse, nowIso, pick, requireString } from './utils.js';
 import { verifyGeneratedAnswer, classifyAnswerOutcome } from './grounding.js';
 import { syncMonitoredWebsiteSources } from './website-sync.js';
+import { computeConceptScore, getSemanticVectorScores, syncKnowledgeVectorIndex } from './semantic.js';
 
 const publicRoutes = new Set([
   'GET /api/health',
@@ -1242,7 +1243,7 @@ function buildFacilityAnswer(question) {
   return null;
 }
 
-export function retrieveKnowledge(question) {
+export function retrieveKnowledge(question, vectorScores = null) {
   const normalizedQuestion = normalizeIntentText(question);
   const rawQuestion = String(question || '').normalize('NFKC').toLocaleLowerCase();
   if (/\b(?:personal\s*(?:whatsapp|phone|number|mobile|contact)|private\s*(?:number|phone|mobile|contact)|student\s*(?:phone|mobile|number|record)|personal record)\b/i.test(rawQuestion)) {
@@ -1439,7 +1440,10 @@ export function retrieveKnowledge(question) {
         return total + (words.has(tag) ? 10 : 0);
       }, 0);
       const referenceTokenScore = referenceTokens.some((token) => `${item.title} ${item.text}`.toLocaleLowerCase().includes(token)) ? 200 : 0;
-      const score = relevanceScore + tagScore + referenceTokenScore + (item.category.toLocaleLowerCase() === preferredCategory ? 20 : 0) + (targetedRecordIds.has(item.id) ? 50 : 0) + (primaryRecordIds.has(item.id) ? 100 : 0);
+      const conceptScore = computeConceptScore(question, item);
+      const vectorScore = (vectorScores instanceof Map) ? (vectorScores.get(item.id) || 0) : 0;
+      const semanticBoost = Math.max(conceptScore, vectorScore);
+      const score = relevanceScore + tagScore + referenceTokenScore + semanticBoost + (item.category.toLocaleLowerCase() === preferredCategory ? 20 : 0) + (targetedRecordIds.has(item.id) ? 50 : 0) + (primaryRecordIds.has(item.id) ? 100 : 0);
       return { ...item, score };
     })
     .filter((item) => item.score >= 2)
@@ -1744,7 +1748,10 @@ export async function answerAdmissionQuestion(body, user) {
     'Engineering eligibility and branch allotment guidance': 'KB-5', 'Document workflow': 'KB-1', 'Admission CAP workflow': 'KB-29',
     'Fee planner': 'KB-2', 'Scholarship readiness': 'KB-18', 'Program finder': /polytechnic/.test(normalized) ? 'KB-12' : /direct second|dse|lateral/.test(normalized) ? 'KB-11' : 'KB-10',
     'Career outcome guidance': 'KB-4', 'Hostel and mess planning': 'KB-23' };
-  const retrievedEvidence = retrieveKnowledge(question);
+  const vectorScores = (language === 'en' && config.geminiApiKey && config.geminiApiKey !== 'test-unused-key' && process.env.NODE_ENV !== 'test')
+    ? await getSemanticVectorScores(question, records)
+    : new Map();
+  const retrievedEvidence = retrieveKnowledge(question, vectorScores);
   // Do not attach a loosely matched MITCORER record to an unrelated question.
   let evidence = retrievedEvidence[0]?.score >= 15 ? retrievedEvidence : [];
 
@@ -2294,6 +2301,9 @@ async function handleApi(req) {
 
 export function createServer() {
   loadDb();
+  if (config.geminiApiKey && config.geminiApiKey !== 'test-unused-key' && process.env.NODE_ENV !== 'test') {
+    syncKnowledgeVectorIndex(getDb().knowledge, config.geminiApiKey).catch(() => {});
+  }
   return http.createServer(async (req, res) => {
     const requestId = generateId('REQ');
     res.setHeader('X-Request-Id', requestId);

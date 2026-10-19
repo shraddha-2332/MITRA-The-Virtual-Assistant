@@ -61,6 +61,20 @@ export function extractConversationContext(text, existingContext = {}) {
     context.quota = 'Institute Level';
   }
 
+  // Gender identification for concessions & accommodation
+  if (/\b(?:girls?|female|women|ladies)\b/.test(norm)) {
+    context.gender = 'girls';
+  } else if (/\b(?:boys?|male|men)\b/.test(norm)) {
+    context.gender = 'boys';
+  }
+
+  // Admission route
+  if (/\b(?:dse|direct second|lateral entry)\b/.test(norm)) {
+    context.route = 'DSE';
+  } else if (/\b(?:first year|fe|freshman)\b/.test(norm)) {
+    context.route = 'First Year';
+  }
+
   // Active topic identification for conversational follow-ups
   if (/\b(?:hostel|mess|accommodation|stay|room|warden)\b/.test(norm)) {
     context.lastTopic = 'hostel';
@@ -77,6 +91,64 @@ export function extractConversationContext(text, existingContext = {}) {
   return context;
 }
 
+export function resolveConversationalQuestion(question, chat, context = {}) {
+  const norm = String(question || '').normalize('NFKC').toLowerCase().trim();
+  if (!chat || !Array.isArray(chat.messages) || chat.messages.length === 0) {
+    return question;
+  }
+  // If the query is already an explicit, comprehensive college inquiry, keep as-is.
+  if (/\b(?:mitcorer|barshi|campus|college)\b/.test(norm) && norm.split(/\s+/).length > 8) {
+    return question;
+  }
+
+  const isBareOrPronoun = /\b(?:it|this|that|there|they|them|its|same|tell me more|is it)\b/.test(norm)
+    || /^(?:and|what about|how about|any|for)\b/.test(norm)
+    || norm.split(/\s+/).length <= 4;
+
+  // 1. Hostel & mess follow-ups
+  if (context.lastTopic === 'hostel' && !/\b(?:hostel|room)\b/.test(norm)) {
+    return `Hostel inquiry: ${question}`;
+  }
+
+  // 2. Fee follow-ups
+  if (isBareOrPronoun && (context.lastTopic === 'fees' || /\b(?:fee|fees|cost|tuition|charges|shulka|concession)\b/.test(norm))) {
+    if (/\b(?:girls?|female|women|ladies)\b/.test(norm)) {
+      return `What is the engineering fee concession for girl students${context.branch ? ' in ' + context.branch : ''}?`;
+    }
+    if (context.branch && !/\b(?:computer|mechanical|civil|railway|ai|data science|entc|electronics)\b/.test(norm) && !/\b(?:engineering fees?)\b/.test(norm)) {
+      return `What are the engineering fees for ${context.branch}?`;
+    }
+    if (!/\b(?:fee|fees|cost|tuition)\b/.test(norm)) {
+      return `Engineering fee inquiry: ${question}`;
+    }
+  }
+
+  // 3. Intake / seats follow-ups (e.g. "what is the intake?", "how many seats?")
+  if (/\b(?:intake|seats?|seat matrix|capacity)\b/.test(norm) && context.branch && !/\b(?:computer|mechanical|civil|railway|ai|data science|entc|electronics)\b/.test(norm)) {
+    return `What is the intake and seat capacity for ${context.branch}?`;
+  }
+
+  // 4. Cutoff follow-ups (e.g. "what was the cutoff?", "last year cutoff?")
+  if (/\b(?:cutoff|cut off|merit|percentile|rank)\b/.test(norm) && context.branch && !/\b(?:computer|mechanical|civil|railway|ai|data science|entc|electronics)\b/.test(norm)) {
+    return `What was the cutoff for ${context.branch}?`;
+  }
+
+  // 5. Placement follow-ups (e.g. "highest package?", "top recruiters?", "average salary?")
+  if (context.lastTopic === 'placement' && !/\b(?:placement|package|recruiter)\b/.test(norm)) {
+    if (context.branch && !/\b(?:computer|mechanical|civil|railway|ai|data science|entc|electronics)\b/.test(norm)) {
+      return `Placement inquiry for ${context.branch}: ${question}`;
+    }
+    return `Placement inquiry: ${question}`;
+  }
+
+  // 6. Branch context fallback for short follow-ups
+  if (context.branch && isBareOrPronoun && !/\b(?:computer|mechanical|civil|railway|ai|data science|entc|electronics)\b/.test(norm)) {
+    return `${question} for ${context.branch}`;
+  }
+
+  return question;
+}
+
 export async function askWithHistory(body, user, answerQuestion) {
   if (typeof body.question !== 'string' || !body.question.trim() || body.question.trim().length > 1000) {
     throw badRequest('Enter a question of up to 1000 characters.');
@@ -85,7 +157,8 @@ export async function askWithHistory(body, user, answerQuestion) {
   const chat = body.conversationId ? getConversation(body.conversationId, user) : null;
   if (chat && chat.messages.length >= 200) throw badRequest('This conversation is full. Start a new chat to continue.');
   const updatedContext = extractConversationContext(question, chat?.context || {});
-  const answer = await answerQuestion({ question, language: body.language, context: updatedContext }, user);
+  const contextualQuestion = resolveConversationalQuestion(question, chat, updatedContext);
+  const answer = await answerQuestion({ question: contextualQuestion, language: body.language, context: updatedContext }, user);
   const now = nowIso();
   const conversation = chat || {
     id: generateId('CHAT'), ownerId: user.id, title: question.replace(/\s+/g, ' ').slice(0, 80),
@@ -119,20 +192,7 @@ export async function askPublicWithHistory(body, answerQuestion) {
     : null;
 
   const updatedContext = extractConversationContext(question, chat?.context || {});
-
-  // Resolving follow-up references using conversational topic context:
-  // e.g. "what about for OBC?", "is mess included?", "what are the timings?"
-  let contextualQuestion = question;
-  const isShortFollowUp = question.split(/\s+/).length <= 6 && !/\b(?:b\.?tech|mitcorer|barshi|college)\b/i.test(question);
-  if (isShortFollowUp && updatedContext.lastTopic) {
-    if (updatedContext.lastTopic === 'hostel' && !/\b(?:hostel|mess|room)\b/i.test(question)) {
-      contextualQuestion = `Hostel inquiry: ${question}`;
-    } else if (updatedContext.lastTopic === 'fees' && !/\b(?:fee|fees|cost|tuition)\b/i.test(question)) {
-      contextualQuestion = `Engineering fee inquiry: ${question}`;
-    } else if (updatedContext.lastTopic === 'placement' && !/\b(?:placement|package|recruiter)\b/i.test(question)) {
-      contextualQuestion = `Placement inquiry: ${question}`;
-    }
-  }
+  const contextualQuestion = resolveConversationalQuestion(question, chat, updatedContext);
 
   const answer = await answerQuestion({
     question: contextualQuestion,

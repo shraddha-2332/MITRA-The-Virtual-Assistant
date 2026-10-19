@@ -17,8 +17,38 @@ function openDatabase() {
       data TEXT NOT NULL,
       updated_at TEXT NOT NULL
     );
+    CREATE TABLE IF NOT EXISTS vector_embeddings (
+      id TEXT PRIMARY KEY,
+      content_hash TEXT NOT NULL,
+      embedding TEXT NOT NULL,
+      updated_at TEXT NOT NULL
+    );
   `);
   return sqlite;
+}
+
+export function getStoredVectors() {
+  try {
+    const rows = openDatabase().prepare('SELECT id, content_hash, embedding FROM vector_embeddings').all();
+    const map = new Map();
+    for (const row of rows) {
+      try {
+        map.set(row.id, { hash: row.content_hash, vector: JSON.parse(row.embedding) });
+      } catch {}
+    }
+    return map;
+  } catch {
+    return new Map();
+  }
+}
+
+export function saveStoredVector(id, contentHash, vector) {
+  try {
+    openDatabase().prepare(`
+      INSERT OR REPLACE INTO vector_embeddings (id, content_hash, embedding, updated_at)
+      VALUES (?, ?, ?, ?)
+    `).run(id, contentHash, JSON.stringify(vector), new Date().toISOString());
+  } catch {}
 }
 
 function readCollection(name) {
