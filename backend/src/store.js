@@ -59,6 +59,7 @@ function normalizeDb(nextDb) {
     conversations: nextDb.conversations || [],
     knowledge: nextDb.knowledge || [],
     officialSources: existingOfficialSources,
+    feedback: nextDb.feedback || [],
   };
 }
 

@@ -14,15 +14,16 @@ export function selectLanguage(question, preference = 'auto') {
   if (named) return { english: 'en', marathi: 'mr', hindi: 'hi' }[named[1]];
   if (/मराठीत|मराठी/.test(text)) return 'mr';
   if (/हिंदी|हिन्दी/.test(text)) return 'hi';
-  const marathi = /मला|सांगा|आहे|किती|मध्ये|त्याची|कोणता/.test(text);
+  const marathi = /मला|सांगा|आहे|किती|मध्ये|त्याची|कोणता|प्रवेश|शुल्क|वसतिगृह/.test(text);
   const hindi = /मुझे|बताइए|कितना|क्या|उसकी|उसका|\sहै(?:\s|[?.]|$)/.test(text);
-  return marathi !== hindi ? marathi ? 'mr' : 'hi' : 'en';
+  return marathi !== hindi ? (marathi ? 'mr' : 'hi') : 'en';
 }
 
 export function normalizeLocalTerms(question) {
   let text = normalizeDigits(String(question).normalize('NFKC'));
   text = text.replace(/^(?:please\s+)?(?:answer|reply|respond)(?:\s+to me)?\s+in\s+(?:english|marathi|hindi)\s*[:,]?\s*(?:and\s+)?/i, '');
   const replacements = [
+    // Devanagari mappings
     [/जागा\s+आणि\s+प्रवेश\s+क्षमता|सीट\s*मैट्रिक्स/gu, ' seat matrix '],
     [/संगणक विज्ञान आणि अभियांत्रिकी|कंप्यूटर साइंस एंड इंजीनियरिंग/gu, ' cse '],
     [/प्रवेश क्षमता|प्रवेशक्षमता|प्रवेश की क्षमता/gu, ' intake '],
@@ -38,6 +39,15 @@ export function normalizeLocalTerms(question) {
     [/खर्च|भुगतान|पैसे/gu, ' cost '], [/ठेव|जमा राशि/gu, ' deposit '],
     [/त्यासाठी/gu, ' its '], [/चॉइस कोड/gu, ' choice code '],
     [/शाखांची|शाखाओं/gu, ' branches '], [/सर्व|सभी/gu, ' all '],
+
+    // Romanized Marathi & Hindi mappings to English search equivalents
+    [/\b(?:shulka|fees?|fee|kiti)\b/gi, ' fee '],
+    [/\b(?:vasatigruh|vasatigruha|chhatravas)\b/gi, ' hostel '],
+    [/\b(?:pravesh|dakhila|dakhla)\b/gi, ' admission '],
+    [/\b(?:granthalay|pustakalay)\b/gi, ' library '],
+    [/\b(?:kramank|choice code)\b/gi, ' choice code '],
+    [/\b(?:mahiti|jaankari|jankari)\b/gi, ' information '],
+    [/\b(?:sangnak|sangnak vibhag)\b/gi, ' computer engineering '],
   ];
   for (const [pattern, replacement] of replacements) text = text.replace(pattern, replacement);
   return text;

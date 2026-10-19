@@ -59,7 +59,7 @@ export const api = {
   getConversation: (token, id) => request(`/api/conversations/${encodeURIComponent(id)}`, { token }),
   askInConversation: (token, question, conversationId) => request('/api/conversations/ask', { token, method: 'POST', body: { question, conversationId } }),
   askAssistant: (token, question) => request('/api/assistant/ask', { token, method: 'POST', body: { question } }),
-  askPublicAssistant: (question, language = 'auto') => request('/api/public-assistant/ask', { method: 'POST', body: { question, language } }),
+  askPublicAssistant: (question, language = 'auto', conversationId = null) => request('/api/public-assistant/ask', { method: 'POST', body: { question, language, conversationId } }),
   getAssistantAttachments: (token) => request('/api/assistant/attachments', { token }),
   uploadAssistantAttachment: (token, note, file) => {
     const formData = new FormData();
@@ -69,6 +69,7 @@ export const api = {
   },
   openAssistantAttachment: (token, id) => openProtectedFile(`/api/assistant/attachments/${id}/file`, token),
   escalateInquiry: (body) => request('/api/public/escalate', { method: 'POST', body }),
+  submitFeedback: (body) => request('/api/public/feedback', { method: 'POST', body }),
   createInquiry: (token, body) => request('/api/inquiries', { token, method: 'POST', body }),
   updateInquiryStatus: (token, id, updates) => request(`/api/inquiries/${id}/status`, { token, method: 'PATCH', body: updates }),
   getAdmissionWorkspace: (token) => request('/api/admission-workspace', { token }),

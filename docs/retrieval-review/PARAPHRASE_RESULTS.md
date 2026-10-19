@@ -30,9 +30,13 @@ Reviewer / date / corrections: __________
 
 HTTP contract: passed
 
-For AY 2026-27, the hostel fee is INR 35,000 plus a refundable hostel deposit of INR 5,000, for a hostel total of INR 40,000. Mess fees are INR 42,000 per year. Room availability, hostel and mess rules, and payment process must be confirmed with the college.
+Academic fees: First Year Engineering fees for AY 2026-27 include Open or OMS total INR 1,05,000, Open EBC EWS OBC SEBC boys INR 61,109, girls INR 17,217, VJNT SBC TFWS INR 17,217, and SC ST INR 8,000. Direct Second Year fees for AY 2026-27 include Open or OMS total INR 98,000, Open EBC EWS OBC SEBC boys INR 58,181, girls INR 18,362, VJNT SBC TFWS INR 18,362, and SC ST INR 10,000. These are annual amounts, not semester-wise amounts and not a semester-wise schedule. The record does not establish an installment split. Category concessions require valid admission and category documents. [1]
 
-Evidence IDs: KB-3
+Hostel and mess fees: For AY 2026-27, the hostel fee is INR 35,000 plus a refundable hostel deposit of INR 5,000, for a hostel total of INR 40,000. Room availability, hostel and mess rules, and payment process must be confirmed with the college. [2]
+
+Hostel and mess fees: For AY 2026-27, Mess fees are INR 42,000 per year. Room availability, hostel and mess rules, and payment process must be confirmed with the college. [2]
+
+Evidence IDs: KB-2, KB-3
 
 Correct / incomplete / incorrect / appropriate refusal: __________
 

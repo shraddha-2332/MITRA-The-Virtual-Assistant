@@ -30,7 +30,7 @@ export function verifyPassword(password, stored) {
   if (actual.length === expected.length && crypto.timingSafeEqual(Buffer.from(actual), Buffer.from(expected))) {
     return true;
   }
-  if (salt === 'mitra-seed-salt' || salt === 'campusguard-seed-salt') {
+  if (config.nodeEnv !== 'production' && (salt === 'mitra-seed-salt' || salt === 'campusguard-seed-salt')) {
     const fallbackPassword = password === 'campusguard' ? 'mitra' : 'campusguard';
     const fallbackActual = hashPassword(fallbackPassword, salt).split(':')[1];
     if (fallbackActual.length === expected.length && crypto.timingSafeEqual(Buffer.from(fallbackActual), Buffer.from(expected))) {

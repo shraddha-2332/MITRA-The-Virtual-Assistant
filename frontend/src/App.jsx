@@ -1,9 +1,10 @@
 import { Fragment, useEffect, useRef, useState } from 'react';
 import {
   ArrowLeft, ArrowRight, BookOpen, CheckCircle2, FileText,
-  HandCoins, LockKeyhole, LogOut, Menu, MessageCircle, Phone,
+  HandCoins, LockKeyhole, LogOut, Menu, Phone,
   Send, ShieldCheck, UploadCloud, X,
-  PanelLeftClose, PanelLeftOpen, Languages, Globe, RefreshCw,
+  PanelLeftClose, PanelLeftOpen, Languages, RefreshCw,
+  ThumbsDown, ThumbsUp,
 } from 'lucide-react';
 import feeFirstYearImage from './assets/fee-first-year-2026.jpeg';
 import feeDirectSecondYearImage from './assets/fee-direct-second-year-2026.jpeg';
@@ -11,7 +12,7 @@ import hostelMessFeeImage from './assets/hostel-mess-fee-2026.jpeg';
 import mitcorerLogo from './assets/mitcorer-logo.png';
 import mitcorerCampus from './assets/mitcorer-campus.png';
 import { api } from './api.js';
-import { formatAnswer, formatPublicResponse } from './answer-format.mjs';
+import { formatPublicResponse } from './answer-format.mjs';
 import { publicAnswerLinks } from './public-answer-links.mjs';
 import { KnowledgeRecordEditor } from './KnowledgeRecordEditor.jsx';
 
@@ -28,10 +29,7 @@ const institution = {
   status: ['AICTE approved', 'AY 2026-27 admissions', 'Verified source mode'],
 };
 
-const admissionPhones = [
-  { label: '+91 84599 67882', href: 'tel:+918459967882' },
-  { label: '+91 86696 62106', href: 'tel:+918669662106' },
-];
+
 
 
 const courses = [
@@ -414,6 +412,7 @@ function PublicAssistantWidget() {
   const [input, setInput] = useState('');
   const [busy, setBusy] = useState(false);
   const [activePills, setActivePills] = useState(null);
+  const [conversationId, setConversationId] = useState(null);
   const [teaserDismissed, setTeaserDismissed] = useState(() => {
     try { return sessionStorage.getItem('mitra_teaser_dismissed') === '1'; } catch { return false; }
   });
@@ -447,6 +446,7 @@ function PublicAssistantWidget() {
 
   const resetConversation = () => {
     setActivePills(null);
+    setConversationId(null);
     setInput('');
     setMessages([
       { type: 'assistant', text: "Hello and Welcome to MITCORER! I'm your virtual assistant. How can I help you today?" },
@@ -466,10 +466,13 @@ function PublicAssistantWidget() {
     setInput('');
     setBusy(true);
     try {
-      const answer = await api.askPublicAssistant(question, language);
+      const answer = await api.askPublicAssistant(question, language, conversationId);
+      if (answer.conversationId) {
+        setConversationId(answer.conversationId);
+      }
       setMessages((items) => [...items,
-        { type: 'assistant', text: answer.answer, next: answer.next, source: answer.source, sourceUrl: answer.sourceUrl, officialLinks: answer.officialLinks, evidence: answer.evidence, sections: answer.sections, requestedLanguage: answer.requestedLanguage, showQuickReplies: !answer.answerPart2, choices: retainedChoices || undefined, suggestions: answer.suggestions, escalation: answer.escalation, originalQuestion: question },
-        ...(answer.answerPart2 ? [{ type: 'assistant', text: answer.answerPart2, choices: retainedChoices || undefined, suggestions: answer.suggestions, escalation: answer.escalation, originalQuestion: question }] : []),
+        { type: 'assistant', text: answer.answer, next: answer.next, source: answer.source, sourceUrl: answer.sourceUrl, officialLinks: answer.officialLinks, evidence: answer.evidence, sections: answer.sections, requestedLanguage: answer.requestedLanguage, showQuickReplies: !answer.answerPart2, choices: retainedChoices || undefined, suggestions: answer.suggestions, escalation: answer.escalation, originalQuestion: question, model: answer.model },
+        ...(answer.answerPart2 ? [{ type: 'assistant', text: answer.answerPart2, choices: retainedChoices || undefined, suggestions: answer.suggestions, escalation: answer.escalation, originalQuestion: question, model: answer.model }] : []),
       ]);
     } catch (error) {
       const limited = /Too many requests/.test(error.message);
@@ -556,6 +559,9 @@ function PublicAssistantWidget() {
               {publicAnswerLinks(message, { firstYear: feeFirstYearImage, directSecondYear: feeDirectSecondYearImage, hostel: hostelMessFeeImage }).map(link => <a key={link.url} href={link.url} target="_blank" rel="noreferrer">{link.label} <ArrowRight size={13} /></a>)}
               {message.type === 'assistant' && (message.escalation?.available || message.source === 'No verified record') && (
                 <PublicEscalationCard message={message} language={language} />
+              )}
+              {message.type === 'assistant' && Boolean(message.originalQuestion) && (
+                <AnswerFeedback message={message} language={language} />
               )}
             </div>
           </article>{message.type === 'assistant' && (message.suggestions?.length > 0 || message.showQuickReplies !== false) && <section className="publicQuickReplies publicQuickRepliesInline" aria-label="Quick questions"><div>{(message.suggestions && message.suggestions.length > 0 ? message.suggestions : (message.choices || quickReplies)).map((topic) => topic.href ? <a key={topic.label} href={topic.href} target="_blank" rel="noreferrer">{topic.label} <ArrowRight size={13} /></a> : <button key={topic.label} type="button" disabled={busy} onClick={() => selectTopic(topic)}>{topic.label}</button>)}</div></section>}</Fragment>)}
@@ -689,6 +695,67 @@ function PublicEscalationCard({ message, language }) {
             </form>
           )}
         </>
+      )}
+    </div>
+  );
+}
+
+function AnswerFeedback({ message, language }) {
+  const [voted, setVoted] = useState(null); // 'up' | 'down' | null
+  const [submitting, setSubmitting] = useState(false);
+
+  const handleVote = async (helpful) => {
+    if (voted || submitting) return;
+    setSubmitting(true);
+    try {
+      await api.submitFeedback({
+        question: message.originalQuestion || '',
+        answer: message.text || '',
+        helpful,
+        model: message.model || 'unknown',
+      });
+      setVoted(helpful ? 'up' : 'down');
+    } catch {
+      // Best-effort feedback submission
+      setVoted(helpful ? 'up' : 'down');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  return (
+    <div className="answerFeedbackRow" aria-label="Answer feedback">
+      {voted === null ? (
+        <>
+          <span className="feedbackLabel">
+            {language === 'mr' ? 'हे उत्तर उपयुक्त होते का?' : language === 'hi' ? 'क्या यह उत्तर उपयोगी था?' : 'Was this answer helpful?'}
+          </span>
+          <button
+            type="button"
+            className="feedbackVoteBtn"
+            onClick={() => handleVote(true)}
+            disabled={submitting}
+            title={language === 'mr' ? 'होय' : language === 'hi' ? 'हाँ' : 'Yes'}
+            aria-label="Yes, helpful"
+          >
+            <ThumbsUp size={12} />
+          </button>
+          <button
+            type="button"
+            className="feedbackVoteBtn"
+            onClick={() => handleVote(false)}
+            disabled={submitting}
+            title={language === 'mr' ? 'नाही' : language === 'hi' ? 'नहीं' : 'No'}
+            aria-label="No, not helpful"
+          >
+            <ThumbsDown size={12} />
+          </button>
+        </>
+      ) : (
+        <span className="feedbackThanks">
+          {voted === 'up' ? '👍 ' : '👎 '}
+          {language === 'mr' ? 'तुमच्या अभिप्रायाबद्दल धन्यवाद!' : language === 'hi' ? 'आपकी प्रतिक्रिया के लिए धन्यवाद!' : 'Thanks for your feedback!'}
+        </span>
       )}
     </div>
   );

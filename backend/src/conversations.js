@@ -61,6 +61,19 @@ export function extractConversationContext(text, existingContext = {}) {
     context.quota = 'Institute Level';
   }
 
+  // Active topic identification for conversational follow-ups
+  if (/\b(?:hostel|mess|accommodation|stay|room|warden)\b/.test(norm)) {
+    context.lastTopic = 'hostel';
+  } else if (/\b(?:fee|fees|cost|tuition|installment|scholarship|concession)\b/.test(norm)) {
+    context.lastTopic = 'fees';
+  } else if (/\b(?:placement|recruiter|package|salary|internship|job|career)\b/.test(norm)) {
+    context.lastTopic = 'placement';
+  } else if (/\b(?:admission|cap|cutoff|eligibility|documents?|apply|seat)\b/.test(norm)) {
+    context.lastTopic = 'admission';
+  } else if (/\b(?:lab|laborator|workshop|infrastructure|campus|library)\b/.test(norm)) {
+    context.lastTopic = 'facilities';
+  }
+
   return context;
 }
 
@@ -87,4 +100,84 @@ export async function askWithHistory(body, user, answerQuestion) {
   if (!chat) getDb().conversations.push(conversation);
   saveDb();
   return { conversation: { ...summary(conversation), messages: conversation.messages, context: conversation.context } };
+}
+
+export async function askPublicWithHistory(body, answerQuestion) {
+  if (typeof body?.question !== 'string' || !body.question.trim() || body.question.trim().length > 1000) {
+    throw badRequest('Enter a question of up to 1000 characters.');
+  }
+  const question = body.question.trim();
+  const db = getDb();
+  db.conversations = db.conversations || [];
+
+  const conversationId = typeof body.conversationId === 'string' && body.conversationId.trim()
+    ? body.conversationId.trim()
+    : null;
+
+  const chat = conversationId
+    ? db.conversations.find((item) => item.id === conversationId && item.ownerId === 'public')
+    : null;
+
+  const updatedContext = extractConversationContext(question, chat?.context || {});
+
+  // Resolving follow-up references using conversational topic context:
+  // e.g. "what about for OBC?", "is mess included?", "what are the timings?"
+  let contextualQuestion = question;
+  const isShortFollowUp = question.split(/\s+/).length <= 6 && !/\b(?:b\.?tech|mitcorer|barshi|college)\b/i.test(question);
+  if (isShortFollowUp && updatedContext.lastTopic) {
+    if (updatedContext.lastTopic === 'hostel' && !/\b(?:hostel|mess|room)\b/i.test(question)) {
+      contextualQuestion = `Hostel inquiry: ${question}`;
+    } else if (updatedContext.lastTopic === 'fees' && !/\b(?:fee|fees|cost|tuition)\b/i.test(question)) {
+      contextualQuestion = `Engineering fee inquiry: ${question}`;
+    } else if (updatedContext.lastTopic === 'placement' && !/\b(?:placement|package|recruiter)\b/i.test(question)) {
+      contextualQuestion = `Placement inquiry: ${question}`;
+    }
+  }
+
+  const answer = await answerQuestion({
+    question: contextualQuestion,
+    language: body.language,
+    context: updatedContext,
+  }, null);
+
+  const now = nowIso();
+  const conversation = chat || {
+    id: generateId('CHAT'),
+    ownerId: 'public',
+    title: question.replace(/\s+/g, ' ').slice(0, 80),
+    createdAt: now,
+    updatedAt: now,
+    messages: [],
+    context: updatedContext,
+  };
+
+  conversation.context = updatedContext;
+  conversation.messages.push(
+    { id: generateId('MSG'), type: 'user', text: question, createdAt: now },
+    {
+      id: generateId('MSG'),
+      type: 'assistant',
+      text: answer.answer,
+      ...pick(answer, ['source', 'sourceUrl', 'officialLinks', 'next', 'actionView', 'actionLabel', 'sections', 'evidence', 'requestedLanguage', 'responseLanguage', 'localizationStatus', 'languageReviewStatus', 'suggestions', 'escalation', 'model']),
+      createdAt: now,
+    },
+  );
+  conversation.updatedAt = now;
+
+  if (!chat) {
+    db.conversations.push(conversation);
+    // Keep max 200 public conversations to bound storage
+    const publicChats = db.conversations.filter(c => c.ownerId === 'public');
+    if (publicChats.length > 200) {
+      const oldestId = publicChats[0].id;
+      db.conversations = db.conversations.filter(c => c.id !== oldestId);
+    }
+  }
+  saveDb();
+
+  return {
+    ...answer,
+    conversationId: conversation.id,
+    context: conversation.context,
+  };
 }

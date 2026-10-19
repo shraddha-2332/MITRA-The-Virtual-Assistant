@@ -858,3 +858,52 @@ td select { min-height: 34px; border: 1px solid var(--line); border-radius: 8px;
   .rowUploadBtn, .clearDocBtn { grid-column: 2; width: 100%; }
   .inquiryDetail dl { grid-template-columns: 1fr; }
 }
+
+.answerFeedbackRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 10px;
+  padding-top: 8px;
+  border-top: 1px solid rgba(0, 0, 0, 0.06);
+  font-size: 11px;
+  color: #64748b;
+}
+
+.feedbackLabel {
+  font-size: 11px;
+  color: #64748b;
+}
+
+.feedbackVoteBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  background: #ffffff;
+  color: #475569;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.feedbackVoteBtn:hover:not(:disabled) {
+  background: #f1f5f9;
+  color: #0f172a;
+  border-color: #94a3b8;
+  transform: translateY(-1px);
+}
+
+.feedbackVoteBtn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.feedbackThanks {
+  font-size: 11px;
+  color: #059669;
+  font-weight: 500;
+}

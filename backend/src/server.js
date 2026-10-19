@@ -4,7 +4,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { config } from './config.js';
-import { askWithHistory, getConversation, listConversations } from './conversations.js';
+import { askWithHistory, askPublicWithHistory, getConversation, listConversations } from './conversations.js';
 import { validateKnowledgeFields, buildMaintainedAnswer, academicFeeSelection, parseLegacyFactText, extractPublicFacts } from './knowledge.js';
 import { selectLanguage, localizeResponse, buildReviewedPassage } from './language.js';
 import { buildClarificationAnswer, buildCompoundAnswer, buildContextualPassage } from './question-plan.js';
@@ -29,6 +29,7 @@ const publicRoutes = new Set([
   'POST /api/public-assistant/ask',
   'POST /api/public/inquiries',
   'POST /api/public/escalate',
+  'POST /api/public/feedback',
 ]);
 const allowedRoles = ['applicant', 'parent', 'staff', 'admin'];
 const authAttempts = new Map();
@@ -403,6 +404,33 @@ export function createPublicEscalatedInquiry(body) {
   saveDb();
   audit('inquiry.escalated', 'inquiry', record.id, { email: record.ownerEmail, role: 'applicant' }, record.topic);
   return { success: true, inquiryId: record.id, message: 'Your enquiry has been escalated to MITCORER admissions staff.' };
+}
+
+export function recordFeedback(body) {
+  const db = getDb();
+  const now = nowIso();
+  const question = typeof body?.question === 'string' ? body.question.trim().slice(0, 1000) : '';
+  const answer = typeof body?.answer === 'string' ? body.answer.trim().slice(0, 2000) : '';
+  const helpful = Boolean(body?.helpful);
+  const comment = typeof body?.comment === 'string' ? body.comment.trim().slice(0, 500) : '';
+  const model = typeof body?.model === 'string' ? body.model.trim().slice(0, 60) : 'unknown';
+
+  const entry = {
+    id: generateId('FDB'),
+    question,
+    answer,
+    helpful,
+    comment,
+    model,
+    createdAt: now,
+  };
+
+  db.feedback = db.feedback || [];
+  db.feedback.unshift(entry);
+  db.feedback = db.feedback.slice(0, 1000); // Keep last 1000 feedback records
+  saveDb();
+  audit('feedback.recorded', 'feedback', entry.id, { email: 'public', role: 'applicant' }, helpful ? 'helpful' : 'unhelpful');
+  return { success: true, feedbackId: entry.id, message: 'Thank you for your feedback!' };
 }
 
 function updateInquiryStatus(id, body, user) {
@@ -1419,6 +1447,114 @@ export function retrieveKnowledge(question) {
     .slice(0, 3);
 }
 
+/**
+ * Detect advisory / synthesis questions that deserve a Gemini-generated
+ * conversational answer rather than a flat deterministic database record.
+ * These are open-ended questions asking for explanations, comparisons, or
+ * recommendations — NOT factual lookups (fees, cutoffs, codes, deadlines).
+ */
+function isAdvisoryQuestion(normalized) {
+  const advisoryPatterns = [
+    /\bwhy should\b/,
+    /\bwhy (?:choose|select|pick|join|study|consider)\b/,
+    /\bwhat makes (?:mitcorer|this college|the college|it)\b/,
+    /\bis it worth\b/,
+    /\bhow does (?:mitcorer|the college|this college|practical|learning|training)\b/,
+    /\bdescribe (?:the|mitcorer)\b/,
+    /\bcan you (?:describe|explain|tell me about|give (?:me )?an overview)\b/,
+    /\bexplain (?:the|how|why|what)\b/,
+    /\bwhat (?:is the (?:learning|teaching|practical|training)|are the benefits|are the advantages)\b/,
+    /\bshould i (?:choose|join|apply|consider|go for)\b/,
+    /\btell me (?:about|more about|an overview)\b/,
+    /\boverview of\b/,
+    /\bwhat (?:kind of|type of) (?:learning|experience|environment|training)\b/,
+    /\bhow (?:do students|are students|is the)\b/,
+  ];
+  return advisoryPatterns.some((pattern) => pattern.test(normalized));
+}
+
+/**
+ * FIX #4 — Smart no-answer suggestions.
+ * When Mitra cannot find a verified answer, instead of always showing the same
+ * generic "contact us" buttons, this function analyses what the student was trying
+ * to ask and returns 3 topic-relevant follow-up questions they CAN actually answer.
+ *
+ * This prevents dead ends and keeps the student engaged in the right direction.
+ */
+function buildNoAnswerSuggestions(normalized) {
+  // Placement / career related
+  if (/\b(?:placement|recruiter|package|internship|job|career|company|companies|alumni)\b/.test(normalized)) {
+    return [
+      { label: 'Highest Package (21 LPA)', question: 'What is the highest package at MITCORER?' },
+      { label: 'Top Recruiters List', question: 'Which companies visit MITCORER for campus placement?' },
+      { label: 'T&P Cell & MoUs', question: 'What is the MITCORER Training and Placement cell?' },
+    ];
+  }
+  // Fee / cost / scholarship related
+  if (/\b(?:fee|fees|cost|charge|tuition|scholarship|loan|concession|mahadbt|ebc|ews|tfws)\b/.test(normalized)) {
+    return [
+      { label: 'B.Tech Fee Structure', question: 'What are the B.Tech engineering fees for Open category?' },
+      { label: 'Category Fee Concessions', question: 'What are the engineering fees for OBC and SC categories?' },
+      { label: 'Scholarship Options', question: 'What scholarship support is available at MITCORER?' },
+    ];
+  }
+  // Hostel / accommodation related
+  if (/\b(?:hostel|mess|accommodation|room|food|stay|residential|canteen)\b/.test(normalized)) {
+    return [
+      { label: 'Hostel & Mess Fees', question: 'What are the hostel and mess fees at MITCORER?' },
+      { label: 'Hostel Facilities', question: 'What facilities are available in the MITCORER hostel?' },
+      { label: 'Hostel Admission Process', question: 'What is the MITCORER hostel admission process?' },
+    ];
+  }
+  // Course / program / branch related
+  if (/\b(?:course|courses|programme|branch|department|syllabus|subject|curriculum|btech|b\.tech|diploma)\b/.test(normalized)) {
+    return [
+      { label: 'All B.Tech Courses', question: 'Which B.Tech courses are offered at MITCORER?' },
+      { label: 'Computer Science & Engineering', question: 'Tell me about Computer Science and Engineering at MITCORER' },
+      { label: 'Railway Engineering Focus', question: 'What are the professional railway diplomas at MITCORER?' },
+    ];
+  }
+  // Admission / eligibility / cutoff related
+  if (/\b(?:admission|apply|eligib|cutoff|percentile|mht cet|jee|cap round|document|certificate)\b/.test(normalized)) {
+    return [
+      { label: 'Admission Process', question: 'What is the MITCORER B.Tech admission process?' },
+      { label: 'Eligibility Criteria', question: 'What is the eligibility criteria for B.Tech admission?' },
+      { label: 'Required Documents', question: 'What documents are needed for MITCORER admission?' },
+    ];
+  }
+  // Facilities / campus / infrastructure related
+  if (/\b(?:lab|laborator|workshop|library|facility|facilities|infrastructure|building|campus|equipment)\b/.test(normalized)) {
+    return [
+      { label: 'Labs & Workshops', question: 'What laboratories and workshops are available at MITCORER?' },
+      { label: 'Railway Model Room', question: 'Tell me about the Railway Model Room at MITCORER' },
+      { label: 'Library & Computer Labs', question: 'What are the library and computer lab facilities at MITCORER?' },
+    ];
+  }
+  // Faculty / staff / teaching related
+  if (/\b(?:faculty|teacher|professor|staff|hod|principal|head|department)\b/.test(normalized)) {
+    return [
+      { label: 'Faculty Count & Highlights', question: 'How many faculty members does MITCORER have?' },
+      { label: 'Why Choose MITCORER', question: 'Why should an engineering aspirant consider MITCORER?' },
+      { label: 'Contact Admissions Office', question: 'What is the MITCORER admission helpline number?' },
+    ];
+  }
+  // Contact / location / address related
+  if (/\b(?:contact|phone|email|address|location|reach|distance|timing|office|website)\b/.test(normalized)) {
+    return [
+      { label: 'Admission Helpline & Hours', question: 'What are the MITCORER office timings and admission helpline?' },
+      { label: 'College Address & Map', question: 'Where is MITCORER located and what is the address?' },
+      { label: 'Official Website & Email', question: 'What is the official MITCORER website and email address?' },
+    ];
+  }
+  // Default — generic but still useful suggestions
+  return [
+    { label: 'Admission Process', question: 'What is the MITCORER B.Tech admission process?' },
+    { label: 'B.Tech Fees', question: 'What are the B.Tech engineering fees at MITCORER?' },
+    { label: 'Contact Admissions', question: 'What is the MITCORER admission helpline number?' },
+  ];
+}
+
+
 async function generateWithGemini(question, routedAnswer, evidence) {
   if (!config.geminiApiKey || evidence.length === 0) return null;
   const evidenceText = evidence.map((item, index) => `[${index + 1}] ${item.title} (${item.source}): ${item.text}`).join('\n\n');
@@ -1429,9 +1565,32 @@ async function generateWithGemini(question, routedAnswer, evidence) {
       method: 'POST', signal: controller.signal,
       headers: { 'x-goog-api-key': config.geminiApiKey, 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        systemInstruction: { parts: [{ text: 'You are Mitra, the MIT Barshi admission assistant. Answer only from the verified evidence. Preserve all numbers, dates, eligibility conditions, and uncertainty. Never promise admission, scholarships, accommodation, placements, or deadlines. If the evidence does not answer the question, reply exactly: INSUFFICIENT_EVIDENCE.' }] },
-        contents: [{ role: 'user', parts: [{ text: `Question: ${question}\n\nVerified evidence:\n${evidenceText}\n\nGive a concise, helpful answer in the user’s language.` }] }],
-        generationConfig: { temperature: 0.1, maxOutputTokens: 380 },
+        // FIX #1 — Rich system prompt with college identity, tone, citation rules, and language guidance.
+        systemInstruction: {
+          parts: [{
+            text: `You are Mitra, the friendly and knowledgeable admission assistant for MIT College of Railway Engineering and Research (MITCORER), Barshi, Solapur District, Maharashtra, India.
+
+Your role: Help students, parents, and aspirants understand MITCORER — its admissions, courses, fees, hostel, campus life, placements, and facilities — using only the verified evidence provided.
+
+STRICT RULES you must follow at all times:
+1. Use ONLY the verified evidence provided below. Do NOT add any information from your own training or the internet.
+2. Preserve all numbers, percentages, dates, seat counts, choice codes, and fee amounts EXACTLY as they appear in the evidence — never round, estimate, or change them.
+3. Never promise or guarantee admission, placement, scholarships, hostel allocation, or any specific outcome.
+4. If the provided evidence is insufficient to answer the question accurately, respond EXACTLY with the word: INSUFFICIENT_EVIDENCE
+5. Write in a warm, helpful, specific, and conversational tone — as if a knowledgeable staff member is advising a student in person.
+6. Respond in the same language the student used. If they wrote in English, reply in English. If they wrote in Marathi (or Roman Marathi), reply in Marathi.
+7. Keep your answer concise — under 180 words. Be specific, not vague.
+8. Do not start your answer with "Based on the evidence" or "According to the evidence" — just answer directly.
+
+College context for tone only (do not use as factual source):
+MITCORER is an MIT Group college with a unique focus on railway engineering alongside Computer Science, Mechanical, Civil, Electronics, and AI & Data Science programmes. It is affiliated to PAHSU (Pune) and approved by AICTE, with DTE institute code 06901.`,
+          }],
+        },
+        contents: [{
+          role: 'user',
+          parts: [{ text: `Student question: ${question}\n\nVerified official evidence:\n${evidenceText}\n\nAnswer the student's question warmly and accurately using only the evidence above.` }],
+        }],
+        generationConfig: { temperature: 0.2, maxOutputTokens: 420 },
       }),
     });
     if (!response.ok) return null;
@@ -1567,11 +1726,7 @@ export async function answerAdmissionQuestion(body, user) {
         officeHours: 'Monday to Saturday, 9:30 AM to 5:30 PM IST',
         actionLabel: 'Escalate to Admissions Staff',
       },
-      suggestions: [
-        { label: 'Connect with Admissions Staff', question: 'What is the MITCORER admission helpline number?' },
-        { label: 'College Timings & Office Hours', question: 'What are the MITCORER office hours and college timings?' },
-        { label: 'Campus Address & Directions', question: 'Where is MITCORER located and what is the address?' },
-      ],
+      suggestions: buildNoAnswerSuggestions(normalized),
     };
     audit('assistant.asked', 'assistant', generateId('ASK'), user, unverifiedAnswer.source);
     return localizeResponse(unverifiedAnswer, language, normalized, [], academicFeeSelection, parseLegacyFactText);
@@ -1592,6 +1747,38 @@ export async function answerAdmissionQuestion(body, user) {
   const retrievedEvidence = retrieveKnowledge(question);
   // Do not attach a loosely matched MITCORER record to an unrelated question.
   let evidence = retrievedEvidence[0]?.score >= 15 ? retrievedEvidence : [];
+
+  // FIX #2 — Advisory routing: for open-ended / synthesis questions (e.g. "why should I choose
+  // MITCORER?", "explain the learning environment", "what makes MITCORER unique?"), skip the flat
+  // deterministic KB record and let Gemini synthesise a warm conversational answer from the top
+  // retrieved evidence. The deterministic chain runs as normal fallback if Gemini fails or the
+  // evidence score is too low.
+  if (language === 'en' && isAdvisoryQuestion(normalized) && retrievedEvidence.length > 0 && retrievedEvidence[0].score >= 5) {
+    const advisoryEvidence = retrievedEvidence.slice(0, 3).map(sourceRecord);
+    const rawAdvisory = await generateWithGemini(question, null, advisoryEvidence);
+    if (rawAdvisory) {
+      const advisoryVerification = verifyGeneratedAnswer(rawAdvisory, advisoryEvidence);
+      if (advisoryVerification.verified) {
+        const advisoryOfficialLinks = [
+          ...getOfficialAdmissionLinks(question),
+          ...getOfficialExperienceLinks(question),
+          ...getOfficialFeeLinks(question),
+        ];
+        audit('assistant.asked', 'assistant', generateId('ASK'), user, advisoryEvidence[0]?.source || 'Gemini advisory');
+        return localizeResponse({
+          source: advisoryEvidence[0]?.source || 'MITCORER verified knowledge',
+          answer: rawAdvisory.replace(/CampusGuard/gi, 'the assistant'),
+          evidence: advisoryEvidence.map((r) => publicEvidence(r, Date.now())),
+          officialLinks: uniqueSourceLinks(advisoryOfficialLinks),
+          model: config.geminiModel,
+          outcomeStatus: 'ANSWERED',
+          next: '',
+        }, language, normalized, [], academicFeeSelection, parseLegacyFactText);
+      }
+    }
+    // Gemini failed verification or returned null — fall through to deterministic chain below.
+  }
+
   const answer = (user && (buildAdmissionReadinessAnswer(question, user) || buildDocumentStatusAnswer(question, user))) || buildCompoundAnswer(question, normalized, records) || buildClarificationAnswer(normalized) || buildReviewedPassage(normalized, language, records) || buildContextualPassage(normalized, records) || guard(buildFacilityAnswer(question), /hostel/.test(normalized) ? 'KB-23' : ((/\b(?:sports grounds?|sports facilit\w*|box cricket|cricket ground|volleyball court|volleyball ground|badminton court|campus gym|college gym|gymnasium|physical fitness)\b/.test(normalized) || /\b(?:sports|gym)\b/.test(normalized)) && !/\b(?:world cup|icc|olympics?)\b/.test(normalized)) ? 'KB-48' : /\b(?:central workshop|machine shop|fitting shop|welding shop|carpentry shop|smithy|sheet metal|computer center|computing center|seminar halls?|audiovisual hall)\b/.test(normalized) ? 'KB-49' : /labs|laborator|workshop/.test(normalized) ? 'KB-22' : /bus|transport/.test(normalized) ? 'KB-19' : /library/.test(normalized) ? 'KB-20' : /railway model/.test(normalized) ? 'KB-42' : 'KB-36') || guard(buildCollegeProfileAnswer(question), (/\b(?:sports grounds?|sports facilit\w*|box cricket|cricket ground|volleyball (?:court|ground)|badminton court|campus gym|gymnasium|cultural events?|cultural gathering|annual gathering|cultural fest|shiv jayanti|ganesh (?:utsav|festival))\b/.test(normalized) && !/\b(?:world cup|icc|olympics?)\b/.test(normalized)) ? 'KB-48' : /\b(?:professional diplomas?|railway diplomas?|railway track technology|railway signaling|railway signalling|rolling stocks?(?: and operations)?|software technology in railway|railway specializations?|railway modules?)\b/.test(normalized) ? 'KB-47' : (/\b(?:polytechnic|msbte|diploma)\b/.test(normalized) && !/\b(?:professional diploma|railway diploma|direct second|dse|lateral|fees?|cost|charges?)\b/.test(normalized)) ? 'KB-12' : /\b(?:office hours?|office timings?|working hours?|visiting hours?|admission desk|enquiry desk|college timings?|open on saturday|admission helpline|helpline number|campus visit|visit booking)\b/.test(normalized) ? 'KB-46' : /\b(?:nep(?: 2020)?|national education policy|outcome[- ]based education|obe|medium of instruction|english medium|curriculum pattern)\b/.test(normalized) ? 'KB-45' : /\b(?:anti[- ]?ragging|ragging|campus safety|emergency vehicle|ambulance|medical emergenc\w*|student welfare)\b/.test(normalized) ? 'KB-44' : /\b(?:mous?|corporate readiness|industry partner|aptitude training|soft skills training|campus interview|interview process|recruitment process)\b/.test(normalized) ? 'KB-43' : /\b(?:is mitcorer (?:the )?same as mit pune|mit pune|maeer|parent trust|mit wpu)\b/.test(normalized) ? 'KB-41' : /\b(?:nearest railway station|nearest station|which railway station|station to college|barshi town station|kurduwadi junction|nearest bus|barshi bus stand|how to reach|reach by train|reach by bus|barshi to solapur|solapur to barshi|solapur distance)\b/.test(normalized) ? 'KB-40' : /\b(?:affiliation|affiliated|which university|what university|solapur university|pahsu|aicte|dte code|institute code|06901|principal|madhukar lengare)\b/.test(normalized) ? 'KB-37' : /\b(?:hod|head of department|somnath mule|amit shinde|sanjay mane|honor|minor degree)\b/.test(normalized) || (/\blabs?\b/.test(normalized) && /\b(?:cse|computer|civil|mechanical)\b/.test(normalized)) || /^(?:mechanical engineering|computer engineering|civil engineering)$/.test(normalized) || /\b(?:computer engineering syllabus|mechanical engineering syllabus)\b/.test(normalized) ? 'KB-38' : /\b(?:nss|rail-mit|rail mit|technical event|asimit)\b/.test(normalized) ? 'KB-39' : /\b(?:why|faculty|teacher|professor|staff|alumni|reviews?|ratings?)\b/.test(normalized) && !/\b(?:hiring|recruitment|vacancy|vacancies|job|jobs|career|careers|opening|openings|employment|apply for job|work with us)\b/.test(normalized) ? 'KB-35' : /\b(?:b\.?tech admission|engineering admission|admission process|how to apply|admission 2026)\b/.test(normalized) ? 'KB-29' : /\b(?:education loan|bank loan|loan assistance)\b/.test(normalized) ? 'KB-1' : /\b(?:contact details?|contact number|contact email|phone number|email address|helpline number|contact us|college address|official contact|email and phone|how to contact)\b/.test(normalized) || (/\b(?:contact|phone|telephone|email|address)\b/.test(normalized) && /\b(?:mitcorer|college|barshi|solapur)\b/.test(normalized)) ? 'KB-17' : 'KB-34') || guard(buildCampusFacilitiesAnswer(question), 'KB-36') || guard(buildPlacementAnswer(question), 'KB-16') || guard(buildDeadlineAnswer(question), 'KB-30') || guard(buildAttendanceAnswer(question), ['KB-31', 'KB-32']) || buildMaintainedAnswer(question, normalized, records) || guard(buildEligibilityAnswer(question), 'KB-5') || guard(buildScholarshipAnswer(question), /pragati/.test(normalized) ? 'KB-33' : 'KB-18') || (fallbackRule ? guard(fallbackRule, ruleRecords[fallbackRule.source] || 'KB-15', false) : null) || {
     source: 'No verified record',
     answer: 'I could not find an official answer for that question. Please ask about a specific programme, fee, scholarship, admission step, or campus facility.',
@@ -1698,11 +1885,10 @@ export async function answerAdmissionQuestion(body, user) {
   }
   groundedAnswer.suggestions = generateQuerySuggestions(question, normalized);
   if ((!groundedAnswer.suggestions || groundedAnswer.suggestions.length === 0) && isUnverified) {
-    groundedAnswer.suggestions = [
-      { label: 'Connect with Admissions Staff', question: 'What is the MITCORER admission helpline number?' },
-      { label: 'College Timings & Office Hours', question: 'What are the MITCORER office hours and college timings?' },
-      { label: 'Campus Address & Directions', question: 'Where is MITCORER located and what is the address?' },
-    ];
+    // FIX #4 — Topic-aware suggestions: analyse what the student was asking about
+    // and surface 3 questions they CAN get a real answer for, instead of always
+    // showing the same generic "contact us" buttons.
+    groundedAnswer.suggestions = buildNoAnswerSuggestions(normalized);
   }
   return localizeResponse(groundedAnswer, language, normalized, evidence, academicFeeSelection, parseLegacyFactText);
 }
@@ -2018,12 +2204,21 @@ async function handleApi(req) {
   if (req.method === 'POST' && url.pathname === '/api/public-assistant/ask') {
     const clientKey = getClientIp(req);
     enforceRateLimit(publicAssistantAttempts, clientKey, config.publicAssistantRateLimitMax, 60_000);
-    return answerAdmissionQuestion(body, null);
+    return askPublicWithHistory(body, answerAdmissionQuestion);
   }
   if (req.method === 'POST' && (url.pathname === '/api/public/inquiries' || url.pathname === '/api/public/escalate')) {
     const clientKey = getClientIp(req);
     enforceRateLimit(publicAssistantAttempts, clientKey, config.publicAssistantRateLimitMax, 60_000);
     return createPublicEscalatedInquiry(body);
+  }
+  if (req.method === 'POST' && url.pathname === '/api/public/feedback') {
+    const clientKey = getClientIp(req);
+    enforceRateLimit(publicAssistantAttempts, clientKey, config.publicAssistantRateLimitMax, 60_000);
+    return recordFeedback(body);
+  }
+  if (req.method === 'GET' && url.pathname === '/api/feedback') {
+    requireRole({ user }, ['staff', 'admin']);
+    return { items: getDb().feedback || [] };
   }
   if (req.method === 'GET' && url.pathname === '/api/conversations') return listConversations(user, url.searchParams.get('offset'));
   const conversationMatch = url.pathname.match(/^\/api\/conversations\/([^/]+)$/);
