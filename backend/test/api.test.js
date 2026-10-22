@@ -1053,6 +1053,16 @@ test('admin-reviewed extracted source text becomes published retrieval knowledge
     });
     assert.match(extracted.payload.data.extractedText, /ALPHA-2026/);
 
+    const structured = await request(base, `/api/official-sources/${uploaded.id}/extract-structured`, {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${adminToken}` },
+      body: JSON.stringify({}),
+    });
+    assert.equal(structured.response.status, 200);
+    assert.equal(structured.payload.data.id, uploaded.id);
+    assert.ok(Array.isArray(structured.payload.data.keyFacts));
+    assert.ok(structured.payload.data.keyFacts.length > 0);
+
     const published = await request(base, `/api/official-sources/${uploaded.id}/publish`, {
       method: 'PATCH',
       headers: { Authorization: `Bearer ${adminToken}` },

@@ -37,3 +37,6 @@ Thumbs.db
 # Editor configuration
 .vscode/
 .idea/
+
+official-sources/
+uploads/

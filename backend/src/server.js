@@ -823,7 +823,7 @@ function getOfficialExperienceLinks(question) {
   if (/nss|national service scheme/.test(normalized)) {
     links.push({ label: 'MITCORER NSS Unit', url: 'https://mitcorer.edu.in/nss.php' });
   }
-  if (/rail-mit|rail mit|technical event|asimit/.test(normalized)) {
+  if (/rail-mit|rail mit|technical event|asimit|space/.test(normalized)) {
     links.push({ label: 'Rail-MIT Technical Events', url: 'https://mitcorer.edu.in/technical-events-rail-mit.php' });
   }
   if (/hod|head of department|computer science|civil|mechanical|somnath mule|amit shinde|sanjay mane/.test(normalized)) {
@@ -958,6 +958,22 @@ function buildCollegeProfileAnswer(question) {
       next: '', actionView: 'placements', actionLabel: 'View placement support',
     };
   }
+  if (/\b(?:student clubs?|technical clubs?|coding club|robotics club|student associations?|technical chapters?|space|mesa|cesa|eesa|asimit|co[- ]?curricular)\b/.test(normalized)) {
+    return {
+      source: 'MITCORER Student Affairs and Co-Curricular Activities portal',
+      sourceUrl: 'https://mitcorer.edu.in/campus-life.php',
+      answer: 'MITCORER Student Clubs, Departmental Bodies, and Co-Curricular Associations:\n\n- Departmental Student Associations: Active student-led technical associations including SPACE (Students\' Association of Computer Engineering), MESA (Mechanical Engineering), and CESA (Civil Engineering). These bodies organize expert guest lectures, hands-on software workshops, coding bootcamps, and technical site visits.\n- Technical & Innovation Clubs: Robotics & Automation Club, Coding & Algorithm Club, and Railway Innovation Cell, where students build practical prototypes, participate in smart hackathons, and compete in national technical symposiums.\n- Rail-MIT Technical Symposium: Annual flagship national-level technical event hosted on campus featuring technical paper presentations, CAD modeling competitions, coding battles, and project exhibitions.\n- NSS & Community Outreach: Active National Service Scheme (NSS) unit affiliated to PAH Solapur University driving blood donation drives, tree plantation campaigns, and rural technology awareness initiatives.',
+      next: '', actionView: 'visit', actionLabel: 'Explore campus life',
+    };
+  }
+  if (/\b(?:industrial visits?|railway visits?|railway workshop visit|field visits?|field training|summer internships?|practical internships?)\b/.test(normalized)) {
+    return {
+      source: 'MITCORER Training and Placement Cell & IIIC records',
+      sourceUrl: 'https://mitcorer.edu.in/training-placement.php',
+      answer: 'MITCORER Industrial Visits, Railway Field Training, and Practical Internships:\n\n- Railway Field Exposure: Proximity to Central Railway hubs enables guided technical visits to the historic Kurduwadi Railway Workshop, Solapur Railway Divisional Headquarters, diesel/electric loco sheds, and signaling interlock installations for practical railway systems understanding.\n- Multi-Industry Site Visits: Regular industrial visits to manufacturing units, structural construction sites, thermal power stations, and IT software companies across Barshi, Solapur, Pune, and surrounding industrial belts.\n- Mandatory Internships: In alignment with AICTE and PAH Solapur University curriculum, all B.Tech students undergo 4-to-8-week industrial internships with leading infrastructure, manufacturing, and software organizations before final-year graduation.\n- Practical Application: Field training bridges classroom engineering theory with operational railway maintenance, safety standards, and modern corporate engineering practices.',
+      next: '', actionView: 'placements', actionLabel: 'View training details',
+    };
+  }
   if (/\b(?:same as mit pune|mitcorer (?:barshi )?(?:and|or) mit pune|connection (?:with|between) mit pune|relationship (?:with|to) mit pune|part of mit pune|branch of mit pune|under mit pune|mit wpu|maeer('s)? mit pune|parent trust|difference between mitcorer and mit pune)\b/.test(normalized)) {
     return {
       source: 'MITCORER Admissions FAQ and official website',
@@ -990,11 +1006,11 @@ function buildCollegeProfileAnswer(question) {
       next: '', actionView: 'programs', actionLabel: 'View department details',
     };
   }
-  if (/nss|national service scheme|rail-mit|rail mit|technical event|asimit|student association/.test(normalized)) {
+  if (/nss|national service scheme|rail-mit|rail mit|technical event|asimit|space|student association/.test(normalized)) {
     return {
       source: 'MITCORER Campus Life portal and official brochure',
       sourceUrl: 'https://mitcorer.edu.in/technical-events-rail-mit.php',
-      answer: 'MITCORER Co-curricular and Campus Life:\n\n- National Service Scheme (NSS): Active NSS unit affiliated with PAH Solapur University organizing community service, blood donation camps, environmental initiatives, and youth leadership projects.\n- Rail-MIT Technical Symposium: Annual flagship national-level technical event featuring technical paper presentations, working model competitions, coding contests, and robotics.\n- Student Associations: Departmental bodies (ASIMIT, CESA, MESA) conducting coding bootcamps, technical workshops, and expert industrial sessions.\n- Sports & Culture: Campus grounds and facilities for student sports, alongside a campus gymnasium and annual cultural festivities.',
+      answer: 'MITCORER Co-curricular and Campus Life:\n\n- National Service Scheme (NSS): Active NSS unit affiliated with PAH Solapur University organizing community service, blood donation camps, environmental initiatives, and youth leadership projects.\n- Rail-MIT Technical Symposium: Annual flagship national-level technical event featuring technical paper presentations, working model competitions, coding contests, and robotics.\n- Student Associations: Departmental bodies (SPACE for Computer Engineering, CESA for Civil, MESA for Mechanical) conducting coding bootcamps, technical workshops, and expert industrial sessions.\n- Sports & Culture: Campus grounds and facilities for student sports, alongside a campus gymnasium and annual cultural festivities.',
       next: '', actionView: 'visit', actionLabel: 'Explore campus life',
     };
   }
@@ -1190,7 +1206,7 @@ function buildFacilityAnswer(question) {
       next: '', actionView: 'visit', actionLabel: 'Explore facilities',
     };
   }
-  if (/labs|laborator|workshop/.test(normalized)) {
+  if (/labs|laborator|workshop/.test(normalized) && !/\b(?:industrial visits?|field visits?|railway visits?|workshop visit)\b/.test(normalized)) {
     return {
       source: 'MITCORER Admissions FAQ and official workshop page',
       sourceUrl: 'https://mitcorer.edu.in/workshops.php',
@@ -1340,13 +1356,21 @@ export function retrieveKnowledge(question, vectorScores = null) {
     targetedRecordIds.add('KB-38');
     primaryRecordIds.add('KB-38');
   }
-  if (['nss', 'national service scheme', 'rail-mit', 'rail mit', 'technical event', 'technical events', 'asimit'].some((term) => rawQuestion.includes(term) || normalizedQuestion.includes(term))) {
+  if (['nss', 'national service scheme', 'rail-mit', 'rail mit', 'technical event', 'technical events', 'asimit', 'space'].some((term) => rawQuestion.includes(term) || normalizedQuestion.includes(term))) {
     targetedRecordIds.add('KB-39');
     primaryRecordIds.add('KB-39');
   }
   if (['nearest railway station', 'railway station', 'barshi town', 'kurduwadi', 'nearest bus stop', 'nearest bus stand', 'barshi bus stand', 'how to reach the college', 'reach mitcorer', 'transit direction', 'distance from station', 'distance from bus stand', 'reach by train', 'reach by bus'].some((term) => rawQuestion.includes(term) || normalizedQuestion.includes(term))) {
     targetedRecordIds.add('KB-40');
     primaryRecordIds.add('KB-40');
+  }
+  if (['student club', 'student clubs', 'technical club', 'technical clubs', 'robotics club', 'coding club', 'student association', 'technical chapter', 'space', 'mesa', 'cesa', 'eesa', 'asimit'].some((term) => rawQuestion.includes(term) || normalizedQuestion.includes(term))) {
+    targetedRecordIds.add('KB-50');
+    primaryRecordIds.add('KB-50');
+  }
+  if (['industrial visit', 'industrial visits', 'railway visit', 'railway visits', 'field visit', 'field training', 'workshop visit', 'kurduwadi workshop'].some((term) => rawQuestion.includes(term) || normalizedQuestion.includes(term))) {
+    targetedRecordIds.add('KB-51');
+    primaryRecordIds.add('KB-51');
   }
   if (['same as mit pune', 'mit pune', 'maeer mit pune', 'mit wpu', 'parent trust', 'mit group of institutions', 'connection with mit pune', 'relationship with mit pune'].some((term) => rawQuestion.includes(term) || normalizedQuestion.includes(term))) {
     targetedRecordIds.add('KB-41');
@@ -1786,7 +1810,7 @@ export async function answerAdmissionQuestion(body, user) {
     // Gemini failed verification or returned null — fall through to deterministic chain below.
   }
 
-  const answer = (user && (buildAdmissionReadinessAnswer(question, user) || buildDocumentStatusAnswer(question, user))) || buildCompoundAnswer(question, normalized, records) || buildClarificationAnswer(normalized) || buildReviewedPassage(normalized, language, records) || buildContextualPassage(normalized, records) || guard(buildFacilityAnswer(question), /hostel/.test(normalized) ? 'KB-23' : ((/\b(?:sports grounds?|sports facilit\w*|box cricket|cricket ground|volleyball court|volleyball ground|badminton court|campus gym|college gym|gymnasium|physical fitness)\b/.test(normalized) || /\b(?:sports|gym)\b/.test(normalized)) && !/\b(?:world cup|icc|olympics?)\b/.test(normalized)) ? 'KB-48' : /\b(?:central workshop|machine shop|fitting shop|welding shop|carpentry shop|smithy|sheet metal|computer center|computing center|seminar halls?|audiovisual hall)\b/.test(normalized) ? 'KB-49' : /labs|laborator|workshop/.test(normalized) ? 'KB-22' : /bus|transport/.test(normalized) ? 'KB-19' : /library/.test(normalized) ? 'KB-20' : /railway model/.test(normalized) ? 'KB-42' : 'KB-36') || guard(buildCollegeProfileAnswer(question), (/\b(?:sports grounds?|sports facilit\w*|box cricket|cricket ground|volleyball (?:court|ground)|badminton court|campus gym|gymnasium|cultural events?|cultural gathering|annual gathering|cultural fest|shiv jayanti|ganesh (?:utsav|festival))\b/.test(normalized) && !/\b(?:world cup|icc|olympics?)\b/.test(normalized)) ? 'KB-48' : /\b(?:professional diplomas?|railway diplomas?|railway track technology|railway signaling|railway signalling|rolling stocks?(?: and operations)?|software technology in railway|railway specializations?|railway modules?)\b/.test(normalized) ? 'KB-47' : (/\b(?:polytechnic|msbte|diploma)\b/.test(normalized) && !/\b(?:professional diploma|railway diploma|direct second|dse|lateral|fees?|cost|charges?)\b/.test(normalized)) ? 'KB-12' : /\b(?:office hours?|office timings?|working hours?|visiting hours?|admission desk|enquiry desk|college timings?|open on saturday|admission helpline|helpline number|campus visit|visit booking)\b/.test(normalized) ? 'KB-46' : /\b(?:nep(?: 2020)?|national education policy|outcome[- ]based education|obe|medium of instruction|english medium|curriculum pattern)\b/.test(normalized) ? 'KB-45' : /\b(?:anti[- ]?ragging|ragging|campus safety|emergency vehicle|ambulance|medical emergenc\w*|student welfare)\b/.test(normalized) ? 'KB-44' : /\b(?:mous?|corporate readiness|industry partner|aptitude training|soft skills training|campus interview|interview process|recruitment process)\b/.test(normalized) ? 'KB-43' : /\b(?:is mitcorer (?:the )?same as mit pune|mit pune|maeer|parent trust|mit wpu)\b/.test(normalized) ? 'KB-41' : /\b(?:nearest railway station|nearest station|which railway station|station to college|barshi town station|kurduwadi junction|nearest bus|barshi bus stand|how to reach|reach by train|reach by bus|barshi to solapur|solapur to barshi|solapur distance)\b/.test(normalized) ? 'KB-40' : /\b(?:affiliation|affiliated|which university|what university|solapur university|pahsu|aicte|dte code|institute code|06901|principal|madhukar lengare)\b/.test(normalized) ? 'KB-37' : /\b(?:hod|head of department|somnath mule|amit shinde|sanjay mane|honor|minor degree)\b/.test(normalized) || (/\blabs?\b/.test(normalized) && /\b(?:cse|computer|civil|mechanical)\b/.test(normalized)) || /^(?:mechanical engineering|computer engineering|civil engineering)$/.test(normalized) || /\b(?:computer engineering syllabus|mechanical engineering syllabus)\b/.test(normalized) ? 'KB-38' : /\b(?:nss|rail-mit|rail mit|technical event|asimit)\b/.test(normalized) ? 'KB-39' : /\b(?:why|faculty|teacher|professor|staff|alumni|reviews?|ratings?)\b/.test(normalized) && !/\b(?:hiring|recruitment|vacancy|vacancies|job|jobs|career|careers|opening|openings|employment|apply for job|work with us)\b/.test(normalized) ? 'KB-35' : /\b(?:b\.?tech admission|engineering admission|admission process|how to apply|admission 2026)\b/.test(normalized) ? 'KB-29' : /\b(?:education loan|bank loan|loan assistance)\b/.test(normalized) ? 'KB-1' : /\b(?:contact details?|contact number|contact email|phone number|email address|helpline number|contact us|college address|official contact|email and phone|how to contact)\b/.test(normalized) || (/\b(?:contact|phone|telephone|email|address)\b/.test(normalized) && /\b(?:mitcorer|college|barshi|solapur)\b/.test(normalized)) ? 'KB-17' : 'KB-34') || guard(buildCampusFacilitiesAnswer(question), 'KB-36') || guard(buildPlacementAnswer(question), 'KB-16') || guard(buildDeadlineAnswer(question), 'KB-30') || guard(buildAttendanceAnswer(question), ['KB-31', 'KB-32']) || buildMaintainedAnswer(question, normalized, records) || guard(buildEligibilityAnswer(question), 'KB-5') || guard(buildScholarshipAnswer(question), /pragati/.test(normalized) ? 'KB-33' : 'KB-18') || (fallbackRule ? guard(fallbackRule, ruleRecords[fallbackRule.source] || 'KB-15', false) : null) || {
+  const answer = (user && (buildAdmissionReadinessAnswer(question, user) || buildDocumentStatusAnswer(question, user))) || buildCompoundAnswer(question, normalized, records) || buildClarificationAnswer(normalized) || buildReviewedPassage(normalized, language, records) || buildContextualPassage(normalized, records) || guard(buildFacilityAnswer(question), /hostel/.test(normalized) ? 'KB-23' : ((/\b(?:sports grounds?|sports facilit\w*|box cricket|cricket ground|volleyball court|volleyball ground|badminton court|campus gym|college gym|gymnasium|physical fitness)\b/.test(normalized) || /\b(?:sports|gym)\b/.test(normalized)) && !/\b(?:world cup|icc|olympics?)\b/.test(normalized)) ? 'KB-48' : /\b(?:central workshop|machine shop|fitting shop|welding shop|carpentry shop|smithy|sheet metal|computer center|computing center|seminar halls?|audiovisual hall)\b/.test(normalized) ? 'KB-49' : /labs|laborator|workshop/.test(normalized) ? 'KB-22' : /bus|transport/.test(normalized) ? 'KB-19' : /library/.test(normalized) ? 'KB-20' : /railway model/.test(normalized) ? 'KB-42' : 'KB-36') || guard(buildCollegeProfileAnswer(question), /\b(?:student clubs?|technical clubs?|coding club|robotics club|student associations?|technical chapters?|space|mesa|cesa|eesa|co[- ]?curricular)\b/.test(normalized) ? 'KB-50' : /\b(?:industrial visits?|railway visits?|railway workshop visit|field visits?|field training|summer internships?)\b/.test(normalized) ? 'KB-51' : (/\b(?:sports grounds?|sports facilit\w*|box cricket|cricket ground|volleyball (?:court|ground)|badminton court|campus gym|gymnasium|cultural events?|cultural gathering|annual gathering|cultural fest|shiv jayanti|ganesh (?:utsav|festival))\b/.test(normalized) && !/\b(?:world cup|icc|olympics?)\b/.test(normalized)) ? 'KB-48' : /\b(?:professional diplomas?|railway diplomas?|railway track technology|railway signaling|railway signalling|rolling stocks?(?: and operations)?|software technology in railway|railway specializations?|railway modules?)\b/.test(normalized) ? 'KB-47' : (/\b(?:polytechnic|msbte|diploma)\b/.test(normalized) && !/\b(?:professional diploma|railway diploma|direct second|dse|lateral|fees?|cost|charges?)\b/.test(normalized)) ? 'KB-12' : /\b(?:office hours?|office timings?|working hours?|visiting hours?|admission desk|enquiry desk|college timings?|open on saturday|admission helpline|helpline number|campus visit|visit booking)\b/.test(normalized) ? 'KB-46' : /\b(?:nep(?: 2020)?|national education policy|outcome[- ]based education|obe|medium of instruction|english medium|curriculum pattern)\b/.test(normalized) ? 'KB-45' : /\b(?:anti[- ]?ragging|ragging|campus safety|emergency vehicle|ambulance|medical emergenc\w*|student welfare)\b/.test(normalized) ? 'KB-44' : /\b(?:mous?|corporate readiness|industry partner|aptitude training|soft skills training|campus interview|interview process|recruitment process)\b/.test(normalized) ? 'KB-43' : /\b(?:is mitcorer (?:the )?same as mit pune|mit pune|maeer|parent trust|mit wpu)\b/.test(normalized) ? 'KB-41' : /\b(?:nearest railway station|nearest station|which railway station|station to college|barshi town station|kurduwadi junction|nearest bus|barshi bus stand|how to reach|reach by train|reach by bus|barshi to solapur|solapur to barshi|solapur distance)\b/.test(normalized) ? 'KB-40' : /\b(?:affiliation|affiliated|which university|what university|solapur university|pahsu|aicte|dte code|institute code|06901|principal|madhukar lengare)\b/.test(normalized) ? 'KB-37' : /\b(?:hod|head of department|somnath mule|amit shinde|sanjay mane|honor|minor degree)\b/.test(normalized) || (/\blabs?\b/.test(normalized) && /\b(?:cse|computer|civil|mechanical)\b/.test(normalized)) || /^(?:mechanical engineering|computer engineering|civil engineering)$/.test(normalized) || /\b(?:computer engineering syllabus|mechanical engineering syllabus)\b/.test(normalized) ? 'KB-38' : /\b(?:nss|rail-mit|rail mit|technical event|asimit)\b/.test(normalized) ? 'KB-39' : /\b(?:why|faculty|teacher|professor|staff|alumni|reviews?|ratings?)\b/.test(normalized) && !/\b(?:hiring|recruitment|vacancy|vacancies|job|jobs|career|careers|opening|openings|employment|apply for job|work with us)\b/.test(normalized) ? 'KB-35' : /\b(?:b\.?tech admission|engineering admission|admission process|how to apply|admission 2026)\b/.test(normalized) ? 'KB-29' : /\b(?:education loan|bank loan|loan assistance)\b/.test(normalized) ? 'KB-1' : /\b(?:contact details?|contact number|contact email|phone number|email address|helpline number|contact us|college address|official contact|email and phone|how to contact)\b/.test(normalized) || (/\b(?:contact|phone|telephone|email|address)\b/.test(normalized) && /\b(?:mitcorer|college|barshi|solapur)\b/.test(normalized)) ? 'KB-17' : 'KB-34') || guard(buildCampusFacilitiesAnswer(question), 'KB-36') || guard(buildPlacementAnswer(question), 'KB-16') || guard(buildDeadlineAnswer(question), 'KB-30') || guard(buildAttendanceAnswer(question), ['KB-31', 'KB-32']) || buildMaintainedAnswer(question, normalized, records) || guard(buildEligibilityAnswer(question), 'KB-5') || guard(buildScholarshipAnswer(question), /pragati/.test(normalized) ? 'KB-33' : 'KB-18') || (fallbackRule ? guard(fallbackRule, ruleRecords[fallbackRule.source] || 'KB-15', false) : null) || {
     source: 'No verified record',
     answer: 'I could not find an official answer for that question. Please ask about a specific programme, fee, scholarship, admission step, or campus facility.',
     next: '',
@@ -2124,6 +2148,121 @@ function getOfficialSourceExtractedText(id, user) {
   return pick(source, ['id', 'title', 'extractedText', 'extractionStatus', 'status']);
 }
 
+export function parseStructuredFactsFallback(text, metadata = {}) {
+  const content = String(text || '').trim();
+  const yearMatch = content.match(/\b(20\d{2}[-/]\d{2,4})\b/);
+  const academicYear = yearMatch ? yearMatch[1] : (metadata.academicYear || 'Not specified');
+
+  let docType = metadata.documentType || 'Admissions';
+  if (/cutoff|closing merit/i.test(content)) docType = 'Cutoff';
+  else if (/fee|tuition|development fee/i.test(content)) docType = 'Fees';
+  else if (/seat matrix|intake|choice code/i.test(content)) docType = 'Seat matrix';
+  else if (/eligibility/i.test(content)) docType = 'Eligibility';
+
+  const paragraphs = content.split(/\n\s*\n/).map((p) => p.trim()).filter((p) => p.length >= 20);
+  const keyFacts = (paragraphs.length ? paragraphs.slice(0, 5) : [content.slice(0, 500)]).map((para, i) => ({
+    category: docType,
+    title: `${metadata.title || docType} Fact ${i + 1}`,
+    text: para,
+    tags: [docType.toLowerCase()],
+  }));
+
+  return {
+    documentType: docType,
+    academicYear,
+    summary: content.slice(0, 200),
+    keyFacts,
+    method: 'deterministic-rule-cdm',
+  };
+}
+
+export async function extractStructuredFactsWithCdm(text, metadata = {}) {
+  const content = String(text || '').trim();
+  if (config.geminiApiKey) {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 20000);
+    try {
+      const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(config.geminiModel)}:generateContent`, {
+        method: 'POST',
+        signal: controller.signal,
+        headers: { 'x-goog-api-key': config.geminiApiKey, 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{
+            role: 'user',
+            parts: [{
+              text: `You are a Constrained Decoding Extraction Model for official college circulars and admissions documents.
+Extract the structured facts from the following official document text. Adhere strictly to the requested schema.
+
+Document Metadata:
+Title: ${metadata.title || ''}
+Type: ${metadata.documentType || ''}
+Year: ${metadata.academicYear || ''}
+
+Document Content:
+${content.slice(0, 30000)}`,
+            }],
+          }],
+          generationConfig: {
+            responseMimeType: 'application/json',
+            responseSchema: {
+              type: 'OBJECT',
+              properties: {
+                documentType: { type: 'STRING', enum: ['Cutoff', 'Fees', 'Seat matrix', 'Eligibility', 'Programs', 'Admissions', 'Facilities', 'University rules'] },
+                academicYear: { type: 'STRING' },
+                summary: { type: 'STRING' },
+                keyFacts: {
+                  type: 'ARRAY',
+                  items: {
+                    type: 'OBJECT',
+                    properties: {
+                      category: { type: 'STRING' },
+                      title: { type: 'STRING' },
+                      text: { type: 'STRING' },
+                      tags: { type: 'ARRAY', items: { type: 'STRING' } },
+                    },
+                    required: ['category', 'title', 'text', 'tags'],
+                  },
+                },
+              },
+              required: ['documentType', 'keyFacts'],
+            },
+          },
+        }),
+      });
+      clearTimeout(timeout);
+      if (response.ok) {
+        const payload = await response.json();
+        const jsonText = payload?.candidates?.[0]?.content?.parts?.[0]?.text;
+        if (jsonText) {
+          const parsed = JSON.parse(jsonText);
+          return { ...parsed, method: 'cdm-gemini-schema' };
+        }
+      }
+    } catch {
+      clearTimeout(timeout);
+    }
+  }
+
+  return parseStructuredFactsFallback(content, metadata);
+}
+
+async function extractStructuredOfficialSource(id, body, user) {
+  requireRole({ user }, ['admin']);
+  const source = (getDb().officialSources || []).find((item) => item.id === id);
+  if (!source) throw notFound('Official source not found.');
+  const text = source.extractedText || '';
+  if (!text.trim()) throw badRequest('Source has no extracted text to structure.');
+
+  const structured = await extractStructuredFactsWithCdm(text, {
+    title: source.title,
+    documentType: source.documentType,
+    academicYear: source.academicYear,
+  });
+
+  audit('official_source.structured_extracted', 'official_source', source.id, user, source.title);
+  return { id: source.id, title: source.title, ...structured };
+}
+
 function getOfficialSourceFile(id, user) {
   requireRole({ user }, ['staff', 'admin']);
   const record = (getDb().officialSources || []).find((item) => item.id === id);
@@ -2256,6 +2395,8 @@ async function handleApi(req) {
   }
   const officialSourceExtractionMatch = url.pathname.match(/^\/api\/official-sources\/([^/]+)\/extracted-text$/);
   if (req.method === 'GET' && officialSourceExtractionMatch) return getOfficialSourceExtractedText(officialSourceExtractionMatch[1], user);
+  const officialSourceStructuredMatch = url.pathname.match(/^\/api\/official-sources\/([^/]+)\/extract-structured$/);
+  if (req.method === 'POST' && officialSourceStructuredMatch) return extractStructuredOfficialSource(officialSourceStructuredMatch[1], body, user);
   const officialSourcePublishMatch = url.pathname.match(/^\/api\/official-sources\/([^/]+)\/publish$/);
   if (req.method === 'PATCH' && officialSourcePublishMatch) return publishOfficialSource(officialSourcePublishMatch[1], body, user);
   const officialSourceFileMatch = url.pathname.match(/^\/api\/official-sources\/([^/]+)\/file$/);

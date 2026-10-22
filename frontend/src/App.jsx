@@ -1,6 +1,6 @@
 import { Fragment, useEffect, useRef, useState } from 'react';
 import {
-  ArrowLeft, ArrowRight, BookOpen, CheckCircle2, FileText,
+  ArrowLeft, ArrowRight, BookOpen, CheckCircle2, Cpu, FileText,
   HandCoins, LockKeyhole, LogOut, Menu, Phone,
   Send, ShieldCheck, UploadCloud, X,
   PanelLeftClose, PanelLeftOpen, Languages, RefreshCw,
@@ -382,8 +382,34 @@ function App() {
     }
   };
 
+  const handleAdminLogin = async (email, password) => {
+    setAppError('');
+    try {
+      const payload = await api.login({ email, password });
+      setToken(payload.token);
+      setView('knowledge');
+      setViewHistory([]);
+      await refreshWorkspaceData(payload.token);
+      setUser(payload.user);
+      return true;
+    } catch (error) {
+      setAppError(error.message);
+      return false;
+    }
+  };
+
+  const extractStructuredOfficialSource = async (id) => {
+    setAppError('');
+    try {
+      return await api.extractStructuredOfficialSource(token, id);
+    } catch (error) {
+      setAppError(error.message);
+      return null;
+    }
+  };
+
   if (!user) {
-    return <PublicAssistantWidget />;
+    return <PublicAssistantWidget onAdminLogin={handleAdminLogin} />;
   }
 
   return (
@@ -394,7 +420,7 @@ function App() {
         {navOpen && <button className="mobileScrim" type="button" aria-label="Close navigation" onClick={() => setNavOpen(false)}><X size={18} /></button>}
         <section className="workspaceBody">
           {appError && <div className="errorBanner">{appError}</div>}
-          {view === 'knowledge' && <KnowledgeManager items={knowledge} sources={officialSources} onCreate={createKnowledgeItem} onUpdate={updateKnowledgeItem} onUploadSource={uploadOfficialSource} onOpenSource={openOfficialSource} onReviewSource={reviewOfficialSource} onPublishSource={publishOfficialSource} onSyncWebsite={syncOfficialSources} />}
+          {view === 'knowledge' && <KnowledgeManager items={knowledge} sources={officialSources} onCreate={createKnowledgeItem} onUpdate={updateKnowledgeItem} onUploadSource={uploadOfficialSource} onOpenSource={openOfficialSource} onReviewSource={reviewOfficialSource} onPublishSource={publishOfficialSource} onSyncWebsite={syncOfficialSources} onExtractStructuredSource={extractStructuredOfficialSource} />}
           {view === 'programs' && <Programs publicFacts={publicFacts} />}
           {view === 'fees' && <Fees setView={navigateTo} publicFacts={publicFacts} />}
           {view === 'scholarships' && <ScholarshipAid />}
@@ -406,7 +432,16 @@ function App() {
   );
 }
 
-function PublicAssistantWidget() {
+function PublicAssistantWidget({ onAdminLogin }) {
+  const [showAdminLogin, setShowAdminLogin] = useState(() => {
+    try {
+      return typeof window !== 'undefined' && (new URLSearchParams(window.location.search).has('admin') || window.location.hash === '#admin');
+    } catch { return false; }
+  });
+  const [adminEmail, setAdminEmail] = useState('admin@mitcorer.edu.in');
+  const [adminPassword, setAdminPassword] = useState('mitra');
+  const [adminLoggingIn, setAdminLoggingIn] = useState(false);
+  const [adminLoginError, setAdminLoginError] = useState('');
   const [language, setLanguage] = useState('auto');
   const [open, setOpen] = useState(false);
   const [input, setInput] = useState('');
@@ -423,13 +458,20 @@ function PublicAssistantWidget() {
     { label: 'Programmes', choices: [
       { label: 'B.Tech Engineering', question: 'Which B.Tech programmes are available at MITCORER?' },
       { label: 'Polytechnic Diploma', question: 'Which Polytechnic diploma programmes are available at MITCORER?' },
+      { label: 'Direct Second Year (DSE)', question: 'What is the Direct Second Year engineering admission process?' },
       { label: 'More', action: 'main' },
     ] },
-    { label: 'Fees', question: 'What are the first-year B.Tech fees?' },
+    { label: 'Fees & Concessions', choices: [
+      { label: 'B.Tech First-Year Fees', question: 'What are the first-year B.Tech fees?' },
+      { label: 'OBC / EBC Concession', question: 'What are the B.Tech engineering fees for OBC category?' },
+      { label: 'SC / ST Concession', question: 'What are the B.Tech engineering fees for SC category?' },
+      { label: 'Direct Second Year Fees', question: 'What are the Direct Second Year engineering fees?' },
+      { label: 'Hostel & Mess Fees', question: 'What are the hostel and mess fees at MITCORER?' },
+      { label: 'More', action: 'main' },
+    ] },
+    { label: 'Cutoffs', question: 'What are the historical cutoffs for Computer Science and Engineering?' },
+    { label: 'Required Documents', question: 'What are the required admission documents?' },
     { label: 'Scholarships', question: 'What scholarships are available at MITCORER and where can I apply?' },
-    { label: 'About MITCORER', question: 'Tell me about MITCORER.' },
-    { label: 'Why MITCORER?', question: 'Why should I choose MITCORER?' },
-    { label: 'Admission enquiry', href: 'https://www.mitcorer.edu.in/Admissions-Open-2026-27.html' },
     { label: 'Placements', question: 'What placement support and published placement highlights does MITCORER offer?' },
     { label: 'Facilities', choices: [
       { label: 'Hostel & mess', question: 'What hostel and mess facilities does MITCORER provide?' },
@@ -440,6 +482,9 @@ function PublicAssistantWidget() {
       { label: 'Campus facilities', question: 'What campus facilities are available at MITCORER?' },
       { label: 'More', action: 'main' },
     ] },
+    { label: 'About MITCORER', question: 'Tell me about MITCORER.' },
+    { label: 'Why MITCORER?', question: 'Why should I choose MITCORER?' },
+    { label: 'Admission enquiry', href: 'https://www.mitcorer.edu.in/Admissions-Open-2026-27.html' },
     { label: 'Contact us', question: 'What are the MITCORER admission contact details?' },
   ];
   const endRef = useRef(null);
@@ -495,7 +540,7 @@ function PublicAssistantWidget() {
       setActivePills(topic.choices);
       setMessages((items) => [...items,
         { type: 'user', text: topic.label },
-        { type: 'assistant', text: `Please select a ${topic.label === 'Programmes' ? 'course type' : 'facility topic'}.`, choices: topic.choices },
+        { type: 'assistant', text: `Please select a ${topic.label.toLowerCase()} option.`, choices: topic.choices },
       ]);
       return;
     }
@@ -572,8 +617,54 @@ function PublicAssistantWidget() {
           <textarea value={input} onChange={(event) => setInput(event.target.value)} onKeyDown={(event) => { if (event.key === 'Enter' && !event.shiftKey) { event.preventDefault(); ask(); } }} rows={1} placeholder={language === 'mr' ? 'तुमचा प्रश्न येथे लिहा…' : language === 'hi' ? 'अपना प्रश्न यहाँ लिखें…' : 'Type your message here…'} aria-label={language === 'mr' ? 'प्रवेशाबद्दल तुमचा प्रश्न' : language === 'hi' ? 'प्रवेश के बारे में आपका प्रश्न' : 'Ask MIT Barshi admissions'} disabled={busy} />
           <button type="submit" aria-label={language === 'mr' ? 'प्रश्न पाठवा' : language === 'hi' ? 'प्रश्न भेजें' : 'Send message'} disabled={busy || !input.trim()}><Send size={19} /></button>
         </form>
-        <footer>Powered by MITCORER <span>©</span></footer>
+        <footer>
+          Powered by MITCORER{' '}
+          <button
+            type="button"
+            className="adminEntryBtn"
+            onClick={() => setShowAdminLogin(true)}
+            title="Administrator Portal"
+            style={{ background: 'transparent', border: 'none', color: 'inherit', cursor: 'pointer', padding: '0 2px', font: 'inherit' }}
+          >
+            ©
+          </button>
+        </footer>
       </section>}
+      {showAdminLogin && (
+        <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(7, 32, 51, 0.72)', display: 'grid', placeItems: 'center', zIndex: 10000, padding: '20px' }}>
+          <div style={{ background: '#fff', borderRadius: '12px', maxWidth: '420px', width: '100%', padding: '28px', boxShadow: '0 20px 40px rgba(0,0,0,0.3)', color: '#202724' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+              <strong style={{ fontSize: '18px', color: '#146548' }}>Administrator Portal</strong>
+              <button type="button" onClick={() => setShowAdminLogin(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#69756e' }}><X size={18} /></button>
+            </div>
+            <p style={{ fontSize: '13px', color: '#555', margin: '0 0 16px' }}>Sign in to manage verified sources, run CDM structured extraction, and publish knowledge.</p>
+            {adminLoginError && <div style={{ background: '#fef2f2', color: '#b91c1c', padding: '8px 12px', borderRadius: '6px', fontSize: '12px', marginBottom: '12px' }}>{adminLoginError}</div>}
+            <form onSubmit={async (e) => {
+              e.preventDefault();
+              if (adminLoggingIn || !onAdminLogin) return;
+              setAdminLoggingIn(true);
+              setAdminLoginError('');
+              try {
+                const ok = await onAdminLogin(adminEmail, adminPassword);
+                if (!ok) setAdminLoginError('Invalid credentials. Check email and password.');
+              } catch (err) {
+                setAdminLoginError(err.message || 'Login failed.');
+              } finally {
+                setAdminLoggingIn(false);
+              }
+            }}>
+              <label style={{ display: 'block', fontSize: '12px', fontWeight: 600, marginBottom: '4px' }}>Admin Email</label>
+              <input type="email" required value={adminEmail} onChange={(e) => setAdminEmail(e.target.value)} style={{ width: '100%', padding: '10px 12px', borderRadius: '6px', border: '1px solid #cfd8d2', marginBottom: '12px', boxSizing: 'border-box' }} />
+              <label style={{ display: 'block', fontSize: '12px', fontWeight: 600, marginBottom: '4px' }}>Password</label>
+              <input type="password" required value={adminPassword} onChange={(e) => setAdminPassword(e.target.value)} style={{ width: '100%', padding: '10px 12px', borderRadius: '6px', border: '1px solid #cfd8d2', marginBottom: '16px', boxSizing: 'border-box' }} />
+              <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
+                <button type="button" onClick={() => setShowAdminLogin(false)} style={{ padding: '8px 16px', borderRadius: '6px', border: '1px solid #cfd8d2', background: '#f6f8f7', cursor: 'pointer' }}>Cancel</button>
+                <button type="submit" disabled={adminLoggingIn} style={{ padding: '8px 20px', borderRadius: '6px', border: 'none', background: '#146548', color: '#fff', fontWeight: 600, cursor: 'pointer' }}>{adminLoggingIn ? 'Signing in…' : 'Sign in'}</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
       <button className="assistantLauncher" type="button" onClick={() => setOpen(true)} aria-label="Open MIT Barshi admission assistant"><span className="launcherPulse" /><img src={mitcorerLogo} alt="" /></button>
     </main>
   );
@@ -1086,7 +1177,9 @@ function HostelMess({ initial, onSave, setView, publicFacts }) {
 }
 
 
-function KnowledgeManager({ items, sources, onCreate, onUpdate, onUploadSource, onOpenSource, onReviewSource, onPublishSource, onSyncWebsite }) {
+function KnowledgeManager({ items, sources, onCreate, onUpdate, onUploadSource, onOpenSource, onReviewSource, onPublishSource, onSyncWebsite, onExtractStructuredSource }) {
+  const [cdmExtracting, setCdmExtracting] = useState(false);
+  const [cdmNotice, setCdmNotice] = useState('');
   const managedUsage = { 'KB-2': 'Public academic fee answers use this record.', 'KB-3': 'Public hostel and mess fee answers use this record.', 'KB-10': 'Public B.Tech intake answers use this record.', 'KB-6': 'Historical seat matrix answers use this record.' };
   const [editing, setEditing] = useState(null);
   const [creating, setCreating] = useState(false);
@@ -1167,7 +1260,61 @@ function KnowledgeManager({ items, sources, onCreate, onUpdate, onUploadSource, 
           <tbody>{sources.map((item) => <tr key={item.id}><td><strong>{item.title}</strong><br /><span>{item.originalFileName}</span></td><td>{item.documentType}</td><td>{item.academicYear}</td><td>{item.sourceAuthority}</td><td>{item.extractionStatus}</td><td>{item.status}</td><td>{item.storedFileName ? <button className="miniEditBtn" type="button" onClick={() => onOpenSource(item.id)}>Open file</button> : item.sourceUrl ? <a className="miniEditBtn sourceReference" href={item.sourceUrl} target="_blank" rel="noreferrer">Open source</a> : 'Reference only'} {item.status !== 'Published' && <button className="miniEditBtn" type="button" onClick={() => openReview(item)}>Review text</button>}</td></tr>)}</tbody>
         </table>
       </div>
-      {review && <section className="formBlock"><div className="sectionHead"><span className="eyebrow">Source review</span><h2>{review.title}</h2><p>{review.status}</p></div><form onSubmit={publishReview}><label className="wide">Verified text for retrieval<textarea rows={9} value={review.text} onChange={(event) => setReview((item) => ({ ...item, text: event.target.value }))} placeholder="No text was extracted. Paste the reviewed official text before publishing." /></label><button type="submit" disabled={!review.text.trim()}><CheckCircle2 size={17} /> Publish verified knowledge</button><button className="miniEditBtn" type="button" onClick={() => setReview(null)}>Cancel</button></form></section>}
+      {review && (
+        <section className="formBlock">
+          <div className="sectionHead">
+            <span className="eyebrow">Source review</span>
+            <h2>{review.title}</h2>
+            <p>{review.status}</p>
+          </div>
+          {cdmNotice && <div className="decisionResult positive" style={{ marginBottom: '1rem' }}><strong>{cdmNotice}</strong></div>}
+          <div style={{ marginBottom: '0.75rem' }}>
+            <button
+              className="inlineAction secondary"
+              type="button"
+              disabled={cdmExtracting}
+              onClick={async () => {
+                if (!review?.id || !onExtractStructuredSource) return;
+                setCdmExtracting(true);
+                setCdmNotice('');
+                try {
+                  const result = await onExtractStructuredSource(review.id);
+                  const facts = result?.structuredFacts;
+                  if (facts?.keyFacts?.length) {
+                    const lines = facts.keyFacts.map((f) => `[${f.category || 'Facts'}] ${f.title}: ${f.text}`).join('\n\n');
+                    setReview((prev) => ({
+                      ...prev,
+                      text: prev.text ? `${prev.text.trim()}\n\n--- CDM Structured Facts ---\n${lines}` : lines,
+                    }));
+                    setCdmNotice(`Extracted ${facts.keyFacts.length} structured facts via CDM schema!`);
+                  } else {
+                    setCdmNotice('CDM returned no structured keyFacts.');
+                  }
+                } catch (err) {
+                  setCdmNotice(`CDM extraction failed: ${err.message}`);
+                } finally {
+                  setCdmExtracting(false);
+                }
+              }}
+            >
+              <Cpu size={16} /> {cdmExtracting ? 'Extracting via CDM…' : 'Auto-extract structured facts (CDM)'}
+            </button>
+          </div>
+          <form onSubmit={publishReview}>
+            <label className="wide">
+              Verified text for retrieval
+              <textarea
+                rows={9}
+                value={review.text}
+                onChange={(event) => setReview((item) => ({ ...item, text: event.target.value }))}
+                placeholder="No text was extracted. Paste the reviewed official text before publishing."
+              />
+            </label>
+            <button type="submit" disabled={!review.text.trim()}><CheckCircle2 size={17} /> Publish verified knowledge</button>
+            <button className="miniEditBtn" type="button" onClick={() => { setReview(null); setCdmNotice(''); }}>Cancel</button>
+          </form>
+        </section>
+      )}
       <div className="sectionHead"><span className="eyebrow">Knowledge records</span><h2>Reviewed text available to retrieval</h2></div>
       <section className="formBlock">
         <form onSubmit={submit}>

@@ -435,10 +435,10 @@ export const seedKnowledge = [
     sourceUrl: 'https://mitcorer.edu.in/technical-events-rail-mit.php',
     tags: [
       'campus life', 'nss', 'national service scheme', 'rail mit', 'rail-mit',
-      'technical events', 'technical symposium', 'asimit', 'student associations',
+      'technical events', 'technical symposium', 'asimit', 'space', 'student associations',
       'sports', 'campus sports', 'sports ground', 'gym', 'cultural events', 'extracurricular',
     ],
-    text: 'MITCORER campus life and co-curricular opportunities include:\n\n- National Service Scheme (NSS): An active NSS unit affiliated with PAH Solapur University organizing community service, blood donation camps, environmental initiatives, and youth leadership projects.\n- Rail-MIT Technical Symposium: Annual flagship national-level technical event featuring technical paper presentations, model competitions, coding contests, and robotics.\n- Student Associations: Departmental bodies (ASIMIT, CESA, MESA) hosting coding bootcamps, technical workshops, and industrial expert sessions.\n- Sports & Cultural Life: Campus grounds and indoor facilities for student sports, alongside a campus gymnasium and annual cultural festivities.',
+    text: 'MITCORER campus life and co-curricular opportunities include:\n\n- National Service Scheme (NSS): An active NSS unit affiliated with PAH Solapur University organizing community service, blood donation camps, environmental initiatives, and youth leadership projects.\n- Rail-MIT Technical Symposium: Annual flagship national-level technical event featuring technical paper presentations, model competitions, coding contests, and robotics.\n- Student Associations: Departmental bodies (SPACE for Computer Engineering, CESA for Civil, MESA for Mechanical) hosting coding bootcamps, technical workshops, and industrial expert sessions.\n- Sports & Cultural Life: Campus grounds and indoor facilities for student sports, alongside a campus gymnasium and annual cultural festivities.',
     status: 'Published',
   },
   {
@@ -587,6 +587,35 @@ export const seedKnowledge = [
       'av projection', 'audiovisual', 'multimedia hall',
     ],
     text: 'MITCORER Central Workshop, Computing Center, and Seminar Halls:\n\n- Central Workshop: Fully equipped fabrication and practical training facility featuring specialized sections: Machine Shop (lathes, shapers, drilling, and milling equipment), Fitting Shop, Welding Shop (electric arc & oxy-acetylene gas welding), Carpentry Shop, and Sheet Metal/Smithy for hands-on fabrication and railway prototype modeling.\n- Central Computing Center: Air-conditioned facility equipped with 100+ high-performance networked desktop systems, dedicated high-speed optical fiber internet connectivity, and licensed engineering software suites for CAD/CAM, numerical computation, and programming.\n- Seminar Halls: Acoustically treated halls with ergonomic seating, multimedia audio-visual projection equipment, and high-fidelity sound systems hosting guest lectures, academic symposia, corporate seminars, and placement sessions.',
+    status: 'Published',
+  },
+  {
+    id: 'KB-50',
+    title: 'MITCORER Student Clubs, Technical Bodies, and Professional Associations',
+    category: 'Facilities',
+    source: 'MITCORER Student Affairs and Co-Curricular Activities portal',
+    sourceUrl: 'https://mitcorer.edu.in/campus-life.php',
+    tags: [
+      'student clubs', 'clubs', 'technical clubs', 'student associations',
+      'space', 'asimit', 'mesa', 'cesa', 'eesa', 'coding club', 'robotics club',
+      'competitive coding', 'hackathon', 'co-curricular', 'technical chapters',
+      'technical symposium', 'rail-mit',
+    ],
+    text: 'MITCORER Student Clubs, Departmental Bodies, and Co-Curricular Associations:\n\n- Departmental Student Associations: Active student-led technical associations including SPACE (Students\' Association of Computer Engineering), previously ASIMIT, MESA (Mechanical Engineering Students Association), and CESA (Civil Engineering Students Association). These bodies organize expert guest lectures, hands-on software workshops, coding bootcamps, and industrial site visits.\n- Technical & Innovation Clubs: Robotics & Automation Club, Coding & Algorithm Club, and Railway Innovation Cell, where students build practical prototypes, participate in smart hackathons, and compete in national technical symposiums.\n- Rail-MIT Technical Symposium: Annual flagship national-level technical event hosted on campus featuring technical paper presentations, CAD modeling competitions, coding battles, and project exhibitions.\n- NSS & Community Outreach: Active National Service Scheme (NSS) unit affiliated to PAH Solapur University driving blood donation drives, tree plantation campaigns, and rural technology awareness initiatives.',
+    status: 'Published',
+  },
+  {
+    id: 'KB-51',
+    title: 'MITCORER Industrial Visits, Railway Field Training, and Practical Internships',
+    category: 'About MITCORER',
+    source: 'MITCORER Training and Placement Cell & IIIC records',
+    sourceUrl: 'https://mitcorer.edu.in/training-placement.php',
+    tags: [
+      'industrial visits', 'railway visits', 'railway workshop visit', 'field training',
+      'internships', 'summer internship', 'practical training', 'industry exposure',
+      'kurduwadi workshop', 'railway division', 'site visits',
+    ],
+    text: 'MITCORER Industrial Visits, Railway Field Training, and Practical Internships:\n\n- Railway Field Exposure: Proximity to Central Railway hubs enables guided technical visits to the historic Kurduwadi Railway Workshop, Solapur Railway Divisional Headquarters, diesel/electric loco sheds, and signaling interlock installations for practical railway systems understanding.\n- Multi-Industry Site Visits: Regular industrial visits to manufacturing units, structural construction sites, thermal power stations, and IT software companies across Barshi, Solapur, Pune, and surrounding industrial belts.\n- Mandatory Internships: In alignment with AICTE and PAH Solapur University curriculum, all B.Tech students undergo 4-to-8-week industrial internships with leading infrastructure, manufacturing, and software organizations before final-year graduation.\n- Practical Application: Field training bridges classroom engineering theory with operational railway maintenance, safety standards, and modern corporate engineering practices.',
     status: 'Published',
   },
 ];
