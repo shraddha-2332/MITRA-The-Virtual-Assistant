@@ -258,4 +258,35 @@ test('verifySlotGrounding detects wrong-row tabular errors missed by token-level
   assert.strictEqual(intakeSlotRes.status, 'WRONG_SLOT_ERROR');
   assert.strictEqual(intakeSlotRes.expected, 120);
   assert.deepStrictEqual(intakeSlotRes.found, ['60']);
+
+  // 5. TFWS Quota check: Boy student under TFWS quota expects 17,217 (100% tuition waiver)
+  const tfwsAnswer = 'For TFWS quota, First Year total fees are INR 17,217.';
+  const tfwsRes = verifySlotGrounding(tfwsAnswer, { quota: 'TFWS', gender: 'male' }, evidence);
+  assert.strictEqual(tfwsRes.verified, true);
+  assert.strictEqual(tfwsRes.status, 'SLOT_VERIFIED');
+
+  // 6. Direct Second Year (DSE) route check: DSE facts in evidence
+  const dseEvidence = [
+    {
+      id: 'KB-2',
+      facts: {
+        kind: 'academicFees',
+        academicYear: '2026-27',
+        firstYear: { open: 105000, concessionBoy: 61109, concessionGirl: 17217, scst: 8000 },
+        directSecondYear: { open: 98000, concessionBoy: 58181, concessionGirl: 18362, scst: 10000 },
+      },
+      text: 'For AY 2026-27: First Year Open INR 1,05,000, OBC Boy INR 61,109. DSE Open INR 98,000, OBC Boy INR 58,181.',
+    },
+  ];
+  const dseWrongAnswer = 'For DSE admission, OBC boy fee is INR 61,109 for AY 2026-27.';
+  const dseWrongRes = verifySlotGrounding(dseWrongAnswer, { category: 'OBC', gender: 'male', route: 'dse' }, dseEvidence);
+  assert.strictEqual(dseWrongRes.verified, false);
+  assert.strictEqual(dseWrongRes.status, 'WRONG_SLOT_ERROR');
+  assert.strictEqual(dseWrongRes.expected, 58181);
+
+  // 7. Legitimate multi-row answer: Citing both Open (1,05,000) and target OBC girl (17,217) does NOT trip error
+  const multiRowAnswer = 'Open category fee is INR 1,05,000, but for OBC girls the fee is INR 17,217 with tuition concession.';
+  const multiRowRes = verifySlotGrounding(multiRowAnswer, { category: 'OBC', gender: 'female' }, evidence);
+  assert.strictEqual(multiRowRes.verified, true);
+  assert.strictEqual(multiRowRes.status, 'SLOT_VERIFIED');
 });

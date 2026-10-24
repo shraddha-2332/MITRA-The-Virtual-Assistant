@@ -341,11 +341,14 @@ export function verifySlotGrounding(generatedText, slots = {}, evidenceList = []
   }
 
   const generatedTokens = extractFactualTokens(generatedText);
+  const isDse = (slots.yearLevel && ['directsecondyear', 'dse'].includes(String(slots.yearLevel).toLowerCase()))
+    || (slots.route && ['dse', 'directsecondyear'].includes(String(slots.route).toLowerCase()));
   const normalizedSlots = {
     category: slots.category ? String(slots.category).toUpperCase().trim() : null,
     gender: slots.gender ? String(slots.gender).toLowerCase().trim() : null,
     route: slots.route ? String(slots.route).toUpperCase().trim() : null,
-    yearLevel: slots.yearLevel ? String(slots.yearLevel).toLowerCase().trim() : 'firstyear',
+    quota: slots.quota ? String(slots.quota).toUpperCase().trim() : null,
+    yearLevel: isDse ? 'directsecondyear' : 'firstyear',
     service: slots.service ? String(slots.service).toLowerCase().trim() : null,
     branch: slots.branch ? String(slots.branch).trim() : null,
   };
@@ -355,7 +358,7 @@ export function verifySlotGrounding(generatedText, slots = {}, evidenceList = []
     if (!record.facts || typeof record.facts !== 'object') continue;
 
     // Check A: Academic fees matrix (KB-2)
-    if (record.facts.kind === 'academicFees' && (normalizedSlots.category || normalizedSlots.gender)) {
+    if (record.facts.kind === 'academicFees' && (normalizedSlots.category || normalizedSlots.gender || normalizedSlots.quota === 'TFWS')) {
       const yearTier = (normalizedSlots.yearLevel === 'directsecondyear' || normalizedSlots.yearLevel === 'dse')
         ? record.facts.directSecondYear
         : record.facts.firstYear;
@@ -365,11 +368,13 @@ export function verifySlotGrounding(generatedText, slots = {}, evidenceList = []
         const cat = normalizedSlots.category;
         const isFemale = normalizedSlots.gender === 'female' || normalizedSlots.gender === 'girls' || normalizedSlots.gender === 'girl';
 
-        if (cat === 'OPEN' || (!cat && !isFemale)) {
+        if (normalizedSlots.quota === 'TFWS' || cat === 'TFWS') {
+          expectedAmount = yearTier.concessionGirl || yearTier.vjnt;
+        } else if (cat === 'OPEN' || (!cat && !isFemale)) {
           expectedAmount = yearTier.open;
         } else if (cat === 'SC' || cat === 'ST') {
           expectedAmount = yearTier.scst;
-        } else if (cat === 'VJNT' || cat === 'NT' || cat === 'SBC' || cat === 'TFWS') {
+        } else if (cat === 'VJNT' || cat === 'NT' || cat === 'SBC') {
           expectedAmount = yearTier.vjnt || yearTier.concessionGirl;
         } else if (['OBC', 'EBC', 'EWS'].includes(cat)) {
           expectedAmount = isFemale ? yearTier.concessionGirl : yearTier.concessionBoy;
@@ -379,9 +384,11 @@ export function verifySlotGrounding(generatedText, slots = {}, evidenceList = []
 
         if (expectedAmount !== null) {
           const expectedStr = String(expectedAmount);
-          const competingAmounts = Object.values(yearTier)
-            .map(String)
-            .filter((amt) => amt !== expectedStr);
+          const allFeeAmounts = [
+            ...Object.values(record.facts.firstYear || {}),
+            ...Object.values(record.facts.directSecondYear || {}),
+          ];
+          const competingAmounts = [...new Set(allFeeAmounts.map(String))].filter((amt) => amt !== expectedStr);
 
           // Did the generated text state a competing fee instead of the expected one?
           const presentCompeting = competingAmounts.filter((amt) => generatedTokens.numbers.has(amt));

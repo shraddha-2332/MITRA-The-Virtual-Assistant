@@ -16,7 +16,7 @@ import { createRefreshToken, createToken, getBearerToken, hashPassword, hashToke
 import { badRequest, forbidden, HttpError, notFound, tooManyRequests, unauthorized } from './errors.js';
 import { getDb, loadDb, saveDb } from './store.js';
 import { generateId, jsonResponse, nowIso, pick, requireString } from './utils.js';
-import { verifyGeneratedAnswer, classifyAnswerOutcome } from './grounding.js';
+import { verifyGeneratedAnswer, classifyAnswerOutcome, verifySlotGrounding } from './grounding.js';
 import { syncMonitoredWebsiteSources } from './website-sync.js';
 import { computeConceptScore, getSemanticVectorScores, syncKnowledgeVectorIndex } from './semantic.js';
 
@@ -1788,7 +1788,7 @@ export async function answerAdmissionQuestion(body, user) {
     const advisoryEvidence = retrievedEvidence.slice(0, 3).map(sourceRecord);
     const rawAdvisory = await generateWithGemini(question, null, advisoryEvidence);
     if (rawAdvisory) {
-      const advisoryVerification = verifyGeneratedAnswer(rawAdvisory, advisoryEvidence);
+      const advisoryVerification = verifySlotGrounding(rawAdvisory, context, advisoryEvidence);
       if (advisoryVerification.verified) {
         const advisoryOfficialLinks = [
           ...getOfficialAdmissionLinks(question),
@@ -1827,7 +1827,7 @@ export async function answerAdmissionQuestion(body, user) {
   if (language === 'en' && !answer.managedRecordId && !answer.composed && !answer.clarification && answer.source === 'No verified record' && evidence.length) {
     const rawGenerated = await generateWithGemini(question, answer, evidence.slice(0, 2));
     if (rawGenerated) {
-      const verification = verifyGeneratedAnswer(rawGenerated, evidence.slice(0, 2));
+      const verification = verifySlotGrounding(rawGenerated, context, evidence.slice(0, 2));
       if (verification.verified) {
         generated = rawGenerated;
       }
