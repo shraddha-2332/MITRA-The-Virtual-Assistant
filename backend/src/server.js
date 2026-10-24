@@ -1881,15 +1881,15 @@ export async function answerAdmissionQuestion(body, user) {
   let contextPrefix = '';
   if (context.category && /\b(?:fee|fees|cost|tuition|shulka)\b/i.test(normalized) && !/\b(?:open|obc|sc|st|vj\/?nt|nt|sbc|ebc|ews|tfws)\b/i.test(normalized)) {
     if (context.category === 'OBC') {
-      contextPrefix = '📌 Profile Note (OBC Category): 50% tuition fee concession applies (Total: ₹54,582/yr — Tuition: ₹44,000 + Development: ₹10,582 with valid caste & non-creamy layer certificate).\n\n';
+      contextPrefix = '📌 Profile Note (OBC Category): For AY 2026-27, 50% tuition concession applies for boys (Total: ₹61,109/yr) and 100% tuition concession for girls (Total: ₹17,217/yr) with valid caste & non-creamy layer certificates.\n\n';
     } else if (context.category === 'SC' || context.category === 'ST') {
       contextPrefix = `📌 Profile Note (${context.category} Category): 100% tuition fee concession applies (Development fee only: ₹10,582/yr with valid caste and validity certificate).\n\n`;
     } else if (context.category === 'VJNT' || context.category === 'SBC') {
       contextPrefix = `📌 Profile Note (${context.category} Category): 100% tuition fee concession applies (Development fee only: ₹10,582/yr with valid documents).\n\n`;
     } else if (context.category === 'EWS') {
-      contextPrefix = '📌 Profile Note (EWS / EBC): 50% tuition fee concession applies through MahaDBT (Total: ₹54,582/yr with income < 8 LPA).\n\n';
+      contextPrefix = '📌 Profile Note (EWS / EBC): 50% tuition fee concession applies for boys (Total: ₹61,109/yr) and 100% for girls (Total: ₹17,217/yr) through MahaDBT.\n\n';
     } else if (context.quota === 'TFWS') {
-      contextPrefix = '📌 Profile Note (TFWS Quota): 100% tuition waiver (Development fee only: ₹10,582/yr).\n\n';
+      contextPrefix = '📌 Profile Note (TFWS Quota): 100% tuition waiver (Total: ₹17,217/yr for First Year, ₹18,362/yr for DSE).\n\n';
     }
   }
   if (contextPrefix) {

@@ -318,3 +318,153 @@ export function classifyAnswerOutcome(answer, evidence, evaluationTime = Date.no
 
   return 'ANSWERED';
 }
+
+
+/**
+ * Slot-Bound Verifier for tabular and multi-attribute admission queries.
+ *
+ * Unlike token-level verifiers that only check if a number exists ANYWHERE
+ * in retrieved evidence, verifySlotGrounding verifies that numbers in the
+ * generated answer match the exact target cell for the queried slot tuple
+ * (e.g. Category x Gender x Route x YearLevel), catching "wrong-row" errors
+ * where an amount from a competing row in the same table is cited.
+ */
+export function verifySlotGrounding(generatedText, slots = {}, evidenceList = []) {
+  if (typeof generatedText !== 'string' || !generatedText.trim()) {
+    return { verified: false, status: 'EMPTY_GENERATION' };
+  }
+
+  // 1. First run baseline token-level check
+  const baseCheck = verifyGeneratedAnswer(generatedText, evidenceList);
+  if (!baseCheck.verified) {
+    return baseCheck;
+  }
+
+  const generatedTokens = extractFactualTokens(generatedText);
+  const normalizedSlots = {
+    category: slots.category ? String(slots.category).toUpperCase().trim() : null,
+    gender: slots.gender ? String(slots.gender).toLowerCase().trim() : null,
+    route: slots.route ? String(slots.route).toUpperCase().trim() : null,
+    yearLevel: slots.yearLevel ? String(slots.yearLevel).toLowerCase().trim() : 'firstyear',
+    service: slots.service ? String(slots.service).toLowerCase().trim() : null,
+    branch: slots.branch ? String(slots.branch).trim() : null,
+  };
+
+  // Find structured records in evidence
+  for (const record of evidenceList) {
+    if (!record.facts || typeof record.facts !== 'object') continue;
+
+    // Check A: Academic fees matrix (KB-2)
+    if (record.facts.kind === 'academicFees' && (normalizedSlots.category || normalizedSlots.gender)) {
+      const yearTier = (normalizedSlots.yearLevel === 'directsecondyear' || normalizedSlots.yearLevel === 'dse')
+        ? record.facts.directSecondYear
+        : record.facts.firstYear;
+
+      if (yearTier) {
+        let expectedAmount = null;
+        const cat = normalizedSlots.category;
+        const isFemale = normalizedSlots.gender === 'female' || normalizedSlots.gender === 'girls' || normalizedSlots.gender === 'girl';
+
+        if (cat === 'OPEN' || (!cat && !isFemale)) {
+          expectedAmount = yearTier.open;
+        } else if (cat === 'SC' || cat === 'ST') {
+          expectedAmount = yearTier.scst;
+        } else if (cat === 'VJNT' || cat === 'NT' || cat === 'SBC' || cat === 'TFWS') {
+          expectedAmount = yearTier.vjnt || yearTier.concessionGirl;
+        } else if (['OBC', 'EBC', 'EWS'].includes(cat)) {
+          expectedAmount = isFemale ? yearTier.concessionGirl : yearTier.concessionBoy;
+        } else if (isFemale) {
+          expectedAmount = yearTier.concessionGirl;
+        }
+
+        if (expectedAmount !== null) {
+          const expectedStr = String(expectedAmount);
+          const competingAmounts = Object.values(yearTier)
+            .map(String)
+            .filter((amt) => amt !== expectedStr);
+
+          // Did the generated text state a competing fee instead of the expected one?
+          const presentCompeting = competingAmounts.filter((amt) => generatedTokens.numbers.has(amt));
+          const hasExpected = generatedTokens.numbers.has(expectedStr);
+
+          if (presentCompeting.length > 0 && !hasExpected) {
+            return {
+              verified: false,
+              status: 'WRONG_SLOT_ERROR',
+              reason: `Generated answer cites alternative slot fee (${presentCompeting.join(', ')}) instead of target slot fee (${expectedStr})`,
+              expected: expectedAmount,
+              found: presentCompeting,
+              slot: { category: cat, gender: normalizedSlots.gender, yearLevel: normalizedSlots.yearLevel },
+            };
+          }
+        }
+      }
+    }
+
+    // Check B: Accommodation fees matrix (KB-3)
+    if (record.facts.kind === 'accommodationFees' && normalizedSlots.service) {
+      let expectedServiceAmount = null;
+      if (normalizedSlots.service.includes('mess')) {
+        expectedServiceAmount = record.facts.messAnnual;
+      } else if (normalizedSlots.service.includes('deposit')) {
+        expectedServiceAmount = record.facts.refundableDeposit;
+      } else if (normalizedSlots.service.includes('hostel')) {
+        expectedServiceAmount = record.facts.hostel;
+      }
+
+      if (expectedServiceAmount !== null) {
+        const expectedStr = String(expectedServiceAmount);
+        const competingAmounts = [
+          String(record.facts.hostel),
+          String(record.facts.refundableDeposit),
+          String(record.facts.messAnnual),
+        ].filter((amt) => amt !== expectedStr);
+
+        const presentCompeting = competingAmounts.filter((amt) => generatedTokens.numbers.has(amt));
+        const hasExpected = generatedTokens.numbers.has(expectedStr);
+
+        if (presentCompeting.length > 0 && !hasExpected) {
+          return {
+            verified: false,
+            status: 'WRONG_SLOT_ERROR',
+            reason: `Generated answer cites alternative accommodation fee (${presentCompeting.join(', ')}) instead of requested ${normalizedSlots.service} fee (${expectedStr})`,
+            expected: expectedServiceAmount,
+            found: presentCompeting,
+            slot: { service: normalizedSlots.service },
+          };
+        }
+      }
+    }
+
+    // Check C: Program intake & choice code matrix (KB-10)
+    if (record.facts.kind === 'programIntake' && normalizedSlots.branch && Array.isArray(record.facts.programs)) {
+      const branchLower = normalizedSlots.branch.toLowerCase();
+      const targetProgram = record.facts.programs.find((p) =>
+        p.name.toLowerCase().includes(branchLower) || branchLower.includes(p.name.toLowerCase())
+      );
+
+      if (targetProgram) {
+        const expectedIntake = String(targetProgram.intake);
+        const competingIntakes = record.facts.programs
+          .map((p) => String(p.intake))
+          .filter((intk) => intk !== expectedIntake);
+
+        const presentCompeting = competingIntakes.filter((intk) => generatedTokens.intakes.has(intk));
+        const hasExpected = generatedTokens.intakes.has(expectedIntake) || generatedTokens.numbers.has(expectedIntake);
+
+        if (presentCompeting.length > 0 && !hasExpected) {
+          return {
+            verified: false,
+            status: 'WRONG_SLOT_ERROR',
+            reason: `Generated answer cites competing program intake (${presentCompeting.join(', ')}) instead of ${targetProgram.name} intake (${expectedIntake})`,
+            expected: targetProgram.intake,
+            found: presentCompeting,
+            slot: { branch: normalizedSlots.branch },
+          };
+        }
+      }
+    }
+  }
+
+  return { verified: true, status: 'SLOT_VERIFIED' };
+}

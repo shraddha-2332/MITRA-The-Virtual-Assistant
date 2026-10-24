@@ -21,7 +21,7 @@ export const config = {
   dataFile: path.resolve(rootDir, process.env.DATA_FILE || './data/db.json'),
   databaseFile: path.resolve(rootDir, process.env.DATABASE_FILE || './data/mitra.sqlite'),
   geminiApiKey: process.env.GEMINI_API_KEY || '',
-  geminiModel: process.env.GEMINI_MODEL || 'gemini-3.5-flash-lite',
+  geminiModel: process.env.GEMINI_MODEL || 'gemini-3.8-flash',
   maxBodyBytes: 15 * 1024 * 1024,
   assistantRateLimitMax: Number(process.env.ASSISTANT_RATE_LIMIT_MAX || 30),
   publicAssistantRateLimitMax: Number(process.env.PUBLIC_ASSISTANT_RATE_LIMIT_MAX || process.env.ASSISTANT_RATE_LIMIT_MAX || 30),

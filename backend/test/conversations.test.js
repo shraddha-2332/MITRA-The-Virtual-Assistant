@@ -32,6 +32,10 @@ test('resolveConversationalQuestion resolves fee follow-ups with branch context'
   // Follow-up 2: "any concession for girls?"
   const resolvedGirls = resolveConversationalQuestion('any concession for girls?', chat, context);
   assert.equal(resolvedGirls, 'What is the engineering fee concession for girl students in Computer Engineering?');
+
+  // Follow-up 3: "What about OBC girls?" preserves both category and gender slots
+  const resolvedObcGirls = resolveConversationalQuestion('What about OBC girls?', chat, { ...context, category: 'OBC' });
+  assert.equal(resolvedObcGirls, 'What is the engineering fee concession for OBC girl students in Computer Engineering?');
 });
 
 test('resolveConversationalQuestion resolves intake and cutoff follow-ups', () => {

@@ -42,7 +42,7 @@ export function extractConversationContext(text, existingContext = {}) {
   // Branch preference
   if (/\b(?:computer engineering|computer science|cse)\b/.test(norm)) {
     context.branch = 'Computer Engineering';
-  } else if (/\b(?:mechanical and rail|railway engineering|railway|mechanical)\b/.test(norm)) {
+  } else if (/\b(?:mechanical and rail(?:way)?|mechanical engineering|mechanical|rail(?:way)? engineering)\b/.test(norm)) {
     context.branch = 'Mechanical & Rail Engineering';
   } else if (/\b(?:ai & ds|ai and ds|artificial intelligence|aids)\b/.test(norm)) {
     context.branch = 'AI & Data Science';
@@ -111,16 +111,33 @@ export function resolveConversationalQuestion(question, chat, context = {}) {
   }
 
   // 2. Fee follow-ups
-  if (isBareOrPronoun && (context.lastTopic === 'fees' || /\b(?:fee|fees|cost|tuition|charges|shulka|concession)\b/.test(norm))) {
-    if (/\b(?:girls?|female|women|ladies)\b/.test(norm)) {
-      return `What is the engineering fee concession for girl students${context.branch ? ' in ' + context.branch : ''}?`;
+  if (!/\b(?:hostel|room|mess)\b/.test(norm) && isBareOrPronoun && (context.lastTopic === 'fees' || /\b(?:fee|fees|cost|tuition|charges|shulka|concession)\b/.test(norm))) {
+    const isGirl = context.gender === 'girls' || /\b(?:girls?|female|women|ladies)\b/.test(norm);
+    const isBoy = !isGirl && (context.gender === 'boys' || /\b(?:boys?|male|men)\b/.test(norm));
+    const cat = context.category ? `${context.category} ` : '';
+    const branchPart = context.branch && !/\b(?:computer|mechanical|civil|railway|ai|data science|entc|electronics)\b/.test(norm)
+      ? (cat || isGirl || isBoy ? ` in ${context.branch}` : ` for ${context.branch}`)
+      : '';
+
+    if (isGirl) {
+      if (cat) {
+        return `What is the engineering fee concession for ${cat}girl students${branchPart}?`;
+      }
+      return `What is the engineering fee concession for girl students${branchPart}?`;
     }
-    if (context.branch && !/\b(?:computer|mechanical|civil|railway|ai|data science|entc|electronics)\b/.test(norm) && !/\b(?:engineering fees?)\b/.test(norm)) {
-      return `What are the engineering fees for ${context.branch}?`;
+    if (isBoy && cat) {
+      return `What are the engineering fees for ${cat}boys${branchPart}?`;
+    }
+    if (cat) {
+      return `What are the engineering fees for ${cat}category${branchPart}?`;
+    }
+    if (branchPart) {
+      return `What are the engineering fees${branchPart}?`;
     }
     if (!/\b(?:fee|fees|cost|tuition)\b/.test(norm)) {
       return `Engineering fee inquiry: ${question}`;
     }
+    return 'What are the engineering fees?';
   }
 
   // 3. Intake / seats follow-ups (e.g. "what is the intake?", "how many seats?")

@@ -52,7 +52,7 @@ The application is a modular monolith. There are no microservices, vector databa
 | Data storage | SQLite via Node `node:sqlite` | Persistent application and knowledge data |
 | Retrieval | Weighted keyword/rule retrieval | Published-record retrieval and topic routing |
 | Query understanding | Dependency-free bounded domain parser | Normalization, scope extraction and clarification |
-| Optional generation | Google Gemini API (`gemini-2.5-flash`) | Evidence-grounded fallback for selected unanswered queries |
+| Optional generation | Google Gemini API (default `gemini-3.8-flash`, configurable) | Evidence-grounded fallback for selected unanswered queries |
 | Source ingestion | Poppler PDF extraction, English Tesseract OCR, TXT/CSV | Protected source review/publish workflow |
 | Container deployment | Docker Compose, Nginx | Backend service and static frontend/API proxy |
 | Testing | Node test runner, Playwright Core with installed Chrome/Edge | Unit, API, regression and browser checks |
@@ -92,7 +92,7 @@ The implementation is documented in [MITRA_QUERY_UNDERSTANDING.md](MITRA_QUERY_U
 
 ### Storage
 
-- Default database: `backend/data/campusguard.sqlite`.
+- Default database: `backend/data/mitra.sqlite`.
 - SQLite has a `collections` table; the `app` row stores application JSON, including the knowledge array. This is suitable for the current small, single-instance academic-project scope, not a normalized high-scale data model.
 - Seed data initializes a newly created database only. Restarting or saving does not overwrite, recreate or republish existing maintainer records.
 - Tests use temporary isolated databases; they do not reset the maintained local database.
@@ -208,7 +208,7 @@ Optional Gemini configuration belongs only in `backend/.env`:
 
 ```dotenv
 GEMINI_API_KEY=your-google-ai-studio-key
-GEMINI_MODEL=gemini-2.5-flash
+GEMINI_MODEL=gemini-3.8-flash
 ```
 
 Never commit `.env`, local databases, uploads, extracted official source files, backups, log files or `node_modules`. The repository `.gitignore` covers these paths.
@@ -233,13 +233,31 @@ Deployment is **not verified as live or production-ready**. Before public deploy
 - health/smoke test, backup/restore exercise, logs/monitoring and rollback instructions;
 - a load/concurrency test appropriate to expected use.
 
+## 12.1 Gemini reliability and fallback policy
+
+Mitra currently uses one configured Gemini API key and one configured generation model. The assistant already has a deterministic evidence-based fallback when Gemini is unavailable, times out or produces an unacceptable answer. It does **not** yet implement model cascading or multiple-key rotation.
+
+The approved design direction is a bounded fallback chain for optional generation only:
+
+```text
+Deterministic maintained answer
+  -> configured primary Gemini model
+  -> one short retry with exponential backoff and jitter for transient failure
+  -> configured fallback Gemini model
+  -> existing evidence-based fallback or safe insufficient-information response
+```
+
+Retry only temporary conditions such as timeouts, HTTP 408, HTTP 429 and temporary 5xx service failures. Do not retry malformed requests, invalid/blocked keys, permission failures, safety blocks or exhausted billing. Every generated response, including fallback-model output, must still pass the existing grounding and promissory-claim checks.
+
+Multiple Gemini keys from the same Google Cloud/AI Studio project are not treated as extra quota capacity: Gemini quotas are applied per project, not per key. A second key is useful for controlled credential rotation or separately authorized disaster recovery, not quota bypass. A future implementation should use configuration such as `GEMINI_FALLBACK_MODEL`, structured failure categories, bounded latency and safe telemetry; it must not expose keys, weaken evidence rules or alter the public answer format. This policy is planned and has not yet been implemented or benchmarked.
+
 ## 13. Latest verification evidence
 
 These are automated development/regression results. They establish the named checks only; they do not prove general answer accuracy, fluent translation quality, live-source currency or production readiness.
 
 | Validation area | Latest verified result | What it checks |
 | --- | ---: | --- |
-| Backend test suite | 114/114 passed | API validation, persistence, structured facts, knowledge authorization, source rules, routing, query understanding and retained functionality |
+| Backend test suite | 146/146 passed on 23 October 2026 | API validation, persistence, structured facts, knowledge authorization, source rules, routing, query understanding, grounding, semantic retrieval and website-sync behavior |
 | Backend syntax check | passed | `server.js` parses |
 | Legacy evaluator | 500/500 passed | Existing routing/content regression expectations with Gemini disabled |
 | Public diagnostic evaluator | 18/18 passed | Supported, unsupported, ambiguity, language, compound and evidence contract cases |
@@ -303,6 +321,7 @@ Implement backend-only claim-level validation for optional Gemini responses:
 3. Consolidate remaining legacy hardcoded facts into maintained structured records.
 4. Separate unrelated legacy workflows from assistant modules where dependency review shows it is safe.
 5. Finish production hardening, deployment verification, CI, backup/restore and observability.
+6. Implement the bounded Gemini model fallback policy above only after confirming the primary/fallback models available to the project and defining latency/cost limits.
 
 ## 17. Final-year project position
 

@@ -41,7 +41,8 @@ export function normalizeLocalTerms(question) {
     [/शाखांची|शाखाओं/gu, ' branches '], [/सर्व|सभी/gu, ' all '],
 
     // Romanized Marathi & Hindi mappings to English search equivalents
-    [/\b(?:shulka|fees?|fee|kiti)\b/gi, ' fee '],
+    [/\b(?:shulka|fees?|fee)\b/gi, ' fee '],
+    [/\b(?:fee kiti|kiti fee|kiti kharch|kiti paise)\b/gi, ' fee '],
     [/\b(?:vasatigruh|vasatigruha|chhatravas)\b/gi, ' hostel '],
     [/\b(?:pravesh|dakhila|dakhla)\b/gi, ' admission '],
     [/\b(?:granthalay|pustakalay)\b/gi, ' library '],

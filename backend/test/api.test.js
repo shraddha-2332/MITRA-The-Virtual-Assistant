@@ -1409,7 +1409,7 @@ test('strategic improvement options: multi-turn session context, suggestions chi
     assert.equal(chat2.context?.category, 'OBC');
     const assistantReply = chat2.messages[chat2.messages.length - 1];
     assert.match(assistantReply.text, /Profile Note \(OBC Category\)/);
-    assert.match(assistantReply.text, /54,582/);
+    assert.match(assistantReply.text, /61,109/);
 
     // Option B: Bare short-tail queries provide quick-action suggestion chips
     resetRuntimeStateForTests();

@@ -6,6 +6,7 @@ import {
   extractEvidenceTokens,
   verifyGeneratedAnswer,
   classifyAnswerOutcome,
+  verifySlotGrounding,
 } from '../src/grounding.js';
 
 test('extractFactualTokens identifies fees, years, percentages, choice codes, and dates', () => {
@@ -176,3 +177,85 @@ test('verifyGeneratedAnswer validates intake capacities, helplines, and institut
   assert.ok(fakeDteRes.unsupported.some((u) => u.type === 'instituteCode'));
 });
 
+
+
+test('verifySlotGrounding detects wrong-row tabular errors missed by token-level verification', () => {
+  const evidence = [
+    {
+      id: 'KB-2',
+      title: 'Engineering fees AY 2026-27',
+      source: 'Approved fee records AY 2026-27',
+      text: 'First Year Engineering fees for AY 2026-27: Open INR 1,05,000, OBC boys INR 61,109, OBC girls INR 17,217, SC ST INR 8,000.',
+      facts: {
+        kind: 'academicFees',
+        academicYear: '2026-27',
+        firstYear: {
+          open: 105000,
+          concessionBoy: 61109,
+          concessionGirl: 17217,
+          vjnt: 17217,
+          scst: 8000,
+        },
+      },
+    },
+    {
+      id: 'KB-3',
+      title: 'Accommodation fees AY 2026-27',
+      text: 'Hostel fee is INR 35,000 with refundable deposit INR 5,000 and mess charges INR 42,000.',
+      facts: {
+        kind: 'accommodationFees',
+        academicYear: '2026-27',
+        hostel: 35000,
+        refundableDeposit: 5000,
+        messAnnual: 42000,
+      },
+    },
+    {
+      id: 'KB-10',
+      title: 'Approved program intake AY 2026-27',
+      text: 'Computer Science and Engineering intake is 120 seats. Mechanical and Rail Engineering intake is 60 seats.',
+      facts: {
+        kind: 'programIntake',
+        academicYear: '2026-27',
+        programs: [
+          { name: 'Computer Science and Engineering', intake: 120 },
+          { name: 'Mechanical and Rail Engineering', intake: 60 },
+        ],
+      },
+    },
+  ];
+
+  // 1. Correct slot matching: OBC girl query with 17,217 passes slot verification
+  const correctSlotAnswer = 'For OBC category girl students, the First Year Engineering fee is INR 17,217 for AY 2026-27.';
+  const correctRes = verifySlotGrounding(correctSlotAnswer, { category: 'OBC', gender: 'female' }, evidence);
+  assert.strictEqual(correctRes.verified, true);
+  assert.strictEqual(correctRes.status, 'SLOT_VERIFIED');
+
+  // 2. Wrong-row error: Token-level verifier sees 61,109 in evidence and falsely passes,
+  // but verifySlotGrounding catches the slot mismatch
+  const wrongRowAnswer = 'For OBC girl students, the First Year Engineering fee is INR 61,109 for AY 2026-27.';
+  const tokenLevelRes = verifyGeneratedAnswer(wrongRowAnswer, evidence);
+  assert.strictEqual(tokenLevelRes.verified, true); // Token-level passes! (False positive)
+
+  const slotLevelRes = verifySlotGrounding(wrongRowAnswer, { category: 'OBC', gender: 'female' }, evidence);
+  assert.strictEqual(slotLevelRes.verified, false);
+  assert.strictEqual(slotLevelRes.status, 'WRONG_SLOT_ERROR');
+  assert.strictEqual(slotLevelRes.expected, 17217);
+  assert.deepStrictEqual(slotLevelRes.found, ['61109']);
+
+  // 3. Accommodation wrong-slot error: Student asks for mess fees, but response quotes hostel fee
+  const wrongMessAnswer = 'The annual mess fee for hostel students is INR 35,000 for AY 2026-27.';
+  const messSlotRes = verifySlotGrounding(wrongMessAnswer, { service: 'mess' }, evidence);
+  assert.strictEqual(messSlotRes.verified, false);
+  assert.strictEqual(messSlotRes.status, 'WRONG_SLOT_ERROR');
+  assert.strictEqual(messSlotRes.expected, 42000);
+  assert.deepStrictEqual(messSlotRes.found, ['35000']);
+
+  // 4. Program intake wrong-slot error: CSE query quotes 60 seats (which belongs to Mechanical)
+  const wrongCseIntake = 'The approved intake for Computer Science and Engineering is 60 seats.';
+  const intakeSlotRes = verifySlotGrounding(wrongCseIntake, { branch: 'Computer Science and Engineering' }, evidence);
+  assert.strictEqual(intakeSlotRes.verified, false);
+  assert.strictEqual(intakeSlotRes.status, 'WRONG_SLOT_ERROR');
+  assert.strictEqual(intakeSlotRes.expected, 120);
+  assert.deepStrictEqual(intakeSlotRes.found, ['60']);
+});

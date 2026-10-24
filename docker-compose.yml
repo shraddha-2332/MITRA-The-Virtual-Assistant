@@ -9,7 +9,7 @@ services:
       TOKEN_SECRET: ${TOKEN_SECRET:?Set TOKEN_SECRET before running Docker Compose}
       DATABASE_FILE: /app/data/mitra.sqlite
       GEMINI_API_KEY: ${GEMINI_API_KEY:-}
-      GEMINI_MODEL: ${GEMINI_MODEL:-gemini-3.5-flash-lite}
+      GEMINI_MODEL: ${GEMINI_MODEL:-gemini-3.8-flash}
     expose:
       - "4000"
     healthcheck:
