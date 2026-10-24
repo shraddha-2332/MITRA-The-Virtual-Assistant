@@ -1,0 +1,35 @@
+{
+  "schemaVersion": 1,
+  "status": "blank-template-not-a-dataset",
+  "batchId": null,
+  "caseId": null,
+  "corpusSha256": null,
+  "engineCommit": null,
+  "split": "final-candidate",
+  "origin": null,
+  "authorReviewerCode": null,
+  "independenceConfirmed": null,
+  "language": null,
+  "topic": null,
+  "turns": [],
+  "answerability": null,
+  "acceptedEvidenceGroups": [],
+  "targetSlots": {
+    "category": null,
+    "gender": null,
+    "admissionRoute": null,
+    "academicYear": null,
+    "programme": null,
+    "service": null
+  },
+  "requiredClaims": [],
+  "prohibitedClaims": [],
+  "requiredClarification": null,
+  "reviewerAnnotations": [],
+  "adjudication": null,
+  "exposure": {
+    "hasBeenExecuted": false,
+    "firstExecutionAt": null,
+    "questionHashes": []
+  }
+}

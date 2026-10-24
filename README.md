@@ -67,7 +67,13 @@ To inspect the database, open backend/data/mitra.sqlite in a SQLite viewer and b
 
 Compound questions can return separate supported or unsupported sections with numbered record references. Ambiguous intake references ask which programme is meant; preceding messages do not resolve them. See [compound answering and clarification](docs/MITRA_COMPOUND_QUESTIONS.md) for supported facets and limits.
 
-Public chat messages are held in React state for the current page session. Refreshing the page resets them. Public chat does not save user conversation history, and earlier messages are not passed to the answer engine as context. Each question is evaluated independently.
+The public widget holds visible messages and a conversation ID in React state. The backend persists exchanges and uses selected category, gender, branch, route, topic and academic-year fields for heuristic follow-ups. Refreshing or resetting the widget loses its active conversation ID; it does not delete stored exchanges. Public conversations are limited to 200 stored messages (100 exchanges), with at most 200 public conversations retained. Conversation-ID session isolation and retention policy require further review before public deployment.
+
+Fee follow-ups preserve the original wording and explicit route/year qualifiers. Missing fields can be added from context; ambiguous category/gender questions still request clarification. Fee responses do not append independent hardcoded profile amounts. Recognized critical factual topics bypass optional advisory generation.
+
+For the current research framing, implemented corrections and evidence requirements, see [research scope and evaluation plan](docs/RESEARCH_SCOPE_AND_EVALUATION_PLAN.md). Existing draft comparative results are unverified and must not be presented as measured findings.
+
+Research preparation now includes a [design-and-implementation manuscript](docs/MITRA_RESEARCH_MANUSCRIPT.md), [primary-source literature audit](docs/LITERATURE_VERIFICATION.md), and [independent-review packet](docs/INDEPENDENT_EVALUATION_PACKET.md). Reviewer labels and final independent measurements remain pending.
 
 ## Local Setup
 
