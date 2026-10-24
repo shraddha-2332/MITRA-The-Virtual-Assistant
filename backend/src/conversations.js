@@ -1,6 +1,7 @@
 import { getDb, saveDb } from './store.js';
 import { badRequest, notFound } from './errors.js';
 import { generateId, nowIso, pick } from './utils.js';
+import { understandQuery } from './query-understanding.js';
 
 const summary = (chat) => pick(chat, ['id', 'title', 'createdAt', 'updatedAt']);
 
@@ -21,6 +22,12 @@ export function listConversations(user, offsetValue) {
 export function extractConversationContext(text, existingContext = {}) {
   const norm = String(text || '').normalize('NFKC').toLocaleLowerCase();
   const context = { ...(existingContext || {}) };
+  const query = understandQuery(text);
+  if (query.academicYears.length === 1 && !query.invalidYears.length) {
+    context.academicYear = query.academicYears[0];
+  } else if (query.academicYears.length || query.invalidYears.length) {
+    delete context.academicYear;
+  }
 
   // Category identification
   if (/\b(?:sc|scheduled caste)\b/.test(norm)) {
@@ -105,39 +112,27 @@ export function resolveConversationalQuestion(question, chat, context = {}) {
     || /^(?:and|what about|how about|any|for)\b/.test(norm)
     || norm.split(/\s+/).length <= 4;
 
+  // Explicit exclusions must reach the scope parser unchanged; do not reuse a negated profile.
+  if (/\b(?:not|no|except|excluding|instead)\b/.test(norm)) return question;
+
   // 1. Hostel & mess follow-ups
   if (context.lastTopic === 'hostel' && !/\b(?:hostel|room)\b/.test(norm)) {
     return `Hostel inquiry: ${question}`;
   }
 
   // 2. Fee follow-ups
-  if (!/\b(?:hostel|room|mess)\b/.test(norm) && isBareOrPronoun && (context.lastTopic === 'fees' || /\b(?:fee|fees|cost|tuition|charges|shulka|concession)\b/.test(norm))) {
-    const isGirl = context.gender === 'girls' || /\b(?:girls?|female|women|ladies)\b/.test(norm);
-    const isBoy = !isGirl && (context.gender === 'boys' || /\b(?:boys?|male|men)\b/.test(norm));
-    const cat = context.category ? `${context.category} ` : '';
-    const branchPart = context.branch && !/\b(?:computer|mechanical|civil|railway|ai|data science|entc|electronics)\b/.test(norm)
-      ? (cat || isGirl || isBoy ? ` in ${context.branch}` : ` for ${context.branch}`)
-      : '';
-
-    if (isGirl) {
-      if (cat) {
-        return `What is the engineering fee concession for ${cat}girl students${branchPart}?`;
-      }
-      return `What is the engineering fee concession for girl students${branchPart}?`;
-    }
-    if (isBoy && cat) {
-      return `What are the engineering fees for ${cat}boys${branchPart}?`;
-    }
-    if (cat) {
-      return `What are the engineering fees for ${cat}category${branchPart}?`;
-    }
-    if (branchPart) {
-      return `What are the engineering fees${branchPart}?`;
-    }
-    if (!/\b(?:fee|fees|cost|tuition)\b/.test(norm)) {
-      return `Engineering fee inquiry: ${question}`;
-    }
-    return 'What are the engineering fees?';
+  if (!/\b(?:hostel|room|mess)\b/.test(norm) && (isBareOrPronoun && context.lastTopic === 'fees' || /\b(?:fee|fees|cost|tuition|charges|shulka|concession)\b/.test(norm))) {
+    // Enrich the original question instead of replacing qualifiers such as DSE,
+    // academic year, semester, comparison, or installment requests.
+    const query = understandQuery(question);
+    const additions = [];
+    if (!/\b(?:fee|fees|cost|tuition|charges|shulka|concession)\b/.test(norm)) additions.push('engineering fees');
+    if (!query.category.positive.length && !query.category.excluded.length && context.category) additions.push(context.category);
+    if (!query.gender.positive.length && !query.gender.excluded.length && context.gender) additions.push(context.gender);
+    if (!query.branch.positive.length && !query.branch.excluded.length && context.branch) additions.push(context.branch);
+    if (!query.route.positive.length && !query.route.excluded.length && !/\bsecond year\b/.test(norm) && context.route) additions.push(context.route);
+    if (!query.academicYears.length && !query.invalidYears.length && context.academicYear) additions.push(context.academicYear);
+    return additions.length ? `${question} (${additions.join(' ')})` : question;
   }
 
   // 3. Intake / seats follow-ups (e.g. "what is the intake?", "how many seats?")
@@ -207,6 +202,8 @@ export async function askPublicWithHistory(body, answerQuestion) {
   const chat = conversationId
     ? db.conversations.find((item) => item.id === conversationId && item.ownerId === 'public')
     : null;
+
+  if (chat && chat.messages.length >= 200) throw badRequest('This conversation is full. Start a new chat to continue.');
 
   const updatedContext = extractConversationContext(question, chat?.context || {});
   const contextualQuestion = resolveConversationalQuestion(question, chat, updatedContext);

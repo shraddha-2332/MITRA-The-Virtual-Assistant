@@ -1729,6 +1729,8 @@ export async function answerAdmissionQuestion(body, user) {
     throw badRequest('Enter a question of up to 1000 characters.');
   }
   const question = body.question.trim();
+  const context = body.context && typeof body.context === 'object' && !Array.isArray(body.context) ? body.context : {};
+  const queryScope = understandQuery(question);
   const language = selectLanguage(question, body.language);
   const normalized = normalizeIntentText(question);
   if (isEmploymentQuery(question) || isEmploymentQuery(normalized)) {
@@ -1784,7 +1786,8 @@ export async function answerAdmissionQuestion(body, user) {
   // deterministic KB record and let Gemini synthesise a warm conversational answer from the top
   // retrieved evidence. The deterministic chain runs as normal fallback if Gemini fails or the
   // evidence score is too low.
-  if (language === 'en' && isAdvisoryQuestion(normalized) && retrievedEvidence.length > 0 && retrievedEvidence[0].score >= 5) {
+  const criticalFactQuery = queryScope.topics.some(topic => ['academicFees', 'accommodationFees', 'programmes', 'seatMatrix'].includes(topic));
+  if (language === 'en' && !criticalFactQuery && isAdvisoryQuestion(normalized) && retrievedEvidence.length > 0 && retrievedEvidence[0].score >= 5) {
     const advisoryEvidence = retrievedEvidence.slice(0, 3).map(sourceRecord);
     const rawAdvisory = await generateWithGemini(question, null, advisoryEvidence);
     if (rawAdvisory) {
@@ -1877,24 +1880,6 @@ export async function answerAdmissionQuestion(body, user) {
     ...officialLinks,
     ...evidence.filter(record => record.sourceUrl).map(record => ({ label: record.title, url: record.sourceUrl })),
   ]);
-  const context = (body && typeof body.context === 'object' && body.context) ? body.context : {};
-  let contextPrefix = '';
-  if (context.category && /\b(?:fee|fees|cost|tuition|shulka)\b/i.test(normalized) && !/\b(?:open|obc|sc|st|vj\/?nt|nt|sbc|ebc|ews|tfws)\b/i.test(normalized)) {
-    if (context.category === 'OBC') {
-      contextPrefix = '📌 Profile Note (OBC Category): For AY 2026-27, 50% tuition concession applies for boys (Total: ₹61,109/yr) and 100% tuition concession for girls (Total: ₹17,217/yr) with valid caste & non-creamy layer certificates.\n\n';
-    } else if (context.category === 'SC' || context.category === 'ST') {
-      contextPrefix = `📌 Profile Note (${context.category} Category): 100% tuition fee concession applies (Development fee only: ₹10,582/yr with valid caste and validity certificate).\n\n`;
-    } else if (context.category === 'VJNT' || context.category === 'SBC') {
-      contextPrefix = `📌 Profile Note (${context.category} Category): 100% tuition fee concession applies (Development fee only: ₹10,582/yr with valid documents).\n\n`;
-    } else if (context.category === 'EWS') {
-      contextPrefix = '📌 Profile Note (EWS / EBC): 50% tuition fee concession applies for boys (Total: ₹61,109/yr) and 100% for girls (Total: ₹17,217/yr) through MahaDBT.\n\n';
-    } else if (context.quota === 'TFWS') {
-      contextPrefix = '📌 Profile Note (TFWS Quota): 100% tuition waiver (Total: ₹17,217/yr for First Year, ₹18,362/yr for DSE).\n\n';
-    }
-  }
-  if (contextPrefix) {
-    groundedAnswer.answer = contextPrefix + groundedAnswer.answer;
-  }
   const isUnverified = groundedAnswer.source === 'No verified record'
     || (!evidence.length && ['UNSUPPORTED_TOPIC', 'OUTDATED_EVIDENCE', 'INSUFFICIENT_EVIDENCE', 'CONFLICTING_EVIDENCE'].includes(effectiveOutcome))
     || (!evidence.length && !groundedAnswer.anchored && groundedAnswer.source !== 'Verified admission checklist' && groundedAnswer.source !== 'My document records')

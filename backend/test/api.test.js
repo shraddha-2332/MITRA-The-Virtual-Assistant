@@ -1408,8 +1408,8 @@ test('strategic improvement options: multi-turn session context, suggestions chi
     const chat2 = turn2.payload.data.conversation;
     assert.equal(chat2.context?.category, 'OBC');
     const assistantReply = chat2.messages[chat2.messages.length - 1];
-    assert.match(assistantReply.text, /Profile Note \(OBC Category\)/);
-    assert.match(assistantReply.text, /61,109/);
+    assert.match(assistantReply.text, /specify boys or girls/i);
+    assert.doesNotMatch(assistantReply.text, /Profile Note|61,109/);
 
     // Option B: Bare short-tail queries provide quick-action suggestion chips
     resetRuntimeStateForTests();
