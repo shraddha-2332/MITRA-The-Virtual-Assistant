@@ -257,7 +257,7 @@ These are automated development/regression results. They establish the named che
 
 | Validation area | Latest verified result | What it checks |
 | --- | ---: | --- |
-| Backend test suite | 146/146 passed on 23 October 2026 | API validation, persistence, structured facts, knowledge authorization, source rules, routing, query understanding, grounding, semantic retrieval and website-sync behavior |
+| Backend test suite | 147/147 passed on 24 October 2026 | API validation, persistence, structured facts, knowledge authorization, source rules, routing, query understanding, grounding, semantic retrieval and website-sync behavior |
 | Backend syntax check | passed | `server.js` parses |
 | Legacy evaluator | 500/500 passed | Existing routing/content regression expectations with Gemini disabled |
 | Public diagnostic evaluator | 18/18 passed | Supported, unsupported, ambiguity, language, compound and evidence contract cases |
