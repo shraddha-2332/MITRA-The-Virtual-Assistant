@@ -61,6 +61,12 @@ The regression increment covers successful advisory and non-advisory generation,
 
 ## 6. Independent evaluation protocol
 
+### Supplemental developer verifier probes
+
+A subsequent direct-function characterization used 15 exposed synthetic answer probes: 11 invalid answers and four valid controls. The local token checker rejected 2/11 invalid answers; the slot checker rejected 6/11. Both accepted the four controls. The slot checker missed mixed swapped labels, requested-year mismatch, unresolved gender and programme-code binding. These counts describe intentionally constructed probes with supplied slots, not independently measured model accuracy or public API error rates. Exact inputs, source hashes and limitations are documented in [verifier development diagnostics](VERIFIER_DEVELOPMENT_DIAGNOSTICS.md). The backend suite expanded to 157 passing tests; the preceding table retains the earlier 155-test run as historical validation.
+
+### Independent study still pending
+
 A separate authoring and adjudication process should collect fresh questions against a frozen, explicitly identified corpus. The final set must remain separate from development tuning. Reviewers should label answerability, required facts, accepted evidence, scope and clarification requirements, with disagreements preserved and resolved. Regional-language cases require competent-speaker judgments.
 
 Compare selected retrieval and answer pipelines under the same corpus and conditions. Report retrieval metrics separately from answer correctness, exact target-cell accuracy, unsupported claims, false refusals and clarification quality. A verifier study must include both incorrect and legitimate comparative statements, including mixed correct-and-wrong figures. Report error-detection recall and false alarms with explicit denominators. Record end-to-end latency, model calls, token usage and actual cost only when measured.

@@ -10,6 +10,7 @@
     "evaluate": "node --no-warnings=ExperimentalWarning scripts/evaluate-assistant.js",
     "evaluate:public": "node --no-warnings=ExperimentalWarning scripts/evaluate-public-assistant.js",
     "evaluate:retrieval": "node --no-warnings=ExperimentalWarning scripts/compare-retrieval.js",
+    "evaluate:verifiers": "node --no-warnings=ExperimentalWarning scripts/evaluate-verifiers.js",
     "prepare:retrieval-review": "node scripts/prepare-retrieval-review.js",
     "evaluate:paraphrases": "node --no-warnings=ExperimentalWarning scripts/evaluate-paraphrases.js",
     "check": "node --check src/server.js",

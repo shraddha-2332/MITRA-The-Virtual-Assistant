@@ -75,6 +75,8 @@ For the current research framing, implemented corrections and evidence requireme
 
 Research preparation now includes a [design-and-implementation manuscript](docs/MITRA_RESEARCH_MANUSCRIPT.md), [primary-source literature audit](docs/LITERATURE_VERIFICATION.md), and [independent-review packet](docs/INDEPENDENT_EVALUATION_PACKET.md). Reviewer labels and final independent measurements remain pending.
 
+Run `npm.cmd run evaluate:verifiers` from `backend` for [reproducible synthetic verifier diagnostics](docs/VERIFIER_DEVELOPMENT_DIAGNOSTICS.md). These explicitly report missed invalid answers; `-- --strict` exits nonzero on decision errors. They do not measure live model or independent answer accuracy.
+
 ## Local Setup
 
 Use Node.js 22.12 or newer in the Node 22 series to support the frontend tooling and built-in SQLite module.
