@@ -1,10 +1,14 @@
 # Mitra: An Institutional Information Assistant with Maintained Facts and Controlled Generation
 
-Design-and-implementation working manuscript, 24 October 2026. Author order, affiliations, submission venue and independent evaluation are pending confirmation. This manuscript replaces the experimental framing of the unverified IEEE draft; it contains no invented comparison results.
+**Shraddha Ukirade, Anzalna Tamboli, Sayali Kakade, Dnyaneshwari Vyavahare, and S. J. Raichurkar**
+
+Department of Computer Science and Engineering, MIT College of Railway Engineering and Research, Barshi, Maharashtra, India
+
+Faculty review copy, 24 October 2026. Author details follow the existing project draft and should be confirmed during review. This is an implementation study with development diagnostics; independent evaluation remains pending.
 
 ## Abstract
 
-Institutional admission information depends on programme, academic year, admission route and applicant attributes. A conversational assistant must preserve these distinctions while making maintained information accessible. This paper describes Mitra, a web-based assistant for MITCORER Barshi that combines published institutional knowledge, deterministic rendering of selected structured facts, bounded multilingual query interpretation and optional evidence-conditioned generation. Revision checks, source metadata and reviewed publication govern knowledge maintenance. Critical factual topics use maintained records, while selected generated outputs undergo numeric, promissory-claim and slot checks before acceptance. The implementation uses React, Node.js and SQLite. Local validation comprises 155 backend tests, 500 routing/content regression cases and 36 public diagnostic cases, all passing in the recorded development runs. These outcomes demonstrate specified implementation behavior rather than independently measured answer accuracy. The paper identifies remaining verifier and conversation limitations and defines an independent evaluation protocol for correctness, evidence support, multilingual quality and runtime behavior.
+Institutional admission information depends on programme, academic year, admission route and applicant attributes. A conversational assistant must preserve these distinctions while making maintained information accessible. This paper describes Mitra, a web-based assistant for MITCORER Barshi that combines published institutional knowledge, deterministic rendering of selected structured facts, bounded multilingual query interpretation and optional evidence-conditioned generation. Revision checks, source metadata and reviewed publication govern knowledge maintenance. Critical factual topics use maintained records, while selected generated outputs undergo numeric, promissory-claim and slot checks before acceptance. The implementation uses React, Node.js and SQLite. Local validation comprises 158 backend tests, 500 routing/content regression cases and 36 public diagnostic cases, all passing in the recorded development runs. These outcomes demonstrate specified implementation behavior rather than independently measured answer accuracy. The paper identifies remaining verifier and conversation limitations and defines an independent evaluation protocol for correctness, evidence support, multilingual quality and runtime behavior.
 
 Keywords: institutional question answering; maintained knowledge; structured facts; retrieval; multilingual interfaces; generation verification.
 
@@ -40,7 +44,7 @@ Weighted lexical and rule scoring retrieves records with conceptual synonym boos
 
 Canonical records control academic fees, accommodation charges and current programme intake. Maintained rendering preserves structured amounts and scopes; missing or retired critical records do not justify regenerating their figures. Questions recognized as critical factual topics bypass the advisory generation path. Unknown wording can still challenge topic recognition.
 
-Optional English generation receives bounded retrieved evidence. Generated outputs are checked for selected unsupported numeric fields and prohibited promises. A specialized verifier compares some fee, accommodation and programme values against supplied slots. However, including both expected and incorrect figures can pass, missing slots can bypass specialized checks, and token support does not prove sentence-level entailment. These are implementation limits, not minor exceptions to a correctness guarantee.
+Optional English generation receives bounded retrieved evidence. Generated outputs are checked for selected unsupported numeric fields and prohibited promises. A specialized verifier compares some fee, accommodation and programme values against supplied slots. Requested-year mismatches, unresolved gender for selected concession fees and competing programme codes are rejected by bounded checks. However, including both expected and incorrectly labeled figures can still pass, and token support does not prove sentence-level entailment. These are implementation limits, not minor exceptions to a correctness guarantee.
 
 Reviewed translations are bound to source content; missing or stale reviewed prose falls back explicitly. Public conversation exchanges are persisted and selected profile/topic fields support heuristic follow-ups. Fee follow-ups enrich original wording so explicit route and year qualifiers are retained. The browser's reset or refresh loses its active conversation reference without deleting prior server records.
 
@@ -50,7 +54,7 @@ The following results were recorded on 24 October 2026 and are development evide
 
 | Check | Result | What it establishes |
 | --- | --- | --- |
-| Backend test suite | 155/155 passed | Defined API, persistence, routing, maintenance and verification regressions |
+| Backend test suite | 158/158 passed | Defined API, persistence, routing, maintenance and verification regressions |
 | Legacy evaluator | 500/500 passed | Developer-authored category/action/content expectations, generation disabled |
 | Strict public diagnostics | 36/36 passed | Specified supported, unsupported, multilingual and scope contracts |
 | Backend syntax and Git whitespace checks | Passed | Parsing and change formatting |
@@ -63,7 +67,7 @@ The regression increment covers successful advisory and non-advisory generation,
 
 ### Supplemental developer verifier probes
 
-A subsequent direct-function characterization used 15 exposed synthetic answer probes: 11 invalid answers and four valid controls. The local token checker rejected 2/11 invalid answers; the slot checker rejected 6/11. Both accepted the four controls. The slot checker missed mixed swapped labels, requested-year mismatch, unresolved gender and programme-code binding. These counts describe intentionally constructed probes with supplied slots, not independently measured model accuracy or public API error rates. Exact inputs, source hashes and limitations are documented in [verifier development diagnostics](VERIFIER_DEVELOPMENT_DIAGNOSTICS.md). The backend suite expanded to 157 passing tests; the preceding table retains the earlier 155-test run as historical validation.
+A direct-function characterization used 15 exposed synthetic answer probes: 11 invalid answers and four valid controls. The local token checker rejected 2/11 invalid answers. Before bounded corrections the slot checker rejected 6/11; after requested-year, missing-gender and programme-code checks it rejected 9/11 (81.82%). Both checkers accepted the four valid controls. The two remaining slot-checker misses contain swapped labels while including both expected and competing amounts. These before/after counts describe deliberately constructed development probes used during debugging, not an independent improvement experiment, model accuracy or public API error rates. The same cases informed the corrections, so generalization cannot be inferred. Exact inputs, source hashes and historical results are documented in the verifier diagnostics.
 
 ### Independent study still pending
 

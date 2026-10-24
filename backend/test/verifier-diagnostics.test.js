@@ -33,3 +33,14 @@ test('diagnostics preserve input corpus, include scope and mixed-row probes, and
   assert.throws(() => evaluateVerifiers([...cases, cases[0]], corpus), /Invalid diagnostic/);
   assert.throws(() => evaluateVerifiers([{ ...cases[0], evidenceIds: ['MISSING'] }], corpus), /Invalid diagnostic/);
 });
+
+test('year mismatch, unresolved concession gender and competing programme code are rejected', () => {
+  const corpus = structuredClone(seedKnowledge.filter(record => record.status === 'Published'));
+  const { rows } = evaluateVerifiers(verifierCases(corpus), corpus);
+  for (const id of ['VD-06', 'VD-07', 'VD-13']) {
+    assert.equal(rows.find(row => row.id === id).methods.slot.rejected, true, id);
+  }
+  for (const id of ['VD-01', 'VD-04', 'VD-08', 'VD-11']) {
+    assert.equal(rows.find(row => row.id === id).methods.slot.rejected, false, id);
+  }
+});

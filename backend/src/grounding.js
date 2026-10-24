@@ -353,6 +353,15 @@ export function verifySlotGrounding(generatedText, slots = {}, evidenceList = []
     branch: slots.branch ? String(slots.branch).trim() : null,
   };
 
+  if (slots.academicYear && !evidenceList.some(record => (record.facts?.academicYear || record.provenance?.academicYear) === slots.academicYear)) {
+    return { verified: false, status: 'REQUESTED_YEAR_UNSUPPORTED' };
+  }
+  if (evidenceList.some(record => record.facts?.kind === 'academicFees')
+    && ['OBC', 'EBC', 'EWS', 'SEBC'].includes(normalizedSlots.category)
+    && !['female', 'girls', 'girl', 'male', 'boys', 'boy'].includes(normalizedSlots.gender)) {
+    return { verified: false, status: 'REQUIRED_SLOT_MISSING', reason: 'Gender is required to resolve this concession fee.' };
+  }
+
   // Find structured records in evidence
   for (const record of evidenceList) {
     if (!record.facts || typeof record.facts !== 'object') continue;
@@ -451,6 +460,11 @@ export function verifySlotGrounding(generatedText, slots = {}, evidenceList = []
       );
 
       if (targetProgram) {
+        const otherCodes = record.facts.programs.filter(program => program !== targetProgram).map(program => program.choiceCode).filter(Boolean);
+        if (targetProgram.choiceCode && !generatedTokens.choiceCodes.has(targetProgram.choiceCode)
+          && otherCodes.some(code => generatedTokens.choiceCodes.has(code))) {
+          return { verified: false, status: 'WRONG_SLOT_ERROR', reason: 'A competing programme choice code was assigned without the target code.' };
+        }
         const expectedIntake = String(targetProgram.intake);
         const competingIntakes = record.facts.programs
           .map((p) => String(p.intake))

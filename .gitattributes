@@ -1,0 +1,2 @@
+# Preserve exact PDF bytes on Windows and suppress text diffs for attachments.
+*.pdf binary

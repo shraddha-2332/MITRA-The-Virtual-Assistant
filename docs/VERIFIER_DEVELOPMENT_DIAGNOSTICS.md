@@ -57,3 +57,11 @@ The [compact machine-readable summary](research-review/verifier-development-resu
 Backend tests: **157/157 passed**; syntax check passed. Repeat runs produced identical input fingerprints and decision counts; saved corpus/case byte hashes were independently recomputed; strict mode returned the expected exit code 1. Tests cover confusion-matrix denominators, invalid judgments, duplicate IDs, missing evidence references, corpus nonmutation and probe coverage. No application answer behavior changed in this increment.
 
 Before expanding generation, address missing required slots, requested-year validation and programme-code binding. Mixed-value statements require actual claim-to-attribute validation or conservative rejection with explicit handling for legitimate comparisons. A patch that merely bans all competing values would also reject valid comparative answers. Use these exposed probes as regression material and retain a separate independently authored final evaluation.
+
+## Follow-up corrections for faculty review
+
+The subsequent bounded corrections reject a requested academic year unsupported by structured/provenance metadata, unresolved gender for selected concession fees, and a competing programme choice code when the target code is absent. They address VD-06, VD-07 and VD-13. A regression test also preserves the four valid controls. Mixed-value label swaps VD-03 and VD-10 remain accepted; semantic attribution and broader context handling are still incomplete.
+
+On the same exposed 15 probes, the slot checker now records TP=9, FN=2, FP=0, TN=4: error-detection recall 9/11 (81.82%), with zero false alarms among four controls. The token checker remains TP=2, FN=9, FP=0, TN=4. These cases informed the patch, so this is a debugging result, not independent improvement evidence. Backend tests passed **158/158**, legacy diagnostics **500/500**, and public diagnostics **36/36**.
+
+New input fingerprint: `2530e421d39b3ebc7e8d29f1d35fe78e3365c87e17ece524e329a622628c448c`. The [post-fix summary](research-review/verifier-postfix-results.json) preserves the new hashes and remaining misses; the original summary above remains unchanged. Strict mode still exits 1 because decision errors remain.
