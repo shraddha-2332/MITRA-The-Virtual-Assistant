@@ -9,9 +9,44 @@ process.env.DATABASE_FILE = path.resolve(process.cwd(), 'data', 'mitra.sqlite');
 import { config } from '../src/config.js';
 import { loadDb, getDb } from '../src/store.js';
 import { answerAdmissionQuestion } from '../src/server.js';
-import { numericTokens } from '../src/language.js';
+import { numericTokens, normalizeDigits } from '../src/language.js';
 
 loadDb();
+
+const SCRIPT_ALIASES = {
+  'सोलापूर': ['solapur', 'सोलापूर', 'सोलापुर', 'pahsu'],
+  'सोलापुर': ['solapur', 'सोलापूर', 'सोलापुर', 'pahsu'],
+  'solapur': ['solapur', 'सोलापूर', 'सोलापुर', 'pahsu'],
+  'बार्शी': ['barshi', 'बार्शी', 'बारशी'],
+  'barshi': ['barshi', 'बार्शी', 'बारशी'],
+  'railway': ['railway', 'रेल्वे', 'रेलवे'],
+  'signaling': ['signaling', 'signalling', 'सिग्नलिंग', 'सिग्नल'],
+  'track': ['track', 'ट्रॅक', 'ट्रैक'],
+  'library': ['library', 'ग्रंथालय', 'पुस्तकालय', 'लाइब्रेरी'],
+  'digital resources': ['digital resources', 'डिजिटल संसाधने', 'डिजिटल संसाधन', 'डिजिटल संसाधनों'],
+  'cricket': ['cricket', 'क्रिकेट'],
+  'volleyball': ['volleyball', 'व्हॉलीबॉल', 'वॉलीबॉल'],
+  'badminton': ['badminton', 'बॅडमिंटन', 'बैडमिंटन'],
+  'workshop': ['workshop', 'कार्यशाळा', 'वर्कशॉप'],
+  'welding': ['welding', 'वेल्डिंग', 'वेल्डिंग शॉप'],
+  'ragging': ['ragging', 'anti-ragging', 'रॅगिंग', 'रैगिंग'],
+  'anti-ragging': ['anti-ragging', 'ragging', 'रॅगिंग', 'रैगिंग'],
+  'safety': ['safety', 'सुरक्षा', 'सुरक्षा व्यवस्था', 'सुरक्षा नियम'],
+  'machine shop': ['machine shop', 'मशीन शॉप'],
+  'carpentry': ['carpentry', 'सुतारकाम'],
+};
+
+function factMatches(normText, fact) {
+  const cleanFact = fact.replace(/,/g, '').trim().toLowerCase();
+  const lowerText = normText.toLowerCase();
+  if (lowerText.includes(cleanFact) || normText.includes(fact)) return true;
+  const aliases = SCRIPT_ALIASES[cleanFact];
+  if (aliases && aliases.some(alias => lowerText.includes(alias.toLowerCase()))) return true;
+  const normDigitsText = normalizeDigits(normText);
+  const normDigitsFact = normalizeDigits(cleanFact);
+  if (normDigitsText.toLowerCase().includes(normDigitsFact.toLowerCase())) return true;
+  return false;
+}
 
 function evaluateResponse(c, res) {
   const text = res.answer || '';
@@ -26,10 +61,9 @@ function evaluateResponse(c, res) {
     if (c.requiredFacts && c.requiredFacts.length > 0) {
       let matchedCount = 0;
       for (const fact of c.requiredFacts) {
-        // match case-insensitively or numeric
-        const cleanFact = fact.replace(/,/g, '');
+        // match case-insensitively, script-aware alias or numeric
         const normText = text.replace(/,/g, '');
-        if (normText.toLowerCase().includes(cleanFact.toLowerCase()) || text.includes(fact)) {
+        if (factMatches(normText, fact)) {
           matchedCount++;
         }
       }
