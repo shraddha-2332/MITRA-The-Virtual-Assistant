@@ -1,3 +1,5 @@
+> Historical milestone: current implementation and pending external work are recorded in [CURRENT_COMPLETION_STATUS.md](CURRENT_COMPLETION_STATUS.md).
+
 # Remaining assistant work: implementation order
 
 The user authorized continuing the assistant improvements, with public UI cleanup first. Completed UI changes: original footer restored; public maintainer link removed; compact header language selector replaces the full-width row. Protected knowledge APIs and the existing authenticated workspace remain available; their browser tests use isolated API-login fixtures.

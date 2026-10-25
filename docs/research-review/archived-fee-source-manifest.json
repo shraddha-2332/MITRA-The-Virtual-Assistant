@@ -1,0 +1,21 @@
+{
+  "reviewedOn": "2026-10-24",
+  "approvalStatus": "Internal faculty review and signed original circulars reported by the project team; no numerical faculty rubric or full signed originals inspected in this task.",
+  "records": [
+    {
+      "path": "frontend/src/assets/fee-first-year-2026.jpeg",
+      "sha256": "89e29b5b8a325c6f60355d4cf5863701e79f3dc37c32226e9e37ea29c52d4307",
+      "observation": "Visually inspected archived table. Signature or certification not independently authenticated from this crop."
+    },
+    {
+      "path": "frontend/src/assets/fee-direct-second-year-2026.jpeg",
+      "sha256": "482642e13383e0c42d267f2c2ef075dcca52243e08d916d65b48f729dc0e110a",
+      "observation": "Visually inspected archived table. Signature or certification not independently authenticated from this crop."
+    },
+    {
+      "path": "frontend/src/assets/hostel-mess-fee-2026.jpeg",
+      "sha256": "9e44d57bb890c80086c0941b13742ec9ab95c40feb825c0467c0b0b831854d86",
+      "observation": "Visually inspected archived table. Signature or certification not independently authenticated from this crop."
+    }
+  ]
+}

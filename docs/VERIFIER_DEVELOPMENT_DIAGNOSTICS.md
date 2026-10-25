@@ -65,3 +65,8 @@ The subsequent bounded corrections reject a requested academic year unsupported 
 On the same exposed 15 probes, the slot checker now records TP=9, FN=2, FP=0, TN=4: error-detection recall 9/11 (81.82%), with zero false alarms among four controls. The token checker remains TP=2, FN=9, FP=0, TN=4. These cases informed the patch, so this is a debugging result, not independent improvement evidence. Backend tests passed **158/158**, legacy diagnostics **500/500**, and public diagnostics **36/36**.
 
 New input fingerprint: `2530e421d39b3ebc7e8d29f1d35fe78e3365c87e17ece524e329a622628c448c`. The [post-fix summary](research-review/verifier-postfix-results.json) preserves the new hashes and remaining misses; the original summary above remains unchanged. Strict mode still exits 1 because decision errors remain.
+
+
+## Current bounded correction snapshot, 24 October 2026
+
+The completion snapshot (`research-review/verifier-completion-results.json`) records 11/11 invalid probes rejected and 4/4 valid controls accepted by the slot verifier. Clause-level checks close the two exposed mixed-value label swaps. The token checker rejects 2/11 invalid probes, not zero across the full set. These same 15 development cases informed the fixes; this is regression evidence, not independent accuracy or general semantic verification. Earlier snapshots above remain historical. See `CURRENT_COMPLETION_STATUS.md` for current validation and external work.

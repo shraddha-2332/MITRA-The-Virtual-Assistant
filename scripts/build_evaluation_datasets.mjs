@@ -1,0 +1,924 @@
+import fs from 'fs';
+
+// Define the 30-case pilot dataset (10 EN, 10 MR, 10 HI)
+const cases30 = [
+  // --- English (10 cases) ---
+  {
+    id: "P30-EN-01",
+    language: "en",
+    domain: "fees",
+    answerability: "ANSWERABLE",
+    question: "What is the approved annual fee for Open category students in First Year B.Tech for AY 2026-27?",
+    requiredFacts: ["1,05,000", "2026-27"],
+    expectedSourceId: "KB-2",
+    expectedOutcome: "ANSWERED"
+  },
+  {
+    id: "P30-EN-02",
+    language: "en",
+    domain: "fees",
+    answerability: "ANSWERABLE",
+    question: "How much fee is applicable for OBC boys in Direct Second Year (DSE) engineering?",
+    requiredFacts: ["58,181"],
+    expectedSourceId: "KB-2",
+    expectedOutcome: "ANSWERED"
+  },
+  {
+    id: "P30-EN-03",
+    language: "en",
+    domain: "intake",
+    answerability: "ANSWERABLE",
+    question: "What is the sanctioned intake and choice code for Computer Science and Engineering?",
+    requiredFacts: ["120", "0690124210"],
+    expectedSourceId: "KB-10",
+    expectedOutcome: "ANSWERED"
+  },
+  {
+    id: "P30-EN-04",
+    language: "en",
+    domain: "hostel",
+    answerability: "ANSWERABLE",
+    question: "What are the hostel charges and refundable deposit for staying on campus?",
+    requiredFacts: ["35,000", "5,000", "40,000"],
+    expectedSourceId: "KB-3",
+    expectedOutcome: "ANSWERED"
+  },
+  {
+    id: "P30-EN-05",
+    language: "en",
+    domain: "library",
+    answerability: "ANSWERABLE",
+    question: "What facilities and resources are available in the college library?",
+    requiredFacts: ["library", "digital resources", "journals"],
+    expectedSourceId: "KB-20",
+    expectedOutcome: "ANSWERED"
+  },
+  {
+    id: "P30-EN-06",
+    language: "en",
+    domain: "eligibility",
+    answerability: "ANSWERABLE",
+    question: "What are the eligibility criteria for First Year B.Tech admissions for general category?",
+    requiredFacts: ["45 percent", "Physics", "Mathematics"],
+    expectedSourceId: "KB-5",
+    expectedOutcome: "ANSWERED"
+  },
+  {
+    id: "P30-EN-07",
+    language: "en",
+    domain: "placement",
+    answerability: "ANSWERABLE",
+    question: "What is the highest and average salary package offered during campus placements?",
+    requiredFacts: ["21 LPA", "4.4 LPA"],
+    expectedSourceId: "KB-16",
+    expectedOutcome: "ANSWERED"
+  },
+  {
+    id: "P30-EN-08",
+    language: "en",
+    domain: "hiring",
+    answerability: "UNANSWERABLE",
+    question: "What is the staff hiring process and current faculty vacancy at MITCORER?",
+    requiredFacts: [],
+    expectedTargetDesk: "administrative_office",
+    expectedOutcome: "INSUFFICIENT_EVIDENCE"
+  },
+  {
+    id: "P30-EN-09",
+    language: "en",
+    domain: "facilities",
+    answerability: "UNANSWERABLE",
+    question: "Does the college have an Olympic-size swimming pool on campus?",
+    requiredFacts: [],
+    expectedTargetDesk: "admissions_desk",
+    expectedOutcome: "INSUFFICIENT_EVIDENCE"
+  },
+  {
+    id: "P30-EN-10",
+    language: "en",
+    domain: "fees",
+    answerability: "AMBIGUOUS",
+    question: "What is the fee?",
+    requiredFacts: [],
+    expectedOutcome: "CLARIFICATION"
+  },
+
+  // --- Marathi (10 cases) ---
+  {
+    id: "P30-MR-01",
+    language: "mr",
+    domain: "fees",
+    answerability: "ANSWERABLE",
+    question: "शैक्षणिक वर्ष २०२६-२७ साठी प्रथम वर्ष B.Tech ओपन प्रवर्गाची फी किती आहे?",
+    requiredFacts: ["1,05,000"],
+    expectedSourceId: "KB-2",
+    expectedOutcome: "ANSWERED"
+  },
+  {
+    id: "P30-MR-02",
+    language: "mr",
+    domain: "fees",
+    answerability: "ANSWERABLE",
+    question: "थेट दुसऱ्या वर्ष (DSE) प्रवेशासाठी VJNT आणि TFWS प्रवर्गातील विद्यार्थ्यांना किती शुल्क भरावे लागते?",
+    requiredFacts: ["18,362"],
+    expectedSourceId: "KB-2",
+    expectedOutcome: "ANSWERED"
+  },
+  {
+    id: "P30-MR-03",
+    language: "mr",
+    domain: "intake",
+    answerability: "ANSWERABLE",
+    question: "संगणक विज्ञान आणि अभियांत्रिकी (CSE) शाखेची मंजूर प्रवेश क्षमता आणि चॉईस कोड काय आहे?",
+    requiredFacts: ["120", "0690124210"],
+    expectedSourceId: "KB-10",
+    expectedOutcome: "ANSWERED"
+  },
+  {
+    id: "P30-MR-04",
+    language: "mr",
+    domain: "hostel",
+    answerability: "ANSWERABLE",
+    question: "महाविद्यालयाचे वसतिगृह शुल्क, अनामत ठेव आणि मेसचा वार्षिक खर्च किती आहे?",
+    requiredFacts: ["35,000", "5,000", "40,000"],
+    expectedSourceId: "KB-3",
+    expectedOutcome: "ANSWERED"
+  },
+  {
+    id: "P30-MR-05",
+    language: "mr",
+    domain: "library",
+    answerability: "ANSWERABLE",
+    question: "ग्रंथालय सुविधा आणि डिजिटल संसाधने याबद्दल माहिती काय आहे?",
+    requiredFacts: ["library", "digital resources"],
+    expectedSourceId: "KB-20",
+    expectedOutcome: "ANSWERED"
+  },
+  {
+    id: "P30-MR-06",
+    language: "mr",
+    domain: "eligibility",
+    answerability: "ANSWERABLE",
+    question: "प्रथम वर्ष बी.टेक प्रवेशासाठी पात्रता निकष काय आहेत?",
+    requiredFacts: ["45 percent", "Physics"],
+    expectedSourceId: "KB-5",
+    expectedOutcome: "ANSWERED"
+  },
+  {
+    id: "P30-MR-07",
+    language: "mr",
+    domain: "placement",
+    answerability: "ANSWERABLE",
+    question: "कॅम्पस प्लेसमेंटमध्ये सर्वोच्च आणि सरासरी पॅकेज किती मिळाले आहे?",
+    requiredFacts: ["21 LPA", "4.4 LPA"],
+    expectedSourceId: "KB-16",
+    expectedOutcome: "ANSWERED"
+  },
+  {
+    id: "P30-MR-08",
+    language: "mr",
+    domain: "hiring",
+    answerability: "UNANSWERABLE",
+    question: "महाविद्यालयात प्राध्यापक व कर्मचारी भरती प्रक्रिया काय आहे आणि अर्ज कसा करावा?",
+    requiredFacts: [],
+    expectedTargetDesk: "administrative_office",
+    expectedOutcome: "INSUFFICIENT_EVIDENCE"
+  },
+  {
+    id: "P30-MR-09",
+    language: "mr",
+    domain: "facilities",
+    answerability: "UNANSWERABLE",
+    question: "कॅम्पसमध्ये विद्यार्थ्यांसाठी ऑलिम्पिक आकाराचा स्विमिंग पूल उपलब्ध आहे का?",
+    requiredFacts: [],
+    expectedTargetDesk: "admissions_desk",
+    expectedOutcome: "INSUFFICIENT_EVIDENCE"
+  },
+  {
+    id: "P30-MR-10",
+    language: "mr",
+    domain: "fees",
+    answerability: "AMBIGUOUS",
+    question: "कॉलेजची फी किती आहे?",
+    requiredFacts: [],
+    expectedOutcome: "CLARIFICATION"
+  },
+
+  // --- Hindi (10 cases) ---
+  {
+    id: "P30-HI-01",
+    language: "hi",
+    domain: "fees",
+    answerability: "ANSWERABLE",
+    question: "प्रथम वर्ष बी.टेक में OBC लड़कों के लिए शैक्षणिक वर्ष 2026-27 की फीस कितनी है?",
+    requiredFacts: ["61,109"],
+    expectedSourceId: "KB-2",
+    expectedOutcome: "ANSWERED"
+  },
+  {
+    id: "P30-HI-02",
+    language: "hi",
+    domain: "intake",
+    answerability: "ANSWERABLE",
+    question: "कंप्यूटर साइंस एंड इंजीनियरिंग (CSE) ब्रांच में कुल कितनी सीटें हैं और चॉइस कोड क्या है?",
+    requiredFacts: ["120", "0690124210"],
+    expectedSourceId: "KB-10",
+    expectedOutcome: "ANSWERED"
+  },
+  {
+    id: "P30-HI-03",
+    language: "hi",
+    domain: "hostel",
+    answerability: "ANSWERABLE",
+    question: "छात्रावास का वार्षिक शुल्क, रिफंडेबल डिपॉजिट और मेस का खर्च कितना है?",
+    requiredFacts: ["35,000", "5,000", "40,000"],
+    expectedSourceId: "KB-3",
+    expectedOutcome: "ANSWERED"
+  },
+  {
+    id: "P30-HI-04",
+    language: "hi",
+    domain: "eligibility",
+    answerability: "ANSWERABLE",
+    question: "बी.टेक प्रथम वर्ष में प्रवेश के लिए पात्रता नियम क्या हैं?",
+    requiredFacts: ["45 percent", "Physics"],
+    expectedSourceId: "KB-5",
+    expectedOutcome: "ANSWERED"
+  },
+  {
+    id: "P30-HI-05",
+    language: "hi",
+    domain: "library",
+    answerability: "ANSWERABLE",
+    question: "कॉलेज लाइब्रेरी सुविधा और डिजिटल संसाधनों की क्या जानकारी है?",
+    requiredFacts: ["library", "digital resources"],
+    expectedSourceId: "KB-20",
+    expectedOutcome: "ANSWERED"
+  },
+  {
+    id: "P30-HI-06",
+    language: "hi",
+    domain: "placement",
+    answerability: "ANSWERABLE",
+    question: "कैंपस प्लेसमेंट में उच्चतम और औसत पैकेज क्या रहा है?",
+    requiredFacts: ["21 LPA", "4.4 LPA"],
+    expectedSourceId: "KB-16",
+    expectedOutcome: "ANSWERED"
+  },
+  {
+    id: "P30-HI-07",
+    language: "hi",
+    domain: "hiring",
+    answerability: "UNANSWERABLE",
+    question: "एमआईटीकॉरर में शिक्षक भर्ती प्रक्रिया क्या है और रिक्त पदों की जानकारी कहां मिलेगी?",
+    requiredFacts: [],
+    expectedTargetDesk: "administrative_office",
+    expectedOutcome: "INSUFFICIENT_EVIDENCE"
+  },
+  {
+    id: "P30-HI-08",
+    language: "hi",
+    domain: "facilities",
+    answerability: "UNANSWERABLE",
+    question: "क्या कॉलेज परिसर में स्विमिंग पूल की सुविधा उपलब्ध है?",
+    requiredFacts: [],
+    expectedTargetDesk: "admissions_desk",
+    expectedOutcome: "INSUFFICIENT_EVIDENCE"
+  },
+  {
+    id: "P30-HI-09",
+    language: "hi",
+    domain: "programmes",
+    answerability: "UNANSWERABLE",
+    question: "क्या कॉलेज में रोबोटिक्स में एम.टेक (M.Tech) कोर्स उपलब्ध है?",
+    requiredFacts: [],
+    expectedTargetDesk: "admissions_desk",
+    expectedOutcome: "INSUFFICIENT_EVIDENCE"
+  },
+  {
+    id: "P30-HI-10",
+    language: "hi",
+    domain: "fees",
+    answerability: "AMBIGUOUS",
+    question: "फीस कितनी है?",
+    requiredFacts: [],
+    expectedOutcome: "CLARIFICATION"
+  }
+];
+
+// Expanded 90 cases (30 EN, 30 MR, 30 HI)
+const cases90 = [
+  ...cases30,
+
+  // --- Additional English cases (11 to 30) ---
+  {
+    id: "E90-EN-11",
+    language: "en",
+    domain: "fees",
+    answerability: "ANSWERABLE",
+    question: "What is the tuition and development fee for SC and ST students in First Year?",
+    requiredFacts: ["8,000"],
+    expectedSourceId: "KB-2",
+    expectedOutcome: "ANSWERED"
+  },
+  {
+    id: "E90-EN-12",
+    language: "en",
+    domain: "fees",
+    answerability: "ANSWERABLE",
+    question: "What is the fee for girl students under TFWS concession in First Year engineering?",
+    requiredFacts: ["17,217"],
+    expectedSourceId: "KB-2",
+    expectedOutcome: "ANSWERED"
+  },
+  {
+    id: "E90-EN-13",
+    language: "en",
+    domain: "intake",
+    answerability: "ANSWERABLE",
+    question: "How many seats are available in Civil Engineering and Mechanical Engineering?",
+    requiredFacts: ["60"],
+    expectedSourceId: "KB-10",
+    expectedOutcome: "ANSWERED"
+  },
+  {
+    id: "E90-EN-14",
+    language: "en",
+    domain: "affiliation",
+    answerability: "ANSWERABLE",
+    question: "Which university is MITCORER affiliated with and what is its DTE institute code?",
+    requiredFacts: ["Solapur", "06901"],
+    expectedSourceId: "KB-37",
+    expectedOutcome: "ANSWERED"
+  },
+  {
+    id: "E90-EN-15",
+    language: "en",
+    domain: "location",
+    answerability: "ANSWERABLE",
+    question: "What is the distance to the nearest railway station from the Barshi campus?",
+    requiredFacts: ["4.7 km", "Barshi"],
+    expectedSourceId: "KB-40",
+    expectedOutcome: "ANSWERED"
+  },
+  {
+    id: "E90-EN-16",
+    language: "en",
+    domain: "transport",
+    answerability: "ANSWERABLE",
+    question: "Does the college operate bus routes for students commuting from Kurduwadi and Solapur?",
+    requiredFacts: ["Kurduwadi", "Solapur"],
+    expectedSourceId: "KB-40",
+    expectedOutcome: "ANSWERED"
+  },
+  {
+    id: "E90-EN-17",
+    language: "en",
+    domain: "scholarship",
+    answerability: "ANSWERABLE",
+    question: "What is the annual scholarship amount provided under the AICTE Pragati scheme for girl students?",
+    requiredFacts: ["50,000"],
+    expectedSourceId: "KB-33",
+    expectedOutcome: "ANSWERED"
+  },
+  {
+    id: "E90-EN-18",
+    language: "en",
+    domain: "sports",
+    answerability: "ANSWERABLE",
+    question: "What outdoor and indoor sports facilities are provided on the college grounds?",
+    requiredFacts: ["cricket", "volleyball", "badminton"],
+    expectedSourceId: "KB-48",
+    expectedOutcome: "ANSWERED"
+  },
+  {
+    id: "E90-EN-19",
+    language: "en",
+    domain: "workshop",
+    answerability: "ANSWERABLE",
+    question: "What engineering workshops are equipped for practical training at MITCORER?",
+    requiredFacts: ["machine shop", "welding", "carpentry"],
+    expectedSourceId: "KB-49",
+    expectedOutcome: "ANSWERED"
+  },
+  {
+    id: "E90-EN-20",
+    language: "en",
+    domain: "contact",
+    answerability: "ANSWERABLE",
+    question: "What are the official working hours and contact number of the admission office?",
+    requiredFacts: ["9:30 AM", "5:30 PM", "84599 67882"],
+    expectedSourceId: "KB-46",
+    expectedOutcome: "ANSWERED"
+  },
+  {
+    id: "E90-EN-21",
+    language: "en",
+    domain: "fees",
+    answerability: "ANSWERABLE",
+    question: "What is the Open category fee for Direct Second Year (DSE) lateral admission in 2026-27?",
+    requiredFacts: ["98,000"],
+    expectedSourceId: "KB-2",
+    expectedOutcome: "ANSWERED"
+  },
+  {
+    id: "E90-EN-22",
+    language: "en",
+    domain: "railway",
+    answerability: "ANSWERABLE",
+    question: "What railway technology modules and professional diplomas are integrated into the curriculum?",
+    requiredFacts: ["railway", "signaling", "track"],
+    expectedSourceId: "KB-47",
+    expectedOutcome: "ANSWERED"
+  },
+  {
+    id: "E90-EN-23",
+    language: "en",
+    domain: "antiragging",
+    answerability: "ANSWERABLE",
+    question: "What campus safety and anti-ragging measures are enforced at the institute?",
+    requiredFacts: ["anti-ragging", "safety"],
+    expectedSourceId: "KB-44",
+    expectedOutcome: "ANSWERED"
+  },
+  // 5 Additional Unanswerable
+  {
+    id: "E90-EN-24",
+    language: "en",
+    domain: "hiring",
+    answerability: "UNANSWERABLE",
+    question: "How can I apply for an assistant professor post in mechanical engineering?",
+    requiredFacts: [],
+    expectedTargetDesk: "administrative_office",
+    expectedOutcome: "INSUFFICIENT_EVIDENCE"
+  },
+  {
+    id: "E90-EN-25",
+    language: "en",
+    domain: "programmes",
+    answerability: "UNANSWERABLE",
+    question: "Does MITCORER offer a full-time MBA in Finance or Marketing?",
+    requiredFacts: [],
+    expectedTargetDesk: "admissions_desk",
+    expectedOutcome: "INSUFFICIENT_EVIDENCE"
+  },
+  {
+    id: "E90-EN-26",
+    language: "en",
+    domain: "cutoff",
+    answerability: "UNANSWERABLE",
+    question: "What was the exact Round 1 MHT-CET cutoff percentile for CSE in the year 2017?",
+    requiredFacts: [],
+    expectedTargetDesk: "admissions_desk",
+    expectedOutcome: "INSUFFICIENT_EVIDENCE"
+  },
+  {
+    id: "E90-EN-27",
+    language: "en",
+    domain: "town",
+    answerability: "UNANSWERABLE",
+    question: "What are the monthly rental rates for 2BHK private flats in Barshi town?",
+    requiredFacts: [],
+    expectedTargetDesk: "admissions_desk",
+    expectedOutcome: "INSUFFICIENT_EVIDENCE"
+  },
+  {
+    id: "E90-EN-28",
+    language: "en",
+    domain: "aviation",
+    answerability: "UNANSWERABLE",
+    question: "Does the campus have an operational helipad or pilot training hangar?",
+    requiredFacts: [],
+    expectedTargetDesk: "admissions_desk",
+    expectedOutcome: "INSUFFICIENT_EVIDENCE"
+  },
+  // 2 Additional Ambiguous
+  {
+    id: "E90-EN-29",
+    language: "en",
+    domain: "intake",
+    answerability: "AMBIGUOUS",
+    question: "How many total seats are available?",
+    requiredFacts: [],
+    expectedOutcome: "CLARIFICATION"
+  },
+  {
+    id: "E90-EN-30",
+    language: "en",
+    domain: "eligibility",
+    answerability: "AMBIGUOUS",
+    question: "Am I eligible to get admission?",
+    requiredFacts: [],
+    expectedOutcome: "CLARIFICATION"
+  },
+
+  // --- Additional Marathi cases (11 to 30) ---
+  {
+    id: "E90-MR-11",
+    language: "mr",
+    domain: "fees",
+    answerability: "ANSWERABLE",
+    question: "प्रथम वर्ष बी.टेकसाठी अनुसूचित जाती (SC) आणि अनुसूचित जमाती (ST) चे वार्षिक शुल्क किती आहे?",
+    requiredFacts: ["8,000"],
+    expectedSourceId: "KB-2",
+    expectedOutcome: "ANSWERED"
+  },
+  {
+    id: "E90-MR-12",
+    language: "mr",
+    domain: "fees",
+    answerability: "ANSWERABLE",
+    question: "EBC किंवा OBC प्रवर्गातील विद्यार्थिनींसाठी (मुलींसाठी) प्रथम वर्षाची फी किती आकारली जाते?",
+    requiredFacts: ["17,217"],
+    expectedSourceId: "KB-2",
+    expectedOutcome: "ANSWERED"
+  },
+  {
+    id: "E90-MR-13",
+    language: "mr",
+    domain: "intake",
+    answerability: "ANSWERABLE",
+    question: "सिव्हिल आणि मेकॅनिकल इंजिनिअरिंग शाखेसाठी किती जागा मंजूर आहेत?",
+    requiredFacts: ["60"],
+    expectedSourceId: "KB-10",
+    expectedOutcome: "ANSWERED"
+  },
+  {
+    id: "E90-MR-14",
+    language: "mr",
+    domain: "affiliation",
+    answerability: "ANSWERABLE",
+    question: "महाविद्यालय कोणत्या विद्यापीठाशी संलग्न आहे आणि डीटीई इन्स्टिट्यूट कोड काय आहे?",
+    requiredFacts: ["सोलापूर", "06901"],
+    expectedSourceId: "KB-37",
+    expectedOutcome: "ANSWERED"
+  },
+  {
+    id: "E90-MR-15",
+    language: "mr",
+    domain: "location",
+    answerability: "ANSWERABLE",
+    question: "बार्शी शहर रेल्वे स्टेशनपासून कॉलेज कॅम्पस किती अंतरावर आहे?",
+    requiredFacts: ["4.7", "बार्शी"],
+    expectedSourceId: "KB-40",
+    expectedOutcome: "ANSWERED"
+  },
+  {
+    id: "E90-MR-16",
+    language: "mr",
+    domain: "transport",
+    answerability: "ANSWERABLE",
+    question: "कुर्डुवाडी आणि सोलापूर येथून येणाऱ्या विद्यार्थ्यांसाठी कॉलेजची बस सेवा आहे का?",
+    requiredFacts: ["कुर्डुवाडी", "सोलापूर"],
+    expectedSourceId: "KB-40",
+    expectedOutcome: "ANSWERED"
+  },
+  {
+    id: "E90-MR-17",
+    language: "mr",
+    domain: "scholarship",
+    answerability: "ANSWERABLE",
+    question: "एआयसीटीई प्रगती शिष्यवृत्ती अंतर्गत मुलींना दरवर्षी किती आर्थिक मदत मिळते?",
+    requiredFacts: ["50,000"],
+    expectedSourceId: "KB-33",
+    expectedOutcome: "ANSWERED"
+  },
+  {
+    id: "E90-MR-18",
+    language: "mr",
+    domain: "sports",
+    answerability: "ANSWERABLE",
+    question: "महाविद्यालयात क्रिकेट, व्हॉलीबॉल आणि बॅडमिंटन खेळांसाठी मैदाने आहेत का?",
+    requiredFacts: ["cricket", "volleyball"],
+    expectedSourceId: "KB-48",
+    expectedOutcome: "ANSWERED"
+  },
+  {
+    id: "E90-MR-19",
+    language: "mr",
+    domain: "workshop",
+    answerability: "ANSWERABLE",
+    question: "प्रायोगिक प्रशिक्षणासाठी सेंट्रल वर्कशॉपमध्ये कोणत्या कार्यशाळा उपलब्ध आहेत?",
+    requiredFacts: ["workshop", "welding"],
+    expectedSourceId: "KB-49",
+    expectedOutcome: "ANSWERED"
+  },
+  {
+    id: "E90-MR-20",
+    language: "mr",
+    domain: "contact",
+    answerability: "ANSWERABLE",
+    question: "प्रवेश कक्षाची वेळ काय आहे आणि चौकशीसाठी संपर्क क्रमांक कोणता आहे?",
+    requiredFacts: ["9:30", "5:30", "84599 67882"],
+    expectedSourceId: "KB-46",
+    expectedOutcome: "ANSWERED"
+  },
+  {
+    id: "E90-MR-21",
+    language: "mr",
+    domain: "fees",
+    answerability: "ANSWERABLE",
+    question: "थेट द्वितीय वर्ष ओपन प्रवर्गाची शैक्षणिक फी किती आहे?",
+    requiredFacts: ["98,000"],
+    expectedSourceId: "KB-2",
+    expectedOutcome: "ANSWERED"
+  },
+  {
+    id: "E90-MR-22",
+    language: "mr",
+    domain: "railway",
+    answerability: "ANSWERABLE",
+    question: "रेल्वे ट्रॅक टेक्नॉलॉजी आणि सिग्नलिंगचे विशेष अभ्यासक्रम उपलब्ध आहेत का?",
+    requiredFacts: ["railway", "signaling"],
+    expectedSourceId: "KB-47",
+    expectedOutcome: "ANSWERED"
+  },
+  {
+    id: "E90-MR-23",
+    language: "mr",
+    domain: "antiragging",
+    answerability: "ANSWERABLE",
+    question: "कॅम्पसमध्ये रॅगिंग प्रतिबंधक समिती आणि सुरक्षा व्यवस्था कशी आहे?",
+    requiredFacts: ["ragging", "safety"],
+    expectedSourceId: "KB-44",
+    expectedOutcome: "ANSWERED"
+  },
+  // 5 Additional Unanswerable
+  {
+    id: "E90-MR-24",
+    language: "mr",
+    domain: "hiring",
+    answerability: "UNANSWERABLE",
+    question: "कॉम्प्युटर सायन्स विभागातील लॅब असिस्टंट किंवा क्लार्क पदासाठी अर्ज कसा करावा?",
+    requiredFacts: [],
+    expectedTargetDesk: "administrative_office",
+    expectedOutcome: "INSUFFICIENT_EVIDENCE"
+  },
+  {
+    id: "E90-MR-25",
+    language: "mr",
+    domain: "programmes",
+    answerability: "UNANSWERABLE",
+    question: "कॉलेजमध्ये एम.बी.ए. किंवा एम.सी.ए. अभ्यासक्रम सुरू आहे का?",
+    requiredFacts: [],
+    expectedTargetDesk: "admissions_desk",
+    expectedOutcome: "INSUFFICIENT_EVIDENCE"
+  },
+  {
+    id: "E90-MR-26",
+    language: "mr",
+    domain: "cutoff",
+    answerability: "UNANSWERABLE",
+    question: "२०१६ मधील कॉम्प्युटर सायन्स शाखेचा पहिल्या फेरीचा कटऑफ किती होता?",
+    requiredFacts: [],
+    expectedTargetDesk: "admissions_desk",
+    expectedOutcome: "INSUFFICIENT_EVIDENCE"
+  },
+  {
+    id: "E90-MR-27",
+    language: "mr",
+    domain: "town",
+    answerability: "UNANSWERABLE",
+    question: "बार्शी शहरातील खासगी रूम्स आणि फ्लॅट्सचे भाडे दरमहा किती असते?",
+    requiredFacts: [],
+    expectedTargetDesk: "admissions_desk",
+    expectedOutcome: "INSUFFICIENT_EVIDENCE"
+  },
+  {
+    id: "E90-MR-28",
+    language: "mr",
+    domain: "aviation",
+    answerability: "UNANSWERABLE",
+    question: "महाविद्यालयाच्या कॅम्पसमध्ये हेलिपॅड किंवा विमान चालवण्याचे प्रशिक्षण आहे का?",
+    requiredFacts: [],
+    expectedTargetDesk: "admissions_desk",
+    expectedOutcome: "INSUFFICIENT_EVIDENCE"
+  },
+  // 2 Additional Ambiguous
+  {
+    id: "E90-MR-29",
+    language: "mr",
+    domain: "intake",
+    answerability: "AMBIGUOUS",
+    question: "एकूण जागा किती आहेत?",
+    requiredFacts: [],
+    expectedOutcome: "CLARIFICATION"
+  },
+  {
+    id: "E90-MR-30",
+    language: "mr",
+    domain: "eligibility",
+    answerability: "AMBIGUOUS",
+    question: "मला प्रवेश मिळेल का?",
+    requiredFacts: [],
+    expectedOutcome: "CLARIFICATION"
+  },
+
+  // --- Additional Hindi cases (11 to 30) ---
+  {
+    id: "E90-HI-11",
+    language: "hi",
+    domain: "fees",
+    answerability: "ANSWERABLE",
+    question: "शैक्षणिक वर्ष 2026-27 के लिए प्रथम वर्ष सामान्य (Open) श्रेणी की कुल फीस कितनी है?",
+    requiredFacts: ["1,05,000"],
+    expectedSourceId: "KB-2",
+    expectedOutcome: "ANSWERED"
+  },
+  {
+    id: "E90-HI-12",
+    language: "hi",
+    domain: "fees",
+    answerability: "ANSWERABLE",
+    question: "प्रथम वर्ष बी.टेक में SC और ST वर्ग के विद्यार्थियों के लिए वार्षिक शुल्क कितना है?",
+    requiredFacts: ["8,000"],
+    expectedSourceId: "KB-2",
+    expectedOutcome: "ANSWERED"
+  },
+  {
+    id: "E90-HI-13",
+    language: "hi",
+    domain: "fees",
+    answerability: "ANSWERABLE",
+    question: "TFWS योजना के तहत छात्राओं के लिए प्रथम वर्ष की वार्षिक फीस कितनी तय की गई है?",
+    requiredFacts: ["17,217"],
+    expectedSourceId: "KB-2",
+    expectedOutcome: "ANSWERED"
+  },
+  {
+    id: "E90-HI-14",
+    language: "hi",
+    domain: "intake",
+    answerability: "ANSWERABLE",
+    question: "सिविल इंजीनियरिंग और मैकेनिकल इंजीनियरिंग ब्रांच में कितनी सीटें स्वीकृत हैं?",
+    requiredFacts: ["60"],
+    expectedSourceId: "KB-10",
+    expectedOutcome: "ANSWERED"
+  },
+  {
+    id: "E90-HI-15",
+    language: "hi",
+    domain: "affiliation",
+    answerability: "ANSWERABLE",
+    question: "कॉलेज किस विश्वविद्यालय से संबद्ध है और इसका डीटीई कोड क्या है?",
+    requiredFacts: ["सोलापुर", "06901"],
+    expectedSourceId: "KB-37",
+    expectedOutcome: "ANSWERED"
+  },
+  {
+    id: "E90-HI-16",
+    language: "hi",
+    domain: "location",
+    answerability: "ANSWERABLE",
+    question: "बार्शी टाउन रेलवे स्टेशन से कॉलेज की दूरी कितनी है?",
+    requiredFacts: ["4.7", "बार्शी"],
+    expectedSourceId: "KB-40",
+    expectedOutcome: "ANSWERED"
+  },
+  {
+    id: "E90-HI-17",
+    language: "hi",
+    domain: "transport",
+    answerability: "ANSWERABLE",
+    question: "क्या सोलापुर और कुर्डुवाडी से कॉलेज के लिए नियमित बस सुविधा उपलब्ध है?",
+    requiredFacts: ["कुर्डुवाडी", "सोलापुर"],
+    expectedSourceId: "KB-40",
+    expectedOutcome: "ANSWERED"
+  },
+  {
+    id: "E90-HI-18",
+    language: "hi",
+    domain: "scholarship",
+    answerability: "ANSWERABLE",
+    question: "छात्राओं के लिए एआईसीटीई प्रगति छात्रवृत्ति योजना में प्रतिवर्ष कितनी राशि मिलती है?",
+    requiredFacts: ["50,000"],
+    expectedSourceId: "KB-33",
+    expectedOutcome: "ANSWERED"
+  },
+  {
+    id: "E90-HI-19",
+    language: "hi",
+    domain: "sports",
+    answerability: "ANSWERABLE",
+    question: "कॉलेज परिसर में कौन-कौन से खेल और जिम की सुविधाएं उपलब्ध हैं?",
+    requiredFacts: ["cricket", "volleyball"],
+    expectedSourceId: "KB-48",
+    expectedOutcome: "ANSWERED"
+  },
+  {
+    id: "E90-HI-20",
+    language: "hi",
+    domain: "workshop",
+    answerability: "ANSWERABLE",
+    question: "प्रैक्टिकल ट्रेनिंग के लिए सेंट्रल वर्कशॉप में कौन से विभाग हैं?",
+    requiredFacts: ["workshop", "welding"],
+    expectedSourceId: "KB-49",
+    expectedOutcome: "ANSWERED"
+  },
+  {
+    id: "E90-HI-21",
+    language: "hi",
+    domain: "contact",
+    answerability: "ANSWERABLE",
+    question: "प्रवेश कार्यालय का समय और आधिकारिक हेल्पलाइन नंबर क्या है?",
+    requiredFacts: ["9:30", "5:30", "84599 67882"],
+    expectedSourceId: "KB-46",
+    expectedOutcome: "ANSWERED"
+  },
+  {
+    id: "E90-HI-22",
+    language: "hi",
+    domain: "fees",
+    answerability: "ANSWERABLE",
+    question: "सीधे द्वितीय वर्ष (DSE) ओपन वर्ग के लिए वार्षिक फीस कितनी है?",
+    requiredFacts: ["98,000"],
+    expectedSourceId: "KB-2",
+    expectedOutcome: "ANSWERED"
+  },
+  {
+    id: "E90-HI-23",
+    language: "hi",
+    domain: "railway",
+    answerability: "ANSWERABLE",
+    question: "क्या रेलवे टेक्नोलॉजी और सिग्नलिंग पर विशेष डिप्लोमा पाठ्यक्रम उपलब्ध हैं?",
+    requiredFacts: ["railway", "signaling"],
+    expectedSourceId: "KB-47",
+    expectedOutcome: "ANSWERED"
+  },
+  {
+    id: "E90-HI-24",
+    language: "hi",
+    domain: "antiragging",
+    answerability: "ANSWERABLE",
+    question: "कैंपस में रैगिंग की रोकथाम और सुरक्षा के क्या नियम हैं?",
+    requiredFacts: ["ragging", "safety"],
+    expectedSourceId: "KB-44",
+    expectedOutcome: "ANSWERED"
+  },
+  // 4 Additional Unanswerable
+  {
+    id: "E90-HI-25",
+    language: "hi",
+    domain: "hiring",
+    answerability: "UNANSWERABLE",
+    question: "कंप्यूटर विभाग में असिस्टेंट प्रोफेसर पद के लिए आवेदन कैसे करें?",
+    requiredFacts: [],
+    expectedTargetDesk: "administrative_office",
+    expectedOutcome: "INSUFFICIENT_EVIDENCE"
+  },
+  {
+    id: "E90-HI-26",
+    language: "hi",
+    domain: "cutoff",
+    answerability: "UNANSWERABLE",
+    question: "वर्ष 2017 में मैकेनिकल इंजीनियरिंग का राउंड 1 कटऑफ क्या था?",
+    requiredFacts: [],
+    expectedTargetDesk: "admissions_desk",
+    expectedOutcome: "INSUFFICIENT_EVIDENCE"
+  },
+  {
+    id: "E90-HI-27",
+    language: "hi",
+    domain: "town",
+    answerability: "UNANSWERABLE",
+    question: "बार्शी शहर में छात्रों के लिए प्राइवेट हॉस्टल और कमरों का किराया कितना है?",
+    requiredFacts: [],
+    expectedTargetDesk: "admissions_desk",
+    expectedOutcome: "INSUFFICIENT_EVIDENCE"
+  },
+  {
+    id: "E90-HI-28",
+    language: "hi",
+    domain: "aviation",
+    answerability: "UNANSWERABLE",
+    question: "क्या कॉलेज में कमर्शियल पायलट या एविएशन ट्रेनिंग कोर्स उपलब्ध है?",
+    requiredFacts: [],
+    expectedTargetDesk: "admissions_desk",
+    expectedOutcome: "INSUFFICIENT_EVIDENCE"
+  },
+  // 2 Additional Ambiguous
+  {
+    id: "E90-HI-29",
+    language: "hi",
+    domain: "intake",
+    answerability: "AMBIGUOUS",
+    question: "कुल सीटें कितनी हैं?",
+    requiredFacts: [],
+    expectedOutcome: "CLARIFICATION"
+  },
+  {
+    id: "E90-HI-30",
+    language: "hi",
+    domain: "eligibility",
+    answerability: "AMBIGUOUS",
+    question: "क्या मुझे कॉलेज में एडमिशन मिल सकता है?",
+    requiredFacts: [],
+    expectedOutcome: "CLARIFICATION"
+  }
+];
+
+fs.writeFileSync('backend/evaluation/pilot-dataset-30.json', JSON.stringify(cases30, null, 2), 'utf8');
+fs.writeFileSync('backend/evaluation/pilot-dataset-90.json', JSON.stringify(cases90, null, 2), 'utf8');
+
+console.log(`Re-saved pilot datasets with canonical aligned facts: 30 cases and 90 cases`);
+

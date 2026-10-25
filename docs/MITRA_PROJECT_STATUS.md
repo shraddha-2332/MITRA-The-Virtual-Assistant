@@ -1,3 +1,5 @@
+> Historical milestone: current implementation and pending external work are recorded in [CURRENT_COMPLETION_STATUS.md](CURRENT_COMPLETION_STATUS.md).
+
 # Mitra — consolidated project status
 
 **Updated:** 12 October 2026  
