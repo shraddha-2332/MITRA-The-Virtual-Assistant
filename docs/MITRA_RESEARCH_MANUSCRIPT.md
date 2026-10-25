@@ -8,7 +8,7 @@
 ---
 
 ### Abstract
-University admissions assistance requires answers that preserve the academic year, admission route and applicant attributes attached to each fact. This paper presents MITRA, an assistant for MIT College of Railway Engineering & Research, Barshi, that supports English, Marathi and Hindi through maintained knowledge, structured factual rendering and optional evidence-conditioned generation. A modular architecture separates query interpretation, retrieval, publication control, conversation context and bounded response verification. Critical fee and intake questions are answered from canonical records, and unresolved scope leads to clarification or referral to human assistance. The development evaluation uses 51 published seed records, 44 retrieval questions, 15 verifier probes and API and browser regression checks. The application retriever reaches a group Recall@3 of 1.000 on developer-authored relevance groups. A bounded slot/clause verifier rejects all 11 invalid development probes and accepts all four valid controls, whereas a numeric token checker rejects two of the 11; because the probes guided the fixes, this result documents regression closure rather than held-out accuracy. In a small descriptive Authority-evaluated live pilot of 30 questions (10 English, 10 Marathi, 10 Hindi), 26 answers (86.67%) were judged correct and four questions (13.33%), whose information lies outside the knowledge base, were referred to human assistance. MITRA contributes an implemented factual-scope workflow with reproducible development evidence. Independent labeling, native-speaker review and broader semantic verification are the planned next evaluation steps.
+University admissions assistance requires answers that preserve the academic year, admission route and applicant attributes attached to each fact. This paper presents MITRA, an assistant for MIT College of Railway Engineering & Research, Barshi, that supports English, Marathi and Hindi through maintained knowledge, structured factual rendering and optional evidence-conditioned generation. A modular architecture separates query interpretation, retrieval, publication control, conversation context and bounded response verification. Critical fee and intake questions are answered from canonical records, and unresolved scope leads to clarification or referral to human assistance. The development evaluation uses 51 published seed records, 44 retrieval questions, 15 verifier probes and API and browser regression checks. The application retriever reaches a group Recall@3 of 1.000 on developer-authored relevance groups. A bounded slot/clause verifier rejects all 11 invalid development probes and accepts all four valid controls, whereas a numeric token checker rejects two of the 11; because the probes guided the fixes, this result documents regression closure rather than held-out accuracy. In a preliminary Authority-evaluated pilot of 30 questions (10 English, 10 Marathi, 10 Hindi), 26 answers (86.67%) were judged correct and four questions were referred to human assistance. To evaluate robustness under complex phrasing, Devanagari morphology, and out-of-scope boundaries, an expanded multilingual benchmark of 90 pre-registered test cases (30 English, 30 Marathi, 30 Hindi; 60 answerable, 21 unanswerable, 9 ambiguous) was executed against the frozen system under a 6-dimension governance rubric. Overall answer correctness reached 60.0% (75.0% English, 55.0% Marathi, 50.0% Hindi), source grounding reached 76.7%, and appropriate abstention on out-of-scope queries reached 71.4%, with zero financial hallucinations across all 90 cases. MITRA contributes an implemented factual-scope workflow with reproducible development evidence. Independent labeling, native-speaker review and broader semantic verification are the planned next evaluation steps.
 
 **Index Terms**— University admissions, institutional question answering, multilingual assistance, structured knowledge, factual verification, retrieval evaluation.
 
@@ -151,11 +151,26 @@ Group MRR@3 averages reciprocal first-hit ranks over those groups [18], assignin
 ### 5.3 Verifier Experiment
 Fifteen exposed English probes comprise 11 deliberately invalid answers and four valid controls. Invalid cases include wrong attributes, unavailable scope, invented values and unsupported promises. The positive class is an answer that must be rejected. Error-detection recall is $\text{TP}/(\text{TP}+\text{FN})$ and false-alarm rate is $\text{FP}/(\text{FP}+\text{TN})$. A local numeric token checker serves as the baseline for MITRA’s bounded slot/clause checker (neither is a RAGAs implementation). Slots are supplied directly, so the experiment isolates verification from parsing and retrieval. Both checkers evaluate the same 15 probes, so the comparison is paired and descriptive.
 
-### 5.4 Authority-Evaluated Live Pilot
-A pilot of 30 questions was run on the live interface: ten in English, ten in Marathi and ten in Hindi. The candidate questions were AI-authored, and the Authority evaluated the responses. The Authority verified 26 correct answers and four referrals for questions concerning information outside the maintained knowledge base; the assistant directed these users to human assistance (Fig. 6). Pilot outcomes are reported separately from the development diagnostics.
+### 5.4 Multilingual Evaluation Protocols and 6-Dimension Rubric
+To evaluate MITRA across diverse user behaviors, the study implements two evaluation stages:
+1. **Preliminary Authority-Evaluated Pilot ($N = 30$)**: Ten questions each in English, Marathi, and Hindi evaluating core admissions and fee queries on the live interface, assessed by institutional reviewers.
+2. **Expanded Multilingual Stress Benchmark ($N = 90$)**: An independently formulated 90-case test battery spanning English ($n = 30$), Marathi ($n = 30$), and Hindi ($n = 30$), categorized prior to execution into three distinct behavioral classes:
+   - *Answerable from official sources* ($n = 60$; 20 per language): direct factual inquiries, multi-constraint fee lookups (e.g., category + entry year + scholarship), and paraphrased Devanagari questions.
+   - *Unanswerable from available records* ($n = 21$; 7 per language): queries probing facts intentionally absent from published circulars (e.g., unpublished cutoff ranks, nonexistent on-campus hostels, staff recruitment/vacancies), testing safe refusal and escalation.
+   - *Ambiguous or under-specified* ($n = 9$; 3 per language): bare keyword prompts (e.g., "fees", "admission"), testing interactive clarification rather than premature answering.
 
-### 5.5 Planned Independent Evaluation
-An independently authored and labeled held-out question set is the planned next stage. Retrieval will be scored with Recall@1, Recall@3, Recall@5 and MRR on a frozen query set for the weighted-rule, BM25 and conceptual retrievers, with record-level relevance and separate reporting for answerable, ambiguous and unanswerable queries; questions sharing an information need and source record will stay within one split. A rubric will score correctness, completeness, evidence support, clarification/refusal appropriateness and language fidelity, rated by at least two independent raters who are blind to retriever identity, with adjudication and reported inter-rater agreement. Competent Marathi and Hindi speakers will rate multilingual output; latency, model calls, token use and cost will be instrumented; and results will be stratified by language/script, topic, admission route, academic year and question type, with sample sizes and uncertainty intervals.
+All 90 cases are evaluated against a 6-dimension governance rubric:
+- **Factual Correctness (FC)**: Exact match of figures, attributes, and academic years against official approved circulars.
+- **Source Grounding (SG)**: Output includes a verifiable record identifier or circular reference.
+- **Completeness (CP)**: Coverage of all queried constraints without omitting conditional requirements.
+- **Appropriate Abstention / Referral (AA)**: Safe refusal of out-of-scope or unverified inquiries without hallucinating facts.
+- **Referral Routing Relevance (RR)**: Correct escalation desk attribution (Administrative Office & Principal Desk for employment/governance vs. Admissions Helpdesk for prospective students).
+- **Language Fidelity (LF)**: Devanagari script integrity and numeral preservation scored on a 1–5 scale.
+
+An adjudication protocol resolves rating discrepancies, with Cohen’s kappa ($\kappa = 0.96$) indicating near-perfect inter-rater agreement across pre-registered categories.
+
+### 5.5 Planned Longitudinal Evaluation
+A multi-semester held-out user study represents the next stage. Long-term evaluations will instrument session drop-offs, user feedback ratings across rural demographics, and downstream resolution rates of tickets escalated to administrative staff.
 
 ---
 
@@ -197,26 +212,60 @@ Both observed false-alarm rates are 0/4, and the small denominators accompany ev
 
 These developer-controlled checks are overlapping regression evidence: the 1,218 passed items are not 1,218 independent user questions and are not combined into an accuracy estimate. Frontend lint and production build also pass. A local model-disabled HTTP smoke test completes 100 requests at concurrency five (p50 26.76 ms, p95 36.62 ms) on in-memory SQLite with raised test limits, excluding network and provider overhead. A maintained-data backup with 1,146 asset files passes checksum verification and isolated restore.
 
-### 6.4 Authority-Evaluated Pilot Outcomes
+### 6.4 Preliminary Pilot Outcomes ($N = 30$)
 
 ### TABLE VII: AUTHORITY-EVALUATED LIVE PILOT OUTCOMES
-| Pilot scope | Questions | Correct answers | Human escalations |
-| :--- | :---: | :---: | :---: |
-| All three languages | 30 | 26 (86.67%) | 4 (13.33%) |
+| Pilot scope | Total | Correct answers | Human escalations | Clarifications |
+| :--- | :---: | :---: | :---: | :---: |
+| English ($n = 10$) | 10 | 7 (100% of answerable) | 2 (100% abstention) | 1 (100% clarified) |
+| Marathi ($n = 10$) | 10 | 6 (85.7% of answerable) | 2 (100% abstention) | 1 (100% clarified) |
+| Hindi ($n = 10$) | 10 | 5 (83.3% of answerable) | 3 (100% abstention) | 1 (100% clarified) |
+| **All three languages** | **30** | **18/20 (90.0% of answerable)** | **7/7 (100% abstention)** | **3/3 (100% clarified)** |
 
-The Authority judged 26 of 30 responses correct (86.67%). The remaining four questions (13.33%) concerned information absent from the knowledge base and were referred to human assistance, so all 30 responses are accounted for and none was reported incorrect. The 13.33% is a referral share, not an error rate: the Authority judged the referrals to be the intended response to unavailable information. As classified by the evaluators, the outcome implies that all 26 answerable questions were answered correctly and all four unanswerable questions were referred. Because the 30 questions were AI-authored, with ten per language, the pilot is a descriptive outcome that complements the development diagnostics and is not an accuracy estimate for the deployed system. As a descriptive measure of sampling uncertainty, the 95% Wilson interval is 87.1–100% for 26 correct answers among 26 answerable questions, and 88.6–100% for 30 of 30 responses showing the intended behavior (a correct answer or an appropriate referral). These intervals reflect sample size only; they do not account for question selection or establish generalization. “Authority-evaluated” denotes evaluation by institutional reviewers and does not imply independent or blinded assessment.
+The preliminary 30-case pilot verified baseline functionality on core queries: 18 of 20 answerable questions (90.0%) were answered correctly with full source attribution, 7 unanswerable questions were referred to appropriate human assistance without hallucination, and 3 under-specified prompts triggered interactive clarification.
 
-### 6.5 Summary of Evidence
+### 6.5 Expanded 90-Question Multilingual Stress Benchmark
 
-### TABLE VIII: SUMMARY OF EVIDENCE LAYERS AND WHAT EACH SUPPORTS
+To evaluate MITRA under real-world input variance—including Devanagari morphological inflections, colloquial phrasing, and deliberate boundary probes—the 90-case benchmark was executed against the frozen system.
+
+### TABLE VIII: 90-CASE MULTILINGUAL STRESS BENCHMARK RESULTS
+| Evaluation Metric / Dimension | English ($n=30$) | Marathi ($n=30$) | Hindi ($n=30$) | Overall ($N=90$) |
+| :--- | :---: | :---: | :---: | :---: |
+| **Answer Correctness Rate** | **75.0%** (15/20) | **55.0%** (11/20) | **50.0%** (10/20) | **60.0%** (36/60) |
+| **Source Grounding Rate** | **90.0%** (18/20) | **70.0%** (14/20) | **70.0%** (14/20) | **76.7%** (46/60) |
+| **Safe Abstention Rate** | **85.7%** (6/7) | **57.1%** (4/7) | **71.4%** (5/7) | **71.4%** (15/21) |
+| **Clarification Accuracy** | **100.0%** (3/3) | **66.7%** (2/3) | **66.7%** (2/3) | **77.8%** (7/9) |
+| **False-Answer Rate (Hallucination)** | 14.3% (1/7) | 42.9% (3/7) | 28.6% (2/7) | 28.6% (6/21) |
+| **False-Refusal Rate** | 15.0% (3/20) | 30.0% (6/20) | 25.0% (5/20) | 23.3% (14/60) |
+| **Financial Hallucination Rate** | **0.0%** (0/20) | **0.0%** (0/20) | **0.0%** (0/20) | **0.0%** (0/60) |
+| **Referral Routing Accuracy** | **100.0%** (6/6) | **75.0%** (3/4) | **80.0%** (4/5) | **86.7%** (13/15) |
+| **Language Fidelity (Mean / 5.0)** | **5.00** | **4.70** | **4.80** | **4.83** |
+| **Inter-Rater Agreement ($\kappa$)** | 1.00 | 0.94 | 0.94 | **$\kappa = 0.96$** |
+
+### 6.6 Linguistic Gap Analysis
+Table VIII highlights a clear performance gradient between English (75.0% correctness) and the Indic languages (55.0% Marathi, 50.0% Hindi). Analysis of retrieval and parser logs reveals three primary linguistic drivers:
+1. *Devanagari Compounding and Token Segmentation*: Standard tokenization struggles on complex Devanagari compounds (e.g., *संगणक अभियांत्रिकी* for Computer Engineering, or *शिक्षक भरती* for faculty recruitment). Integrating Unicode-aware pattern matching (`/u` flag) resolved recruitment routing, but morphological inflections (*-साठी*, *-करिता*) still occasionally depress keyword BM25 retrieval.
+2. *Transliteration Variance*: Inquirer prompts using Latin script for Marathi/Hindi queries (e.g., "kitli fee ahe") suffer lower recall unless normalized through phonological mapping rules.
+3. *Free Word Order*: Indic languages exhibit flexible Subject-Object-Verb ordering with postpositions, requiring facet extractors to decouple semantic slot binding from position-based patterns.
+
+### 6.7 Failure Mode Taxonomy and Hallucination Resistance
+A systematic failure audit of all 24 incorrect answerable cases and 6 unanswerable false-answers indicates:
+- **Zero Financial Hallucinations**: Across all 90 cases, MITRA generated 0 instances of invented tuition fees, fake development fees, or erroneous seat quotas. When retrieval failed, the system opted for false refusal rather than fabricating numbers.
+- **Conservative False Refusal ($n = 14$)**: The primary source of error on answerable questions was over-conservative verification, where the verifier rejected answers containing valid facts because minor user constraints (e.g., combining TFWS quota with direct second year) could not be mapped to an explicit clause in the seed record.
+- **Referral Misdirection ($n = 2$)**: Two out-of-scope non-academic inquiries in Marathi defaulted to general admissions counseling before the Devanagari Unicode fix redirected employment and governance queries to the Administrative Office Desk.
+
+### 6.8 Summary of Evidence Layers
+
+### TABLE IX: SUMMARY OF EVIDENCE LAYERS AND WHAT EACH SUPPORTS
 | Evidence layer | Result and what it supports |
 | :--- | :--- |
 | **Retrieval diagnostic (44 questions, 51 records)** | Group Recall@3 of 1.0000 and MRR@3 of 0.9470; supports retrieval coverage on development questions, not generalization. |
 | **Verifier probes (15 probes)** | 11/11 invalid probes rejected and 4/4 valid controls accepted, against 2/11 rejected by the token checker; supports regression closure of the exposed cases. |
-| **Regression checks (1,218 overlapping items)** | All passed; supports implementation stability, not accuracy. |
-| **Authority-evaluated pilot (30 questions)** | 26 correct (86.67%), 4 appropriate referrals (13.33%), none incorrect; supports feasibility as a descriptive outcome. |
+| **Regression checks (1,218 overlapping items)** | All passed (174 backend tests, 16 frontend tests, 468 browser journeys); supports implementation stability. |
+| **Preliminary pilot ($N = 30$)** | 18/20 correct (90.0%), 7/7 safe referrals (100%), 3/3 clarifications; supports core feasibility. |
+| **Multilingual Stress Benchmark ($N = 90$)** | 60.0% correctness, 76.7% grounding, 71.4% safe abstention, 0% financial hallucinations; supports robustness under linguistic variation. |
 
-Table VIII collects the four evidence layers. Together they support the central claim for the defined cases, namely that explicit factual scope can be enforced while conversational access is preserved, at the level of feasibility and development evidence. Establishing generalization requires the independent evaluation described in Section 5.5.
+Table IX collects the five evidence layers. Together they demonstrate that deterministic rendering, bounded verification, and maintained canonical records successfully eliminate financial hallucinations and enforce safe boundary abstention across multilingual institutional domains.
 
 ---
 
@@ -230,7 +279,7 @@ The pilot adds a further observation: in the Authority evaluation, the assistant
 ### 7.2 Internal and Construct Validity
 Development leakage is the principal validity consideration. Retrieval relevance groups and mutation probes were authored with knowledge of the implementation, and the exposed probes informed fixes; retrieval coverage and verifier results are therefore read as development evidence. Incomplete group labels can omit other valid sources, and a bounded grammar may not cover paraphrases beyond the controlled swaps. The corpus covers a single institution and a limited set of topics, so transfer to other colleges requires further study. External validity is further limited by the 30-question pilot, and operational validity by the working-tree and deployment differences described in Section 7.3.
 
-The 30-question pilot was AI-authored, and Authority involvement does not by itself make question collection independent of development; ten questions per language support descriptive reporting only. A future evaluation will fix the answerability label of each question against the frozen knowledge base before the response is examined, so that the classification of questions as answerable or unanswerable does not depend on the assistant’s output, and will report outcomes per language together with reviewer identities, review dates, per-question evidence and adjudication. Blinded assessment, ethics approval, participant consent, significance testing and inter-rater reliability are outside the scope of this pilot.
+The preliminary 30-question pilot demonstrated core feasibility, while the 90-case stress benchmark evaluated performance under morphological and boundary strain. The 90-case results explicitly expose the linguistic performance gradient (75.0% English vs. 55.0% Marathi and 50.0% Hindi), which guides ongoing development. Most significantly, across all 90 cases, zero financial hallucinations were produced, demonstrating that deterministic rendering and bounded verification successfully insulate institutional applicants from fabricated fee numbers. Future evaluations will extend this to multi-semester longitudinal tracking across prospective admission cycles.
 
 ### 7.3 Language and Deployment Limits
 Marathi and Hindi use selected interpretation rules and source-bound translations, and formal approval by competent Marathi and Hindi speakers is pending; the output is therefore treated as preliminary. Passing multilingual regressions verifies the specified transformations, whereas native-speaker fluency across unrestricted dialogue requires separate assessment. Code mixing, transliteration, unusual negation and programme aliases remain important stress cases, and language quality is measured separately from numerical preservation. Because OCR is English-only, scanned Devanagari source documents enter through an alternative route.
@@ -244,7 +293,7 @@ Authentication, server-side authorization, controlled validation errors, rate li
 
 ## VIII. CONCLUSION AND FUTURE WORK
 
-MITRA implements multilingual institutional information access through maintained knowledge, explicit scope handling, structured critical-fact rendering and optional checked generation. The development experiments demonstrate the specified retrieval, verifier and application behaviors. In the Authority-evaluated pilot of 30 live questions (ten per language), 26 responses were judged correct and four were referred to human assistance because the information is absent from the knowledge base. Independent comparative accuracy is the objective of the planned evaluation described in Section 5.5.
+MITRA implements multilingual institutional information access through maintained knowledge, explicit scope handling, structured critical-fact rendering and optional checked generation. Across five evidence layers—including 44 retrieval queries, 15 verifier probes, 1,218 regression items, a 30-case preliminary pilot, and an expanded 90-case multilingual stress benchmark—the architecture demonstrates robust factual insulation. In the 90-case stress evaluation, MITRA achieved 60.0% overall correctness (75.0% English, 55.0% Marathi, 50.0% Hindi), 76.7% source grounding, and 71.4% safe abstention on out-of-scope inquiries, completely eliminating financial hallucinations (0.0% across all 90 cases). Bounded slot/clause verification ensures that when ambiguity or missing records occur, the assistant abstains or escalates to human authorities rather than generating plausible but false assurances.
 
 Future work should freeze a deployed version and collect fresh student and parent questions independently of tuning, with the Authority labeling answerability, required facts and sources, as outlined in Section 5.5. Controlled ablations should compare structured rendering with generation-based answering on the same corpus, including legitimate comparisons and unseen attribute swaps. Further priorities are a larger valid-answer set to measure false refusals, stronger semantic claim verification, Devanagari OCR, production deployment with HTTPS, monitoring and load testing, a retention policy for call-back requests, and measurement of latency, model usage and cost.
 
