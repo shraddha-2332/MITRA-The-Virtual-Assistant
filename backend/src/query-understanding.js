@@ -19,7 +19,7 @@ function oneEdit(left, right) {
 }
 export function isEmploymentQuery(text) {
   const norm = String(text || '').normalize('NFKC').toLowerCase();
-  const hasDevanagariJob = /(?:भरती|भर्ती|नोकरीसाठी|रिक्त\s*जागा|नोकरी\s*के\s*लिए|रिक्त\s*पदों|अध्यापक|कर्मचारी\s*भरती|शिक्षक\s*भरती|शिक्षक\s*भर्ती|प्राध्यापक\s*भरती)/u.test(norm);
+  const hasDevanagariJob = /(?:भरती|भर्ती|नोकरीसाठी|नोकरी\s*के\s*लिए|रिक्त\s*जागा|रिक्त\s*पदों|अध्यापक|कर्मचारी\s*भरती|शिक्षक\s*भरती|शिक्षक\s*भर्ती|प्राध्यापक\s*भरती|पदासाठी\s*अर्ज|पद\s*के\s*लिए\s*आवेदन|क्लार्क|लॅब\s*असिस्टंट|असिस्टेंट\s*प्रोफेसर\s*पद)/u.test(norm);
   if (hasDevanagariJob) return true;
 
   const hasJobTerms = /\b(?:hiring|recruitment|recruiting|vacancy|vacancies|job openings?|work with us|careers? at (?:mitcorer|mit|the college)|faculty recruitment|staff recruitment|teacher recruitment)\b/i.test(norm);
