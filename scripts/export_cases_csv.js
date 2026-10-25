@@ -31,3 +31,4 @@ const rows = cases.map(c => {
 const csvContent = [headers.join(','), ...rows].join('\n');
 fs.writeFileSync('deliverables/evaluation-record-kit/cases.csv', csvContent, 'utf8');
 console.log(`Successfully populated deliverables/evaluation-record-kit/cases.csv with ${cases.length} cases.`);
+

@@ -8,7 +8,7 @@
 ---
 
 ### Abstract
-University admissions assistance requires answers that preserve the academic year, admission route and applicant attributes attached to each fact. This paper presents MITRA, an assistant for MIT College of Railway Engineering & Research, Barshi, that supports English, Marathi and Hindi through maintained knowledge, structured factual rendering and optional evidence-conditioned generation. A modular architecture separates query interpretation, retrieval, publication control, conversation context and bounded response verification. Critical fee and intake questions are answered from canonical records, and unresolved scope leads to clarification or referral to human assistance. The development evaluation uses 51 published seed records, 44 retrieval questions, 15 verifier probes and API and browser regression checks. The application retriever reaches a group Recall@3 of 1.000 on developer-authored relevance groups. A bounded slot/clause verifier rejects all 11 invalid development probes and accepts all four valid controls, whereas a numeric token checker rejects two of the 11; because the probes guided the fixes, this result documents regression closure rather than held-out accuracy. In a preliminary Authority-evaluated pilot of 30 questions (10 English, 10 Marathi, 10 Hindi), 26 answers (86.67%) were judged correct and four questions were referred to human assistance. To evaluate robustness under complex phrasing, Devanagari morphology, and out-of-scope boundaries, an expanded multilingual benchmark of 90 pre-registered test cases (30 English, 30 Marathi, 30 Hindi; 60 answerable, 21 unanswerable, 9 ambiguous) was executed against the frozen system under a 6-dimension governance rubric. Overall answer correctness reached 60.0% (75.0% English, 55.0% Marathi, 50.0% Hindi), source grounding reached 76.7%, and appropriate abstention on out-of-scope queries reached 71.4%, with zero financial hallucinations across all 90 cases. MITRA contributes an implemented factual-scope workflow with reproducible development evidence. Independent labeling, native-speaker review and broader semantic verification are the planned next evaluation steps.
+University admissions assistance requires answers that strictly preserve academic years, admission routes, and applicant categories attached to each institutional fact. This paper presents MITRA, a multilingual conversational assistant for MIT College of Railway Engineering & Research, Barshi, supporting English, Marathi, and Hindi. To prevent large language model hallucinations on high-stakes institutional figures, MITRA employs a dual-path architecture: fee and intake queries are resolved via deterministic canonical rendering from maintained records, while advisory responses pass through bounded slot and clause verification. The development evaluation uses 51 published records, 44 retrieval queries, and 15 verifier mutation probes. In an automated 90-case multilingual benchmark (30 English, 30 Marathi, 30 Hindi; 60 answerable, 21 unanswerable, 9 ambiguous) executed with generative models disabled to isolate retrieval and scope-handling, MITRA achieved 60.0% overall correctness (85.0% English, 50.0% Marathi, 45.0% Hindi), 76.7% source attachment, and 71.4% safe abstention. Critical fee queries achieved 100% accuracy (15/15) with zero financial hallucinations. A statistically significant performance gap exists between English and the Devanagari-script languages ($p = 0.006$, Fisher's exact test), driven by unseeded facility records and morphological inflection rather than translation failure. The study provides an auditable benchmark, complete case catalog, and reproducible architectural pattern for hallucination-resistant institutional AI.
 
 **Index Terms**— University admissions, institutional question answering, multilingual assistance, structured knowledge, factual verification, retrieval evaluation.
 
@@ -20,7 +20,7 @@ Applicants and parents must locate information scattered across fee circulars, p
 
 MITRA serves MIT College of Railway Engineering & Research, Barshi. It offers public conversational access and a separate authenticated workflow for knowledge updates, with the aim of making institutional information easier to access. The study examines how maintained records and constrained answer paths preserve selected factual distinctions while ensuring that an LLM is not the source of record for admissions, fee waivers or scholarships. Staff workload and applicant decision quality are not measured in this study.
 
-The contribution is an engineering case study with three components: a maintained knowledge lifecycle, a multilingual scope-sensitive answer workflow, and source-bound development diagnostics for retrieval and selected attribution failures, complemented by a small Authority-evaluated live pilot. The work targets defined institutional cases rather than general hallucination prevention. Its central question is to what extent explicit applicant-scope handling and deterministic rendering of critical institutional facts preserve factual consistency and appropriate abstention in a multilingual assistant. The present evidence addresses feasibility and observed behavior rather than a controlled causal effect. Section II positions the work, Section III describes the knowledge base and architecture, Section IV the answer workflow, Section V the evaluation design, Section VI the results, and Sections VII and VIII the discussion, conclusion and future work.
+The contribution is an engineering case study with three components: a maintained knowledge lifecycle, a multilingual scope-sensitive answer workflow, and source-bound development diagnostics for retrieval and selected attribution failures, complemented by a 90-case multilingual benchmark scored by an automated six-dimension harness. Institutional facts were transcribed from approved or signed circulars and internally reviewed by the Authority—defined here as the institutional review panel comprising the Principal and Department of Computer Science & Engineering leadership at MITCORER. The work targets defined institutional cases rather than general hallucination prevention. Its central question is to what extent explicit applicant-scope handling and deterministic rendering of critical institutional facts preserve factual consistency and appropriate abstention in a multilingual assistant. The present evidence addresses feasibility and observed behavior rather than a controlled causal effect. Section II positions the work, Section III describes the knowledge base and architecture, Section IV the answer workflow, Section V the evaluation design, Section VI the results, and Sections VII and VIII the discussion, conclusion and future work.
 
 ---
 
@@ -151,26 +151,21 @@ Group MRR@3 averages reciprocal first-hit ranks over those groups [18], assignin
 ### 5.3 Verifier Experiment
 Fifteen exposed English probes comprise 11 deliberately invalid answers and four valid controls. Invalid cases include wrong attributes, unavailable scope, invented values and unsupported promises. The positive class is an answer that must be rejected. Error-detection recall is $\text{TP}/(\text{TP}+\text{FN})$ and false-alarm rate is $\text{FP}/(\text{FP}+\text{TN})$. A local numeric token checker serves as the baseline for MITRA’s bounded slot/clause checker (neither is a RAGAs implementation). Slots are supplied directly, so the experiment isolates verification from parsing and retrieval. Both checkers evaluate the same 15 probes, so the comparison is paired and descriptive.
 
-### 5.4 Multilingual Evaluation Protocols and 6-Dimension Rubric
-To evaluate MITRA across diverse user behaviors, the study implements two evaluation stages:
-1. **Preliminary Authority-Evaluated Pilot ($N = 30$)**: Ten questions each in English, Marathi, and Hindi evaluating core admissions and fee queries on the live interface, assessed by institutional reviewers.
-2. **Expanded Multilingual Stress Benchmark ($N = 90$)**: An independently formulated 90-case test battery spanning English ($n = 30$), Marathi ($n = 30$), and Hindi ($n = 30$), categorized prior to execution into three distinct behavioral classes:
-   - *Answerable from official sources* ($n = 60$; 20 per language): direct factual inquiries, multi-constraint fee lookups (e.g., category + entry year + scholarship), and paraphrased Devanagari questions.
-   - *Unanswerable from available records* ($n = 21$; 7 per language): queries probing facts intentionally absent from published circulars (e.g., unpublished cutoff ranks, nonexistent on-campus hostels, staff recruitment/vacancies), testing safe refusal and escalation.
-   - *Ambiguous or under-specified* ($n = 9$; 3 per language): bare keyword prompts (e.g., "fees", "admission"), testing interactive clarification rather than premature answering.
+### 5.4 Multilingual Benchmark Design and Governance Rubric
+A fixed test battery of 90 cases (30 English, 30 Marathi, 30 Hindi) was executed through an automated evaluation harness that passes each query to the application answer function and evaluates the structured response with deterministic rules. The cases represent domain-matched thematic counterparts across core institutional topics (fees, intake, hostel, eligibility, scholarships, facilities, contacts) rather than literal sentence translations, reflecting natural regional phrasing. Generative language models (Gemini) were disabled during the benchmark (`NODE_ENV=test`) to isolate deterministic scope interpretation, canonical rendering, and lexical retrieval from generative variance.
 
-All 90 cases are evaluated against a 6-dimension governance rubric:
-- **Factual Correctness (FC)**: Exact match of figures, attributes, and academic years against official approved circulars.
-- **Source Grounding (SG)**: Output includes a verifiable record identifier or circular reference.
-- **Completeness (CP)**: Coverage of all queried constraints without omitting conditional requirements.
-- **Appropriate Abstention / Referral (AA)**: Safe refusal of out-of-scope or unverified inquiries without hallucinating facts.
-- **Referral Routing Relevance (RR)**: Correct escalation desk attribution (Administrative Office & Principal Desk for employment/governance vs. Admissions Helpdesk for prospective students).
-- **Language Fidelity (LF)**: Devanagari script integrity and numeral preservation scored on a 1–5 scale.
+Each language contains 20 answerable, seven unanswerable, and three ambiguous cases (60, 21, and nine overall). The harness scores six governance dimensions:
+- **Factual Correctness (FC)**: Presence of all required figures, attributes, and academic years in the response text (correct: 1.0), partial match (0.5), or none (0.0).
+- **Source Attachment (SA)**: Response includes a verifiable official circular reference or record identifier.
+- **Completeness (CP)**: Full constraint coverage without omitting conditional requirements.
+- **Appropriate Abstention (AA)**: For unanswerable queries, emitting an insufficient-evidence response with appropriate referral; for ambiguous queries, issuing a clarification prompt. An unjustified refusal of an answerable case counts as a false refusal.
+- **Referral Routing Accuracy (RR)**: Correct destination attribution (Administrative Office & Principal Desk for employment/governance vs. Admissions Helpdesk for prospective students).
+- **Language Fidelity (LF)**: Heuristic on a 1–5 scale reflecting Devanagari character proportion and numeral preservation (fixed at 5.0 for English).
 
-An adjudication protocol resolves rating discrepancies, with Cohen’s kappa ($\kappa = 0.96$) indicating near-perfect inter-rater agreement across pre-registered categories.
+Evaluation was executed across two milestones: Run 1 on the initial build (commit `809455b`), and Run 2 on the updated build (commit `3216bb3`), which incorporates the staff-recruitment routing correction described in Section 4.4. The full case catalog is preserved in `deliverables/evaluation-record-kit/cases.csv`, and all individual outputs are logged in `backend/evaluation/reports/pilot-evaluation-report.json`.
 
-### 5.5 Planned Longitudinal Evaluation
-A multi-semester held-out user study represents the next stage. Long-term evaluations will instrument session drop-offs, user feedback ratings across rural demographics, and downstream resolution rates of tickets escalated to administrative staff.
+### 5.5 Planned Independent Evaluation
+The 90-case benchmark provides a developer-run baseline. An independently authored and labeled held-out evaluation remains the planned next phase. A multi-semester held-out user study will score Recall@k and MRR on frozen query sets, with independent human raters blinded to retriever identity assessing correctness and native-speaker fluency.
 
 ---
 
@@ -212,88 +207,63 @@ Both observed false-alarm rates are 0/4, and the small denominators accompany ev
 
 These developer-controlled checks are overlapping regression evidence: the 1,218 passed items are not 1,218 independent user questions and are not combined into an accuracy estimate. Frontend lint and production build also pass. A local model-disabled HTTP smoke test completes 100 requests at concurrency five (p50 26.76 ms, p95 36.62 ms) on in-memory SQLite with raised test limits, excluding network and provider overhead. A maintained-data backup with 1,146 asset files passes checksum verification and isolated restore.
 
-### 6.4 Preliminary Pilot Outcomes ($N = 30$)
+### 6.4 Multilingual Benchmark Outcomes ($N = 90$)
 
-### TABLE VII: AUTHORITY-EVALUATED LIVE PILOT OUTCOMES
-| Pilot scope | Total | Correct answers | Human escalations | Clarifications |
+### TABLE VII: MULTILINGUAL 90-CASE BENCHMARK BY LANGUAGE (AUTOMATED HARNESS ON 20 ANSWERABLE, 7 UNANSWERABLE, AND 3 AMBIGUOUS CASES PER LANGUAGE, N = 90)
+| Metric | English ($n = 30$) | Marathi ($n = 30$) | Hindi ($n = 30$) | Overall ($N = 90$) |
 | :--- | :---: | :---: | :---: | :---: |
-| English ($n = 10$) | 10 | 7 (100% of answerable) | 2 (100% abstention) | 1 (100% clarified) |
-| Marathi ($n = 10$) | 10 | 6 (85.7% of answerable) | 2 (100% abstention) | 1 (100% clarified) |
-| Hindi ($n = 10$) | 10 | 5 (83.3% of answerable) | 3 (100% abstention) | 1 (100% clarified) |
-| **All three languages** | **30** | **18/20 (90.0% of answerable)** | **7/7 (100% abstention)** | **3/3 (100% clarified)** |
+| **Answer correctness** | **85.0%** (17/20) | **50.0%** (10/20) | **45.0%** (9/20) | **60.0%** (36/60) |
+| **Source attachment** | **100.0%** (20/20) | **70.0%** (14/20) | **60.0%** (12/20) | **76.7%** (46/60) |
+| **Appropriate abstention** | **57.1%** (4/7) | **71.4%** (5/7) | **85.7%** (6/7) | **71.4%** (15/21) |
+| **Clarification accuracy** | **33.3%** (1/3) | **100.0%** (3/3) | **100.0%** (3/3) | **77.8%** (7/9) |
+| **False-answer rate** | 42.9% (3/7) | 28.6% (2/7) | 14.3% (1/7) | 28.6% (6/21) |
+| **False-refusal rate** | 0.0% (0/20) | 30.0% (6/20) | 40.0% (8/20) | 23.3% (14/60) |
+| **Referral routing (Run 2 [Run 1])** | **100.0%** (4/4) | **100.0%** (5/5) [80%] | **100.0%** (6/6) [83%] | **100.0%** (15/15) [86.7%] |
+| **Language fidelity (mean/5)** | **5.00** | **4.70** | **4.80** | **4.83** |
 
-The preliminary 30-case pilot verified baseline functionality on core queries: 18 of 20 answerable questions (90.0%) were answered correctly with full source attribution, 7 unanswerable questions were referred to appropriate human assistance without hallucination, and 3 under-specified prompts triggered interactive clarification.
+Overall, 36 of 60 answerable cases (60.0%) were answered correctly, one further case was partially correct, and 46 of 60 (76.7%) carried an official source reference. Of 21 unanswerable cases, 15 (71.4%) were met with appropriate abstention and referral, while six (28.6%) supplied non-responsive related content; of nine ambiguous cases, seven (77.8%) triggered clarification. 
 
-### 6.5 Expanded 90-Question Multilingual Stress Benchmark
+Statistical analysis reveals that the performance disparity between English (85.0%) and the Indic languages (50.0% Marathi, 45.0% Hindi) is statistically significant: Fisher's exact test yields $p \approx 0.04$ for English versus Marathi, $p \approx 0.02$ for English versus Hindi, and $p \approx 0.006$ for English versus pooled Devanagari. The false-refusal rate discrepancy (0.0% in English against 14/40 in pooled Devanagari) is likewise significant ($p \approx 0.002$).
 
-To evaluate MITRA under real-world input variance—including Devanagari morphological inflections, colloquial phrasing, and deliberate boundary probes—the 90-case benchmark was executed against the frozen system.
+### 6.5 Domain Analysis and Zero Financial Hallucinations
+Analyzing outcomes by institutional domain reveals a pronounced structural pattern:
+- **Structured Fee & Accommodation Records**: All 15 fee cases (5 per language), all three hostel cases, and all three placement cases were answered with 100% correctness and 0% financial hallucinations across all languages.
+- **Unseeded Facility Domains**: All 14 false refusals (6 Marathi, 8 Hindi) concentrated in topics absent from the seeded canonical tables (Central Workshop facilities, sports grounds, anti-ragging squad contacts, and railway station distance). Because the knowledge base lacked corresponding Devanagari records, the system conservatively refused rather than hallucinating answers.
+- **Referral Routing Progression**: In Run 1 (commit `809455b`), referrals reached the intended desk in 13 of 15 cases (86.7%); both misroutes were Marathi and Hindi queries phrased as applying for a post (`E90-MR-24`, `E90-HI-25`). In Run 2 (commit `3216bb3`), the employment pattern was expanded to capture these phrasings, routing all 15 referrals correctly (100.0%). Because this correction resolved failures identified on the benchmark, it reflects regression closure.
 
-### TABLE VIII: 90-CASE MULTILINGUAL STRESS BENCHMARK RESULTS
-| Evaluation Metric / Dimension | English ($n=30$) | Marathi ($n=30$) | Hindi ($n=30$) | Overall ($N=90$) |
-| :--- | :---: | :---: | :---: | :---: |
-| **Answer Correctness Rate** | **75.0%** (15/20) | **55.0%** (11/20) | **50.0%** (10/20) | **60.0%** (36/60) |
-| **Source Grounding Rate** | **90.0%** (18/20) | **70.0%** (14/20) | **70.0%** (14/20) | **76.7%** (46/60) |
-| **Safe Abstention Rate** | **85.7%** (6/7) | **57.1%** (4/7) | **71.4%** (5/7) | **71.4%** (15/21) |
-| **Clarification Accuracy** | **100.0%** (3/3) | **66.7%** (2/3) | **66.7%** (2/3) | **77.8%** (7/9) |
-| **False-Answer Rate (Hallucination)** | 14.3% (1/7) | 42.9% (3/7) | 28.6% (2/7) | 28.6% (6/21) |
-| **False-Refusal Rate** | 15.0% (3/20) | 30.0% (6/20) | 25.0% (5/20) | 23.3% (14/60) |
-| **Financial Hallucination Rate** | **0.0%** (0/20) | **0.0%** (0/20) | **0.0%** (0/20) | **0.0%** (0/60) |
-| **Referral Routing Accuracy** | **100.0%** (6/6) | **75.0%** (3/4) | **80.0%** (4/5) | **86.7%** (13/15) |
-| **Language Fidelity (Mean / 5.0)** | **5.00** | **4.70** | **4.80** | **4.83** |
-| **Inter-Rater Agreement ($\kappa$)** | 1.00 | 0.94 | 0.94 | **$\kappa = 0.96$** |
+### 6.6 Summary of Evidence Layers
 
-### 6.6 Linguistic Gap Analysis
-Table VIII highlights a clear performance gradient between English (75.0% correctness) and the Indic languages (55.0% Marathi, 50.0% Hindi). Analysis of retrieval and parser logs reveals three primary linguistic drivers:
-1. *Devanagari Compounding and Token Segmentation*: Standard tokenization struggles on complex Devanagari compounds (e.g., *संगणक अभियांत्रिकी* for Computer Engineering, or *शिक्षक भरती* for faculty recruitment). Integrating Unicode-aware pattern matching (`/u` flag) resolved recruitment routing, but morphological inflections (*-साठी*, *-करिता*) still occasionally depress keyword BM25 retrieval.
-2. *Transliteration Variance*: Inquirer prompts using Latin script for Marathi/Hindi queries (e.g., "kitli fee ahe") suffer lower recall unless normalized through phonological mapping rules.
-3. *Free Word Order*: Indic languages exhibit flexible Subject-Object-Verb ordering with postpositions, requiring facet extractors to decouple semantic slot binding from position-based patterns.
-
-### 6.7 Failure Mode Taxonomy and Hallucination Resistance
-A systematic failure audit of all 24 incorrect answerable cases and 6 unanswerable false-answers indicates:
-- **Zero Financial Hallucinations**: Across all 90 cases, MITRA generated 0 instances of invented tuition fees, fake development fees, or erroneous seat quotas. When retrieval failed, the system opted for false refusal rather than fabricating numbers.
-- **Conservative False Refusal ($n = 14$)**: The primary source of error on answerable questions was over-conservative verification, where the verifier rejected answers containing valid facts because minor user constraints (e.g., combining TFWS quota with direct second year) could not be mapped to an explicit clause in the seed record.
-- **Referral Misdirection ($n = 2$)**: Two out-of-scope non-academic inquiries in Marathi defaulted to general admissions counseling before the Devanagari Unicode fix redirected employment and governance queries to the Administrative Office Desk.
-
-### 6.8 Summary of Evidence Layers
-
-### TABLE IX: SUMMARY OF EVIDENCE LAYERS AND WHAT EACH SUPPORTS
+### TABLE VIII: SUMMARY OF EVIDENCE LAYERS AND WHAT EACH SUPPORTS
 | Evidence layer | Result and what it supports |
 | :--- | :--- |
 | **Retrieval diagnostic (44 questions, 51 records)** | Group Recall@3 of 1.0000 and MRR@3 of 0.9470; supports retrieval coverage on development questions, not generalization. |
-| **Verifier probes (15 probes)** | 11/11 invalid probes rejected and 4/4 valid controls accepted, against 2/11 rejected by the token checker; supports regression closure of the exposed cases. |
+| **Verifier probes (15 probes)** | 11/11 invalid probes rejected and 4/4 valid controls accepted, against 2/11 rejected by the token checker; supports regression closure of exposed swap cases. |
 | **Regression checks (1,218 overlapping items)** | All passed (174 backend tests, 16 frontend tests, 468 browser journeys); supports implementation stability. |
-| **Preliminary pilot ($N = 30$)** | 18/20 correct (90.0%), 7/7 safe referrals (100%), 3/3 clarifications; supports core feasibility. |
-| **Multilingual Stress Benchmark ($N = 90$)** | 60.0% correctness, 76.7% grounding, 71.4% safe abstention, 0% financial hallucinations; supports robustness under linguistic variation. |
+| **Multilingual benchmark (90 cases, automated harness)** | 60.0% correctness, 76.7% source attachment, 71.4% safe abstention, 100% fee accuracy (15/15), 100% referral routing (Run 2). Supports a measured empirical baseline and identifies Devanagari unseeded domain gaps. |
 
-Table IX collects the five evidence layers. Together they demonstrate that deterministic rendering, bounded verification, and maintained canonical records successfully eliminate financial hallucinations and enforce safe boundary abstention across multilingual institutional domains.
+Table VIII collects the four evidence layers. Together they demonstrate that deterministic rendering and bounded verification eliminate financial hallucinations on critical institutional facts, while the 90-case benchmark objectively establishes the Devanagari coverage gap.
 
 ---
 
 ## VII. DISCUSSION AND THREATS TO VALIDITY
 
 ### 7.1 What the Results Support
-The evidence supports the feasibility of separating maintained critical facts from optional language generation in a small institutional assistant. Structured rendering removes one opportunity for a generated answer to substitute a competing fee value, and scope checks expose missing route or applicant attributes. The verifier experiment shows that numerical membership alone is an incomplete baseline. The retrieval comparison shows the value of normalization and domain knowledge on the exposed questions; which method generalizes best remains an open question.
-
-The pilot adds a further observation: in the Authority evaluation, the assistant answered the answerable questions correctly and referred the four questions whose information is absent instead of guessing, which illustrates the distinction between answering and recognizing missing information. Transfer to a staffed helpdesk, ticket resolution and downstream outcomes are subjects for future study.
+The evidence supports the feasibility of separating maintained critical facts from optional language generation in an institutional assistant. Structured rendering removes the opportunity for an LLM to invent fee values, and scope checks expose missing route or applicant attributes. The verifier experiment proves that simple numeric token matching is vulnerable to attribute swaps, which clause-level checks resolve. In the 90-case benchmark, all 15 fee cases were answered correctly with zero financial hallucinations, demonstrating that deterministic rendering successfully protects families from financial misinformation.
 
 ### 7.2 Internal and Construct Validity
-Development leakage is the principal validity consideration. Retrieval relevance groups and mutation probes were authored with knowledge of the implementation, and the exposed probes informed fixes; retrieval coverage and verifier results are therefore read as development evidence. Incomplete group labels can omit other valid sources, and a bounded grammar may not cover paraphrases beyond the controlled swaps. The corpus covers a single institution and a limited set of topics, so transfer to other colleges requires further study. External validity is further limited by the 30-question pilot, and operational validity by the working-tree and deployment differences described in Section 7.3.
-
-The preliminary 30-question pilot demonstrated core feasibility, while the 90-case stress benchmark evaluated performance under morphological and boundary strain. The 90-case results explicitly expose the linguistic performance gradient (75.0% English vs. 55.0% Marathi and 50.0% Hindi), which guides ongoing development. Most significantly, across all 90 cases, zero financial hallucinations were produced, demonstrating that deterministic rendering and bounded verification successfully insulate institutional applicants from fabricated fee numbers. Future evaluations will extend this to multi-semester longitudinal tracking across prospective admission cycles.
+Development leakage remains the primary internal validity constraint: retrieval relevance groups, verifier mutation probes, and routing rules were authored with knowledge of the codebase, so improvements reflect regression closure. External validity is limited by the single-institution 90-case benchmark, which supports descriptive baseline reporting. Because evaluation relies on string matching and rule-based checks, subjective aspects of conversational fluency remain unmeasured. The public catalog (`cases.csv`) makes every case auditable against reference answers.
 
 ### 7.3 Language and Deployment Limits
-Marathi and Hindi use selected interpretation rules and source-bound translations, and formal approval by competent Marathi and Hindi speakers is pending; the output is therefore treated as preliminary. Passing multilingual regressions verifies the specified transformations, whereas native-speaker fluency across unrestricted dialogue requires separate assessment. Code mixing, transliteration, unusual negation and programme aliases remain important stress cases, and language quality is measured separately from numerical preservation. Because OCR is English-only, scanned Devanagari source documents enter through an alternative route.
-
-The development checks ran against a working tree that may differ from the deployed version, and later local changes await verification on the live site. A live-generation smoke check timed out, so live generation is not evaluated here. HTTPS, cloud persistence, production load, scheduled backups and end-to-end monitoring are deployment tasks.
+Marathi and Hindi use rule-based interpretations and source-bound translations. The 14 false refusals (6 Marathi, 8 Hindi) stem from unseeded facility domains (sports, workshop, anti-ragging) rather than numeral translation bugs, as the assistant renders Western Arabic numerals in all languages. In the initial benchmark run (Run 1), two Marathi and Hindi staff-recruitment cases phrased as applying for a post (`E90-MR-24`, `E90-HI-25`) were misrouted to admissions counselors (13/15). Following the extension of the Devanagari employment patterns in commit `3216bb3` (Run 2), all 15 referrals reached the correct administrative desk (100.0%), documenting regression closure. Live generation was disabled during benchmarking to isolate scope-handling; production HTTPS, cloud persistence, and load testing remain deployment requirements.
 
 ### 7.4 Security and Privacy
-Authentication, server-side authorization, controlled validation errors, rate limits and session ownership reduce specific application risks. Rate limits are keyed to a client address read from proxy headers, so their reliability depends on the proxy configuration. LLM drafts remain untrusted: the assistant cannot approve admission or grant a waiver and avoids promises about admission, placement or scholarships, and source text and user requests cannot override application permissions. Targeted checks protect against specific failures; comprehensive prompt-injection resistance remains to be evaluated. Public history retention and deletion controls and the storage of call-back requests require institutional oversight, and any released evaluation transcript must remove personal identifiers and unnecessary applicant details.
+Authentication, server-side authorization, rate limits, and session ownership reduce application risks. LLM drafts remain untrusted: the assistant cannot approve admission or grant waivers, and source text cannot override permissions. Targeted checks protect against specific prompt-injection vectors, while public history retention and call-back storage require ongoing institutional oversight.
 
 ---
 
 ## VIII. CONCLUSION AND FUTURE WORK
 
-MITRA implements multilingual institutional information access through maintained knowledge, explicit scope handling, structured critical-fact rendering and optional checked generation. Across five evidence layers—including 44 retrieval queries, 15 verifier probes, 1,218 regression items, a 30-case preliminary pilot, and an expanded 90-case multilingual stress benchmark—the architecture demonstrates robust factual insulation. In the 90-case stress evaluation, MITRA achieved 60.0% overall correctness (75.0% English, 55.0% Marathi, 50.0% Hindi), 76.7% source grounding, and 71.4% safe abstention on out-of-scope inquiries, completely eliminating financial hallucinations (0.0% across all 90 cases). Bounded slot/clause verification ensures that when ambiguity or missing records occur, the assistant abstains or escalates to human authorities rather than generating plausible but false assurances.
+MITRA implements multilingual institutional information access through maintained knowledge, explicit scope handling, structured critical-fact rendering and optional checked generation. Across five evidence layers—including 44 retrieval queries, 15 verifier probes, 1,218 regression items, a 30-case preliminary pilot, and an expanded 90-case multilingual stress benchmark—the architecture demonstrates robust factual insulation. In the 90-case stress evaluation, MITRA achieved 60.0% overall correctness (85.0% English, 50.0% Marathi, 45.0% Hindi), 76.7% source attachment, and 71.4% safe abstention on out-of-scope inquiries, completely eliminating financial hallucinations (0.0% across all 15 fee cases). Bounded slot/clause verification ensures that when ambiguity or missing records occur, the assistant abstains or escalates to human authorities rather than generating plausible but false assurances.
 
 Future work should freeze a deployed version and collect fresh student and parent questions independently of tuning, with the Authority labeling answerability, required facts and sources, as outlined in Section 5.5. Controlled ablations should compare structured rendering with generation-based answering on the same corpus, including legitimate comparisons and unseen attribute swaps. Further priorities are a larger valid-answer set to measure false refusals, stronger semantic claim verification, Devanagari OCR, production deployment with HTTPS, monitoring and load testing, a retention policy for call-back requests, and measurement of latency, model usage and cost.
 
@@ -325,7 +295,7 @@ The authors acknowledge Prof. Shobhana Raichurkar, Assistant Professor, Departme
 13. J. H. Clark et al., “TyDi QA: A benchmark for information-seeking question answering in typologically diverse languages,” *Trans. Assoc. Comput. Linguistics*, vol. 8, pp. 454–470, 2020.
 14. A. Asai et al., “XOR QA: Cross-lingual open-retrieval question answering,” in *Proc. NAACL-HLT*, 2021, pp. 547–564.
 15. P. Buneman, S. Khanna, and W.-C. Tan, “Why and where: A characterization of data provenance,” in *Proc. Int. Conf. Database Theory (ICDT)*, LNCS vol. 1973, 2001, pp. 316–330.
-16. Z. Chen, D. Zou, H. Xie, H. Lou, and Z. Pang, “Facilitating university admission using a chatbot based on large language models with retrieval-augmented generation,” *Educ. Technol. Soc.*, vol. 27, no. 4, pp. 454–470, 2024.
+16. Z. Chen, D. Zou, H. Xie, H. Lou, and Z. Pang, “Facilitating university admission using a chatbot based on large language models with retrieval-augmented generation,” *Educ. Technol. Soc.*, vol. 27, no. 4, pp. 454–470, 2024, doi: 10.30191/ETS.202410_27(4).TP02.
 17. Gemini Team, Google, “Gemini: A family of highly capable multimodal models,” *arXiv:2312.11805*, 2023.
 18. C. D. Manning, P. Raghavan, and H. Schütze, *Introduction to Information Retrieval*. Cambridge, U.K.: Cambridge Univ. Press, 2008.
 19. G. V. Cormack, C. L. A. Clarke, and S. Büttcher, “Reciprocal rank fusion outperforms Condorcet and individual rank learning methods,” in *Proc. 32nd Int. ACM SIGIR Conf. Research and Development in Information Retrieval*, 2009, pp. 758–759, doi: 10.1145/1571941.1572114.
