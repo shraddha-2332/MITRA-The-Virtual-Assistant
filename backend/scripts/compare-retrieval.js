@@ -5,7 +5,7 @@ import crypto from 'node:crypto';
 import { fileURLToPath } from 'node:url';
 import { performance } from 'node:perf_hooks';
 import { config } from '../src/config.js';
-import { createSeedData } from '../src/seed.js';
+import { createSeedData, seedKnowledge } from '../src/seed.js';
 import { resetDbForTests } from '../src/store.js';
 import { retrieveKnowledge, normalizeIntentText } from '../src/server.js';
 import { createBm25 } from '../src/bm25.js';
@@ -17,6 +17,7 @@ const original = JSON.parse(fs.readFileSync(path.join(root, 'evaluation/public-d
 const additional = JSON.parse(fs.readFileSync(path.join(root, 'evaluation/retrieval-development.json')));
 const cases = [...original.records.filter(r => r.answerability === 'supported').map(r => ({ id: r.id, question: r.question, language: r.language, evidenceGroups: r.evidenceGroups })), ...additional.records];
 const seed = createSeedData();
+seed.knowledge = structuredClone(seedKnowledge);
 const corpus = seed.knowledge.filter(record => record.status === 'Published');
 const known = new Set(corpus.map(record => record.id));
 const ids = new Set();
@@ -47,7 +48,7 @@ try {
       const k = 60;
       kw.forEach((item, r) => map.set(item.id, (map.get(item.id) || 0) + (1 / (k + r + 1))));
       bm.forEach((item, r) => map.set(item.id, (map.get(item.id) || 0) + (1 / (k + r + 1))));
-      return [...map.entries()].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0])).map(([id, score]) => ({ id, score }));
+      return [...map.entries()].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0])).slice(0, 3).map(([id, score]) => ({ id, score }));
     },
   };
   const rows = cases.map(item => ({ ...item, methods: {} }));
@@ -69,8 +70,8 @@ try {
     const times = timings[name].sort((a, b) => a - b);
     return [name, { ...Object.fromEntries(['groupRecallAt1', 'groupRecallAt3', 'groupMRRAt3'].map(metric => [metric, mean(rows.map(row => row.methods[name][metric]))])), p50Ms: times[Math.ceil(times.length * 0.5) - 1], p95Ms: times[Math.ceil(times.length * 0.95) - 1] }];
   }));
-  const sourceHashes = Object.fromEntries(['src/server.js', 'src/language.js', 'src/bm25.js', 'evaluation/retrieval-metrics.js', 'scripts/compare-retrieval.js'].map(file => [file, hash(fs.readFileSync(path.join(root, file)))]));
-  const report = { version: 1, generatedAt: new Date().toISOString(), node: process.version, platform: process.platform, reviewStatus: 'unreviewed', split: 'development', corpusSha256: hash(JSON.stringify(corpus)), casesSha256: hash(JSON.stringify(cases)), sourceHashes, corpusSize: corpus.length, caseCount: cases.length, bm25: { k1: 1.2, b: 0.75, buildMs, fields: 'title category tags text, concatenated without weighting', queryTermFrequency: 'binary', tieBreak: 'id lexical' }, methodology: 'Same seeded corpus and questions; current unchanged keyword top-3; BM25 top-3; shared query normalization ablation; 10 warmups per case/method; 100 timed repeats with alternating method order; ranking only, no HTTP, generation or audit writes.', limitations: ['Developer-authored incomplete relevance groups; not independently reviewed or held-out.', 'Group recall and group MRR are facet proxies, not standard exhaustive-document Recall or MRR.', 'Precision is omitted because relevance labels are incomplete.', 'Retrieval overlap does not establish answerability, correct year or safe abstention.', 'Local warm latency is not production latency; keyword scans each query and BM25 prebuilds an index.', 'No semantic retrieval, stemming, parameter tuning or production switch.'], summary, rows, corpus };
+  const sourceHashes = Object.fromEntries([...fs.readdirSync(path.join(root, 'src')).filter(name => name.endsWith('.js')).map(name => `src/${name}`), 'evaluation/retrieval-metrics.js', 'scripts/compare-retrieval.js'].map(file => [file, hash(fs.readFileSync(path.join(root, file)))]));
+  const report = { version: 1, generatedAt: new Date().toISOString(), node: process.version, platform: process.platform, reviewStatus: 'unreviewed', split: 'development', corpusSha256: hash(JSON.stringify(corpus)), casesSha256: hash(JSON.stringify(cases)), sourceHashes, corpusSize: corpus.length, caseCount: cases.length, bm25: { k1: 1.2, b: 0.75, buildMs, fields: 'title category tags text, concatenated without weighting', queryTermFrequency: 'binary', tieBreak: 'id lexical' }, methodology: 'Same seeded corpus and questions; current unchanged keyword top-3; BM25 top-3; shared query normalization ablation; 10 warmups per case/method; 100 timed repeats with alternating method order; ranking only, no HTTP, generation or audit writes.', limitations: ['Developer-authored incomplete relevance groups; not independently reviewed or held-out.', 'Group recall and group MRR are facet proxies, not standard exhaustive-document Recall or MRR.', 'Precision is omitted because relevance labels are incomplete.', 'Retrieval overlap does not establish answerability, correct year or safe abstention.', 'Local warm latency is not production latency; keyword scans each query and BM25 prebuilds an index.', 'No external embeddings, generation, stemming, parameter tuning or production switch. The keyword/rule baseline includes current conceptual synonym boosts.'], summary, rows, corpus };
   const folder = path.join(root, 'evaluation/reports'); fs.mkdirSync(folder, { recursive: true });
   fs.writeFileSync(path.join(folder, 'retrieval-latest.json'), `${JSON.stringify(report, null, 2)}\n`);
   console.log(JSON.stringify({ caseCount: cases.length, corpusSize: corpus.length, summary, report: 'evaluation/reports/retrieval-latest.json' }, null, 2));

@@ -26,6 +26,7 @@ export function hashPassword(password, salt = crypto.randomBytes(16).toString('h
 export function verifyPassword(password, stored) {
   const [salt, expected] = String(stored || '').split(':');
   if (!salt || !expected) return false;
+  if (config.nodeEnv === 'production' && ['mitra-seed-salt', 'campusguard-seed-salt'].includes(salt)) return false;
   const actual = hashPassword(password, salt).split(':')[1];
   if (actual.length === expected.length && crypto.timingSafeEqual(Buffer.from(actual), Buffer.from(expected))) {
     return true;
@@ -61,7 +62,9 @@ export function hashToken(token) {
 }
 
 export function verifyToken(token) {
-  const [encoded, signature] = String(token || '').split('.');
+  const parts = String(token || '').split('.');
+  if (parts.length !== 2) throw unauthorized('Invalid authentication token.');
+  const [encoded, signature] = parts;
   if (!encoded || !signature || !signaturesMatch(sign(encoded), signature)) {
     throw unauthorized('Invalid authentication token.');
   }

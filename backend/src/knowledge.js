@@ -225,12 +225,21 @@ export function buildMaintainedAnswer(question, normalized, records) {
 
 export function extractPublicFacts(records = []) {
   const published = records.filter(usableKnowledge);
-  const feeRecord = published.find((item) => item.facts?.kind === 'academicFees')
-    || records.find((item) => item.id === 'KB-2' && item.facts);
-  const hostelRecord = published.find((item) => item.facts?.kind === 'accommodationFees')
-    || records.find((item) => item.id === 'KB-3' && item.facts);
-  const intakeRecord = published.find((item) => item.facts?.kind === 'programIntake')
-    || records.find((item) => item.id === 'KB-10' && item.facts);
+  const select = (id, kind) => {
+    const record = published.find(item => item.id === id);
+    if (!record) return null;
+    try {
+      const facts = record.facts ? validateFacts(record.facts) : parseLegacyFactText(record);
+      if (!facts || facts.kind !== kind) return null;
+      const signature = value => JSON.stringify(value.kind === 'programIntake' ? { ...value, programs: [...value.programs].sort((a, b) => a.name.localeCompare(b.name)) } : value);
+      if (published.some(item => item.id !== id && item.facts?.kind === kind && item.facts.academicYear === facts.academicYear
+        && signature(validateFacts(item.facts)) !== signature(facts))) return null;
+      return { ...record, facts };
+    } catch { return null; }
+  };
+  const feeRecord = select('KB-2', 'academicFees');
+  const hostelRecord = select('KB-3', 'accommodationFees');
+  const intakeRecord = select('KB-10', 'programIntake');
 
   const academicFees = feeRecord?.facts ? {
     academicYear: feeRecord.facts.academicYear,
@@ -271,7 +280,7 @@ export function extractPublicFacts(records = []) {
   })) : [];
 
   return {
-    academicYear: academicFees?.academicYear || '2026-27',
+    academicYear: academicFees?.academicYear || null,
     academicFees,
     accommodationFees,
     programs,

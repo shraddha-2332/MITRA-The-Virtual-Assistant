@@ -1,4 +1,5 @@
 import crypto from 'node:crypto';
+import { badRequest } from './errors.js';
 
 export function jsonResponse(res, status, payload) {
   const body = JSON.stringify(payload);
@@ -26,11 +27,11 @@ export function pick(object, keys) {
 
 export function requireString(value, field, max = 300) {
   if (typeof value !== 'string' || !value.trim()) {
-    throw new Error(`${field} is required.`);
+    throw badRequest(`${field} is required.`);
   }
   const trimmed = value.trim();
   if (trimmed.length > max) {
-    throw new Error(`${field} must be ${max} characters or less.`);
+    throw badRequest(`${field} must be ${max} characters or less.`);
   }
   return trimmed;
 }

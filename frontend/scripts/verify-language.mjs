@@ -44,6 +44,8 @@ try {
   await languageControl.press('ArrowDown');
   await languageControl.press('Tab');
   assert.equal(await languageControl.inputValue(), 'en');
+  assert.equal(await page.getByRole('button', { name: 'New conversation', exact: true }).evaluate(element => element === document.activeElement), true);
+  await page.keyboard.press('Tab');
   assert.equal(await page.getByRole('button', { name: 'Minimize assistant' }).evaluate(element => element === document.activeElement), true);
   await languageControl.selectOption('auto');
   await page.getByRole('button', { name: 'Minimize assistant' }).evaluate(element => element.blur());
@@ -116,7 +118,7 @@ try {
   const feeBubble = page.locator('.publicBubble.assistant').last();
   assert.equal(await feeBubble.locator('.publicAnswerList').count(), 2, feeData.answer);
   assert.equal(await feeBubble.locator('.publicAnswerList li').count(), 10);
-  for (const number of numericTokens(feeData.answer)) assert.ok(numericTokens(await feeBubble.innerText()).has(number));
+  for (const number of numericTokens(feeData.answer)) assert.ok(numericTokens(await feeBubble.innerText()).has(number), `Missing ${number}; UI=${await feeBubble.innerText()}; API=${feeData.answer}`);
   assert.equal(await feeBubble.locator('a').count() >= 2, true);
   await page.screenshot({ path: path.join(root, 'tmp/answer-fees.png') });
   const staleLibraryUrl = 'https://www.mitcorer.edu.in/about-lib-details.html';
@@ -150,10 +152,10 @@ try {
   await page.setViewportSize({ width: 390, height: 844 });
   assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true);
   assert.deepEqual(errors, []);
-  fs.mkdirSync(path.join(root, '../docs/language-review'), { recursive: true });
-  fs.writeFileSync(path.join(root, '../docs/language-review/review-packet.json'), `${JSON.stringify(packet, null, 2)}\n`);
+  fs.mkdirSync(path.join(root, 'tmp/language-review'), { recursive: true });
+  fs.writeFileSync(path.join(root, 'tmp/language-review/review-packet.json'), `${JSON.stringify(packet, null, 2)}\n`);
   const markdown = ['# Language review packet', '', 'Status: **speaker-review-pending**. Generated from isolated seeded API responses, not the live maintained database.', '', 'For each case, check meaning against the English evidence, category/route, academic year, amounts, codes, negation, eligibility conditions, uncertainty and fluency. Mark Accept / Correct / Reject; record reviewer name, language competence, date and corrections. Native script and matching numbers alone do not establish correctness.', '', 'Fallback cases intentionally retain English: supply a complete reviewed translation of the knowledge record through Knowledge → Edit record. Do not approve a translation against a different prepared answer. Source changes require review again.', '', ...packet.cases.flatMap((item, index) => [`## Case ${index + 1}: ${item.language} — ${item.question}`, '', `Localization: ${item.localizationStatus}`, '', '### English response', '', item.english, '', '### Displayed answer', '', item.answer, '', '### Supporting evidence', '', ...(item.evidence || []).map(record => `${record.id}: ${record.text || record.title || ''}`), '', 'Reviewer / competence / date: __________', '', 'Meaning / conditions / fluency verdicts: __________', '', 'Corrections: __________', ''])].join('\n');
-  fs.writeFileSync(path.join(root, '../docs/language-review/REVIEW_PACKET.md'), `${markdown}\n`);
+  fs.writeFileSync(path.join(root, 'tmp/language-review/REVIEW_PACKET.md'), `${markdown}\n`);
   console.log('PASS: restored footer, compact header language selector with keyboard/mobile checks, 14 real API language journeys, hidden evidence panel, safe literal rendering, empty-submit guard, network recovery and browser errors. Speaker approval remains pending.');
 } finally {
   await browser?.close();

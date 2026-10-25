@@ -22,7 +22,11 @@ export const config = {
   databaseFile: path.resolve(rootDir, process.env.DATABASE_FILE || './data/mitra.sqlite'),
   geminiApiKey: process.env.GEMINI_API_KEY || '',
   geminiModel: process.env.GEMINI_MODEL || 'gemini-3.8-flash',
+  geminiEmbeddingModel: process.env.GEMINI_EMBEDDING_MODEL || 'gemini-embedding-001',
+  geminiFallbackModel: process.env.GEMINI_FALLBACK_MODEL || '',
   maxBodyBytes: 15 * 1024 * 1024,
   assistantRateLimitMax: Number(process.env.ASSISTANT_RATE_LIMIT_MAX || 30),
   publicAssistantRateLimitMax: Number(process.env.PUBLIC_ASSISTANT_RATE_LIMIT_MAX || process.env.ASSISTANT_RATE_LIMIT_MAX || 30),
+  trustProxy: process.env.TRUST_PROXY === 'true',
+  publicConversationTtlMs: 30 * 60 * 1000,
 };

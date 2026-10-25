@@ -644,6 +644,7 @@ export const seedOfficialSources = [
 export function createSeedData() {
   const createdAt = nowIso();
   const isProduction = config.nodeEnv === 'production';
+  if (isProduction && process.env.ADMIN_PASSWORD && process.env.ADMIN_PASSWORD.length < 12) throw new Error('Production ADMIN_PASSWORD must contain at least 12 characters.');
   const allowDemoUsers = process.env.ALLOW_DEMO_USERS === 'true';
   const defaultUsers = [
     { id: 'USR-APP', name: 'Applicant', email: 'applicant@example.com', role: 'applicant', passwordHash, createdAt },
@@ -662,7 +663,7 @@ export function createSeedData() {
     },
   ] : [];
   const users = (isProduction && !allowDemoUsers) ? productionUsers : defaultUsers;
-  return {
+  const seeded = {
     users,
     inquiries: [
       { id: 'INQ-2401', name: 'Aarav Kulkarni', role: 'Applicant', topic: 'Caste validity receipt', priority: 'High', status: 'Needs reply', city: 'Solapur', contact: 'aarav@example.com', question: 'Caste validity receipt is pending. Can I report?', createdAt, updatedAt: createdAt },
@@ -688,4 +689,11 @@ export function createSeedData() {
     knowledge: seedKnowledge.map((item) => ({ ...structuredClone(item), updatedAt: createdAt })),
     officialSources: seedOfficialSources.map((item) => ({ ...item, uploadedBy: 'system', createdAt, updatedAt: createdAt })),
   };
+  if (isProduction) {
+    seeded.inquiries = [];
+    seeded.documents = [];
+    seeded.content = [];
+    seeded.auditLogs[0].details = 'Initial application data created.';
+  }
+  return seeded;
 }

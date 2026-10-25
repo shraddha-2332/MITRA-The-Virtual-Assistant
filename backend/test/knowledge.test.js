@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { validateFacts, validateKnowledgeFields, renderFactText, buildMaintainedAnswer } from '../src/knowledge.js';
+import { validateFacts, validateKnowledgeFields, renderFactText, buildMaintainedAnswer, extractPublicFacts } from '../src/knowledge.js';
 import { createSeedData } from '../src/seed.js';
 
 test('structured facts reject invalid numbers, year ranges, duplicate programmes and unknown keys', () => {
@@ -55,4 +55,19 @@ test('legacy plain text is used directly without silently reinstating seeded fig
   const record = { id: 'KB-2', text: 'Reviewed fee for AY 2026-27 is INR 12,345.', source: 'Updated circular', status: 'Published' };
   const answer = buildMaintainedAnswer('First year fee', 'first year fee', [record]);
   assert.equal(answer.answer, record.text);
+});
+
+test('public facts exclude retired, conflicting and invalid canonical records without reviving alternatives', () => {
+  const knowledge = createSeedData().knowledge;
+  const fee = knowledge.find(record => record.id === 'KB-2');
+  fee.status = 'Retired';
+  assert.equal(extractPublicFacts(knowledge).academicFees, null);
+  assert.equal(extractPublicFacts(knowledge).academicYear, null);
+  fee.status = 'Published';
+  const conflicting = structuredClone(fee);
+  conflicting.id = 'KB-CONFLICT';
+  conflicting.facts.firstYear.open = 123456;
+  assert.equal(extractPublicFacts([...knowledge, conflicting]).academicFees, null);
+  fee.facts.firstYear.open = -1;
+  assert.equal(extractPublicFacts(knowledge).academicFees, null);
 });

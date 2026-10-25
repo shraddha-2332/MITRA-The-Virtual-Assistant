@@ -22,4 +22,6 @@ test('group metrics account for missing facets and alternative supporting record
   assert.deepEqual(retrievalMetrics(['a', 'b', 'c'], [['a', 'other'], ['c'], ['missing']]),
     { groupRecallAt1: 1 / 3, groupRecallAt3: 2 / 3, groupMRRAt3: (1 + 1 / 3) / 3 });
   assert.equal(retrievalMetrics([], []), null);
+  assert.deepEqual(retrievalMetrics(['a', 'b', 'c', 'outside'], [['outside']]),
+    { groupRecallAt1: 0, groupRecallAt3: 0, groupMRRAt3: 0 });
 });

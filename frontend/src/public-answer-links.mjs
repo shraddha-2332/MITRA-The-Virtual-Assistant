@@ -6,6 +6,9 @@ const feeSnapshots = {
   directSecondYear: ['98,000', '58,181', '18,362', '18,362', '10,000'],
   hostel: ['35,000', '5,000', '40,000', '42,000'],
 };
+export function matchesFeeSnapshot(route, academicYear, amounts) {
+  return academicYear === '2026-27' && JSON.stringify(amounts.map(value => typeof value === 'number' ? value.toLocaleString('en-IN') : value)) === JSON.stringify(feeSnapshots[route]);
+}
 // Also correct answers already returned by a backend that has not been restarted.
 export function resolvePublicSourceUrl(url) {
   try {

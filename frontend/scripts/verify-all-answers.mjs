@@ -50,6 +50,13 @@ try {
       await page.getByRole('combobox', { name: 'Response language', exact: true }).selectOption(language);
       for (const [index, question] of audit.questions.entries()) {
         resetRuntimeStateForTests();
+        // Catalogue questions are independent cases, not a 200+ turn dialogue.
+        if (await page.locator('.publicBubble.user').count()) {
+          const deleted = page.waitForResponse(response => response.request().method() === 'DELETE' && response.url().endsWith('/api/public-assistant/conversation'));
+          await page.locator('.publicResetButton').click();
+          assert.equal((await deleted).status(), 200);
+          await page.waitForFunction(() => !document.querySelector('.publicComposer textarea').disabled);
+        }
         await page.locator('.publicComposer textarea').fill(question);
         const pending = page.waitForResponse(response => response.url().endsWith('/api/public-assistant/ask'));
         await page.locator('.publicComposer textarea').press('Enter');
@@ -61,7 +68,9 @@ try {
         const bubble = answer.answerPart2 ? bubbles.nth(await bubbles.count() - 2) : bubbles.last();
         const visible = await bubble.innerText();
         const factualText = answer.sections?.map(section => section.answer).join('\n') || answer.answer;
-        for (const number of numericTokens(factualText)) assert.ok(numericTokens(visible).has(number), `${name}/${language}/${question}: missing ${number}`);
+        // Ordered-list positions become bullets in the UI; they are not facts.
+        const content = factualText.replace(/^\s*\d+[.)]\s+/gm, '');
+        for (const number of numericTokens(content)) assert.ok(numericTokens(visible).has(number), `${name}/${language}/${question}: missing ${number}`);
         assert.ok(visible.trim(), question);
         assert.equal(await page.locator('.publicEvidence').count(), 0);
         const links = await bubble.locator('a').evaluateAll(elements => elements.map(element => element.getAttribute('href')));

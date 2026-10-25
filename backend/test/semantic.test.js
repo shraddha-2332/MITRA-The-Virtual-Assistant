@@ -1,5 +1,11 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { beforeEach, afterEach } from 'node:test';
+import { config } from '../src/config.js';
+import { resetDbForTests, closeDb } from '../src/store.js';
+import { resetVectorIndexForTests } from '../src/semantic.js';
+beforeEach(() => { config.databaseFile = ':memory:'; config.geminiApiKey = ''; resetDbForTests(); resetVectorIndexForTests(); });
+afterEach(() => closeDb());
 import {
   cosineSimilarity,
   computeConceptScore,

@@ -62,12 +62,12 @@ test('successful non-advisory evidence fallback also reaches generation verifica
 test('public DSE follow-up uses edited maintained fees and preserves route and academic year', async () => {
   const record = getDb().knowledge.find(item => item.id === 'KB-2');
   record.facts.directSecondYear.concessionGirl = 23456;
-  const first = await askPublicWithHistory({ question: 'I am an OBC girl. What are DSE fees for 2026-27?' }, answerAdmissionQuestion);
-  const followup = await askPublicWithHistory({ question: 'what are the fees?', conversationId: first.conversationId }, answerAdmissionQuestion);
+  const first = await askPublicWithHistory({ question: 'I am an OBC girl. What are DSE fees for 2026-27?' }, answerAdmissionQuestion, 'b'.repeat(64));
+  const followup = await askPublicWithHistory({ question: 'what are the fees?', conversationId: first.conversationId }, answerAdmissionQuestion, 'b'.repeat(64));
   assert.match(followup.answer, /23,456/);
   assert.match(followup.answer, /Direct Second Year/);
   assert.doesNotMatch(followup.answer, /17,217|18,362|Profile Note/);
-  const historical = await askPublicWithHistory({ question: 'fees for 2025-26?', conversationId: first.conversationId }, answerAdmissionQuestion);
+  const historical = await askPublicWithHistory({ question: 'fees for 2025-26?', conversationId: first.conversationId }, answerAdmissionQuestion, 'b'.repeat(64));
   assert.equal(historical.evidence.length, 0);
   assert.doesNotMatch(historical.answer, /23,456|17,217|18,362/);
 });

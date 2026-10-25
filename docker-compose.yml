@@ -5,11 +5,17 @@ services:
     environment:
       PORT: 4000
       NODE_ENV: production
+      TRUST_PROXY: "true"
       CORS_ORIGIN: http://127.0.0.1:8080,http://localhost:8080
       TOKEN_SECRET: ${TOKEN_SECRET:?Set TOKEN_SECRET before running Docker Compose}
       DATABASE_FILE: /app/data/mitra.sqlite
       GEMINI_API_KEY: ${GEMINI_API_KEY:-}
       GEMINI_MODEL: ${GEMINI_MODEL:-gemini-3.8-flash}
+      GEMINI_EMBEDDING_MODEL: ${GEMINI_EMBEDDING_MODEL:-gemini-embedding-001}
+      GEMINI_FALLBACK_MODEL: ${GEMINI_FALLBACK_MODEL:-}
+      ADMIN_EMAIL: ${ADMIN_EMAIL:-}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-}
+      ADMIN_NAME: ${ADMIN_NAME:-Administrator}
     expose:
       - "4000"
     healthcheck:

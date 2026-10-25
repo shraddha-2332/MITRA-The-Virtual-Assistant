@@ -3,6 +3,8 @@ import assert from 'node:assert/strict';
 import { config } from '../src/config.js';
 import { resetDbForTests, closeDb, getDb } from '../src/store.js';
 import { beforeEach, afterEach } from 'node:test';
+import { publicSessionHash } from '../src/public-session.js';
+const session = 'a'.repeat(64);
 
 beforeEach(() => { config.databaseFile = ':memory:'; resetDbForTests(); });
 afterEach(() => closeDb());
@@ -33,15 +35,15 @@ test('resolveConversationalQuestion resolves fee follow-ups with branch context'
 
   // Follow-up 1: "what are the fees?"
   const resolvedFee = resolveConversationalQuestion('what are the fees?', chat, context);
-  assert.equal(resolvedFee, 'what are the fees? (Computer Engineering)');
+  assert.equal(resolvedFee, 'what are the fees (Computer Engineering)?');
 
   // Follow-up 2: "any concession for girls?"
   const resolvedGirls = resolveConversationalQuestion('any concession for girls?', chat, context);
-  assert.equal(resolvedGirls, 'any concession for girls? (Computer Engineering)');
+  assert.equal(resolvedGirls, 'any concession for girls (Computer Engineering)?');
 
   // Follow-up 3: "What about OBC girls?" preserves both category and gender slots
   const resolvedObcGirls = resolveConversationalQuestion('What about OBC girls?', chat, { ...context, category: 'OBC' });
-  assert.equal(resolvedObcGirls, 'What about OBC girls? (engineering fees Computer Engineering)');
+  assert.equal(resolvedObcGirls, 'What about OBC girls (engineering fees Computer Engineering)?');
 });
 
 test('resolveConversationalQuestion resolves intake and cutoff follow-ups', () => {
@@ -49,10 +51,10 @@ test('resolveConversationalQuestion resolves intake and cutoff follow-ups', () =
   const context = { branch: 'AI & Data Science' };
 
   const resolvedIntake = resolveConversationalQuestion('what is the intake?', chat, context);
-  assert.equal(resolvedIntake, 'What is the intake and seat capacity for AI & Data Science?');
+  assert.equal(resolvedIntake, 'what is the intake for AI & Data Science?');
 
   const resolvedCutoff = resolveConversationalQuestion('what was the cutoff?', chat, context);
-  assert.equal(resolvedCutoff, 'What was the cutoff for AI & Data Science?');
+  assert.equal(resolvedCutoff, 'what was the cutoff for AI & Data Science?');
 });
 
 test('resolveConversationalQuestion resolves hostel follow-ups without confusing with academic fees', () => {
@@ -77,7 +79,7 @@ test('askPublicWithHistory maintains multi-turn context across turns', async () 
   };
 
   // Turn 1: Ask about Computer Engineering
-  const res1 = await askPublicWithHistory({ question: 'Tell me about Computer Engineering' }, mockAnswer);
+  const res1 = await askPublicWithHistory({ question: 'Tell me about Computer Engineering' }, mockAnswer, session);
   assert.ok(res1.conversationId);
   assert.equal(res1.context.branch, 'Computer Engineering');
 
@@ -85,7 +87,7 @@ test('askPublicWithHistory maintains multi-turn context across turns', async () 
   const res2 = await askPublicWithHistory({
     question: 'what are the fees?',
     conversationId: res1.conversationId,
-  }, mockAnswer);
+  }, mockAnswer, session);
 
   assert.equal(res2.conversationId, res1.conversationId);
   assert.ok(recordedQuestions.some((q) => q.includes('Computer Engineering')));
@@ -96,7 +98,7 @@ test('fee enrichment preserves original qualifiers and explicit exclusions', () 
   const context = { category: 'OBC', gender: 'girls', route: 'DSE', academicYear: '2026-27', lastTopic: 'fees' };
   for (const question of ['DSE semester fees?', 'fees for 2025-26?', 'fees for 2026-29?', 'first year fees?']) {
     const result = resolveConversationalQuestion(question, chat, context);
-    assert.ok(result.startsWith(question));
+    assert.ok(result.startsWith(question.replace(/\?$/, '')));
     if (/2025|2026-29/.test(question)) assert.doesNotMatch(result, /2026-27/);
     if (/first year/.test(question)) assert.doesNotMatch(result, /DSE/);
   }
@@ -104,9 +106,19 @@ test('fee enrichment preserves original qualifiers and explicit exclusions', () 
 });
 
 test('public conversations reject further turns at the message bound without invoking the answer engine', async () => {
-  getDb().conversations.push({ id: 'FULL', ownerId: 'public', messages: Array(200).fill({ type: 'user', text: 'fees' }) });
+  getDb().conversations.push({ id: 'FULL', ownerId: 'public', publicSessionHash: publicSessionHash(session), expiresAt: new Date(Date.now()+60000).toISOString(), messages: Array(200).fill({ type: 'user', text: 'fees' }) });
   let called = false;
-  await assert.rejects(askPublicWithHistory({ question: 'fees?', conversationId: 'FULL' }, async () => { called = true; }), /conversation is full/);
+  await assert.rejects(askPublicWithHistory({ question: 'fees?', conversationId: 'FULL' }, async () => { called = true; }, session), /conversation is full/);
   assert.equal(called, false);
+});
+
+test('excluded profile values are cleared and explicit topic changes preserve their question', () => {
+  const previous = { category: 'OBC', gender: 'girls', branch: 'Computer Engineering', route: 'DSE', lastTopic: 'fees' };
+  const next = extractConversationContext('not OBC, not girls', previous);
+  assert.equal(next.category, undefined);
+  assert.equal(next.gender, undefined);
+  const chat = { messages: [{ type: 'user', text: 'fees' }] };
+  assert.equal(resolveConversationalQuestion('Tell me about the library.', chat, previous), 'Tell me about the library.');
+  assert.equal(resolveConversationalQuestion('What is the 2025-26 intake?', chat, previous), 'What is the 2025-26 intake for Computer Engineering?');
 });
 

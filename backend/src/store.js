@@ -113,6 +113,9 @@ export function saveDb() {
 export function getDb() {
   return loadDb();
 }
+export function checkStorageReady() {
+  return openDatabase().prepare('SELECT 1 AS ready').get().ready === 1;
+}
 
 export function closeDb() {
   if (sqlite) {

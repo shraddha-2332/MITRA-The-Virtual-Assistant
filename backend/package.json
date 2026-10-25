@@ -11,13 +11,15 @@
     "evaluate:public": "node --no-warnings=ExperimentalWarning scripts/evaluate-public-assistant.js",
     "evaluate:retrieval": "node --no-warnings=ExperimentalWarning scripts/compare-retrieval.js",
     "evaluate:verifiers": "node --no-warnings=ExperimentalWarning scripts/evaluate-verifiers.js",
+    "evaluate:load": "node --no-warnings=ExperimentalWarning scripts/evaluate-local-load.js",
     "prepare:retrieval-review": "node scripts/prepare-retrieval-review.js",
     "evaluate:paraphrases": "node --no-warnings=ExperimentalWarning scripts/evaluate-paraphrases.js",
     "check": "node --check src/server.js",
-    "backup": "node scripts/backup-data.js",
+    "backup": "node --env-file-if-exists=.env --no-warnings=ExperimentalWarning scripts/backup-data.js",
+    "provision:admin": "node --env-file-if-exists=.env --no-warnings=ExperimentalWarning scripts/provision-admin.js",
     "sync:website": "node --no-warnings=ExperimentalWarning scripts/sync-website.js"
   },
   "engines": {
-    "node": ">=20"
+    "node": ">=22.12 <23"
   }
 }

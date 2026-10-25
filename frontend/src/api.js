@@ -1,6 +1,8 @@
 import { createRefreshSession } from './refresh-session.mjs';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || '';
+// Production uses the same-origin Vite/Nginx/Vercel API proxy so Strict cookies
+// are first-party. Direct cross-site APIs would break browser session isolation.
+const API_BASE_URL = import.meta.env.DEV ? (import.meta.env.VITE_API_URL || '') : '';
 
 async function request(path, { token, method = 'GET', body } = {}) {
   const response = await fetch(`${API_BASE_URL}${path}`, {
@@ -15,7 +17,9 @@ async function request(path, { token, method = 'GET', body } = {}) {
   const payload = await response.json().catch(() => ({}));
   if (!response.ok) {
     const message = payload?.error?.message || 'MITRA API request failed.';
-    throw new Error(message);
+    const error = new Error(message);
+    error.status = response.status;
+    throw error;
   }
   return payload.data;
 }
@@ -59,7 +63,15 @@ export const api = {
   getConversation: (token, id) => request(`/api/conversations/${encodeURIComponent(id)}`, { token }),
   askInConversation: (token, question, conversationId) => request('/api/conversations/ask', { token, method: 'POST', body: { question, conversationId } }),
   askAssistant: (token, question) => request('/api/assistant/ask', { token, method: 'POST', body: { question } }),
-  askPublicAssistant: (question, language = 'auto', conversationId = null) => request('/api/public-assistant/ask', { method: 'POST', body: { question, language, conversationId } }),
+  askPublicAssistant: async (question, language = 'auto', conversationId = null) => {
+    try { return await request('/api/public-assistant/ask', { method: 'POST', body: { question, language, conversationId } }); }
+    catch (error) {
+      if (!conversationId || error.status !== 404) throw error;
+      const fresh = await request('/api/public-assistant/ask', { method: 'POST', body: { question, language } });
+      return { ...fresh, conversationReset: true };
+    }
+  },
+  resetPublicConversation: (conversationId) => request('/api/public-assistant/conversation', { method: 'DELETE', body: { conversationId } }),
   getAssistantAttachments: (token) => request('/api/assistant/attachments', { token }),
   uploadAssistantAttachment: (token, note, file) => {
     const formData = new FormData();

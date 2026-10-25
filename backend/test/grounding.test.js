@@ -290,3 +290,14 @@ test('verifySlotGrounding detects wrong-row tabular errors missed by token-level
   assert.strictEqual(multiRowRes.verified, true);
   assert.strictEqual(multiRowRes.status, 'SLOT_VERIFIED');
 });
+
+test('attribution rejects mixed swapped labels while preserving explicitly correct comparisons', () => {
+  const evidence = [{ id: 'KB-2', text: 'OBC girls INR 17,217, boys INR 61,109.', facts: { kind: 'academicFees', academicYear: '2026-27', firstYear: { concessionGirl: 17217, concessionBoy: 61109 } } }];
+  const slots = { category: 'OBC', gender: 'girls', route: 'First Year' };
+  assert.equal(verifySlotGrounding('OBC girls pay INR 61,109 and OBC boys pay INR 17,217.', slots, evidence).verified, false);
+  assert.equal(verifySlotGrounding('OBC girls pay INR 17,217 and OBC boys pay INR 61,109.', slots, evidence).verified, true);
+  assert.equal(verifyGeneratedAnswer('An additional fee is INR 500.', evidence).verified, false);
+  assert.equal(verifyGeneratedAnswer('The fee is INR 17,217 [99].', evidence).status, 'INVALID_CITATION');
+  assert.equal(verifyGeneratedAnswer('The fee is INR 17,217 [KB-UNKNOWN].', evidence).status, 'INVALID_CITATION');
+  assert.equal(verifyGeneratedAnswer('The fee is INR 17,217.', [{ ...evidence[0], status: 'Retired' }]).status, 'UNAVAILABLE_EVIDENCE');
+});

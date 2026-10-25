@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { publicAnswerLinks, resolvePublicSourceUrl } from '../src/public-answer-links.mjs';
+import { publicAnswerLinks, resolvePublicSourceUrl, matchesFeeSnapshot } from '../src/public-answer-links.mjs';
 
 test('old library links in existing answers are corrected and deduplicated', () => {
   const old = 'https://www.mitcorer.edu.in/about-lib-details.html';
@@ -8,6 +8,12 @@ test('old library links in existing answers are corrected and deduplicated', () 
   assert.deepEqual(publicAnswerLinks({ sourceUrl: old, officialLinks: [{ label: 'Library', url: current }] }), [{ label: 'Official source', url: current }]);
   assert.equal(resolvePublicSourceUrl('http://mitcorer.edu.in/about-lib-details.html'), current);
   assert.equal(resolvePublicSourceUrl('https://example.com/about-lib-details.html'), 'https://example.com/about-lib-details.html');
+});
+
+test('planner fee snapshots require exact maintained amounts and the archived academic year', () => {
+  assert.equal(matchesFeeSnapshot('firstYear', '2026-27', [105000, 61109, 17217, 17217, 8000]), true);
+  assert.equal(matchesFeeSnapshot('firstYear', '2027-28', [105000, 61109, 17217, 17217, 8000]), false);
+  assert.equal(matchesFeeSnapshot('firstYear', '2026-27', [105000, 61109, 17217, 18000, 8000]), false);
 });
 const passage = 'First Year Engineering fees for AY 2026-27 include Open or OMS total INR 1,05,000, Open EBC EWS OBC SEBC boys INR 61,109, girls INR 17,217, VJNT SBC TFWS INR 17,217, and SC ST INR 8,000. Direct Second Year fees include Open or OMS INR 98,000, Open EBC EWS OBC SEBC boys INR 58,181, girls INR 18,362, VJNT SBC TFWS INR 18,362, and SC ST INR 10,000.';
 test('provided fee snapshots are route-specific and disappear when maintained values or year change', () => {

@@ -11,6 +11,10 @@
 import crypto from 'node:crypto';
 import { config } from './config.js';
 import { getStoredVectors, saveStoredVector } from './store.js';
+import { usableKnowledge } from './provenance.js';
+
+const embeddingText = record => [record.title, record.category, ...(record.tags || []), record.text].join(' ').slice(0, 2048);
+export const embeddingRecordHash = record => computeContentHash(`${config.geminiEmbeddingModel}\n${embeddingText(record)}`);
 
 export function tokenize(text) {
   return String(text || '')
@@ -29,7 +33,7 @@ export function computeContentHash(text) {
  * Returns value between -1 and 1 (or 0 for zero-vectors).
  */
 export function cosineSimilarity(vecA, vecB) {
-  if (!Array.isArray(vecA) || !Array.isArray(vecB) || vecA.length === 0 || vecA.length !== vecB.length) {
+  if (!Array.isArray(vecA) || !Array.isArray(vecB) || vecA.length === 0 || vecA.length !== vecB.length || !vecA.every(Number.isFinite) || !vecB.every(Number.isFinite)) {
     return 0;
   }
   let dotProduct = 0;
@@ -68,28 +72,30 @@ export function resetVectorIndexForTests() {
 export async function fetchGeminiEmbedding(text, apiKey = config.geminiApiKey) {
   if (!apiKey || typeof text !== 'string' || !text.trim()) return null;
   const clean = text.trim().slice(0, 2048);
-  if (queryCache.has(clean)) {
-    return queryCache.get(clean);
+  const cacheKey = `${config.geminiEmbeddingModel}\n${clean}`;
+  if (queryCache.has(cacheKey)) {
+    return queryCache.get(cacheKey);
   }
 
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), 4000);
   try {
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/text-embedding-004:embedContent?key=${encodeURIComponent(apiKey)}`;
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(config.geminiEmbeddingModel)}:embedContent`;
     const res = await fetch(url, {
       method: 'POST',
       signal: controller.signal,
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', 'x-goog-api-key': apiKey },
       body: JSON.stringify({
-        model: 'models/text-embedding-004',
+        model: `models/${config.geminiEmbeddingModel}`,
         content: { parts: [{ text: clean }] },
       }),
     });
     if (!res.ok) return null;
     const data = await res.json();
     const values = data?.embedding?.values;
-    if (Array.isArray(values) && values.length > 0) {
-      queryCache.set(clean, values);
+    if (Array.isArray(values) && values.length > 0 && values.every(Number.isFinite)) {
+      if (queryCache.size >= 200) queryCache.delete(queryCache.keys().next().value);
+      queryCache.set(cacheKey, values);
       return values;
     }
   } catch {
@@ -110,8 +116,9 @@ export async function syncKnowledgeVectorIndex(records, apiKey = config.geminiAp
   let indexedCount = 0;
 
   for (const record of records) {
-    const text = [record.title, record.category, ...(record.tags || []), record.text].join(' ').slice(0, 2048);
-    const hash = computeContentHash(text);
+    if (!usableKnowledge(record)) continue;
+    const text = embeddingText(record);
+    const hash = embeddingRecordHash(record);
     const cached = index.get(record.id);
 
     if (cached && cached.hash === hash && Array.isArray(cached.vector)) {
@@ -150,7 +157,7 @@ export async function getSemanticVectorScores(query, records = [], apiKey = conf
   const scores = new Map();
   for (const record of records) {
     const entry = index.get(record.id);
-    if (!entry || !entry.vector) continue;
+    if (!usableKnowledge(record) || !entry || !entry.vector || entry.hash !== embeddingRecordHash(record)) continue;
     const similarity = cosineSimilarity(queryVector, entry.vector);
     if (similarity > 0.5) {
       const scaled = Math.min(20, Math.round((similarity - 0.5) * 40));
