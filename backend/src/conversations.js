@@ -2,8 +2,11 @@ import { getDb, saveDb } from './store.js';
 import { badRequest, notFound } from './errors.js';
 import { generateId, nowIso, pick } from './utils.js';
 import { understandQuery } from './query-understanding.js';
+import { config } from './config.js';
+import { publicSessionHash } from './public-session.js';
 
 const summary = (chat) => pick(chat, ['id', 'title', 'createdAt', 'updatedAt']);
+const withScope = (question, scope) => `${question.replace(/[?।]+$/u, '').trim()} ${scope}${/[?।]$/u.test(question) ? '?' : ''}`;
 
 export function getConversation(id, user) {
   const chat = getDb().conversations.find((item) => item.id === id && item.ownerId === user.id);
@@ -95,6 +98,14 @@ export function extractConversationContext(text, existingContext = {}) {
     context.lastTopic = 'facilities';
   }
 
+  // Explicit exclusions and multi-value questions do not establish a personal profile.
+  for (const [field, slot] of [['category', query.category], ['gender', query.gender], ['branch', query.branch], ['route', query.route]]) {
+    if (slot.excluded.length || slot.positive.length > 1) delete context[field];
+  }
+  if (query.category.excluded.length || query.category.mentions.length > 1) delete context.category;
+  if (/\b(?:not|no|except|excluding)\s+(?:tfws|cap|management|institute)/i.test(norm)) delete context.quota;
+  if (/\b(?:library|transport|bus|intake|choice code|courses?|programmes?|programs?)\b/.test(norm)
+    && !/\b(?:fee|fees|cost|tuition|concession)\b/.test(norm)) context.lastTopic = 'facilities';
   return context;
 }
 
@@ -111,17 +122,20 @@ export function resolveConversationalQuestion(question, chat, context = {}) {
   const isBareOrPronoun = /\b(?:it|this|that|there|they|them|its|same|tell me more|is it)\b/.test(norm)
     || /^(?:and|what about|how about|any|for)\b/.test(norm)
     || norm.split(/\s+/).length <= 4;
+  const currentQuery = understandQuery(question);
+  const explicitOtherTopic = currentQuery.topics.some(topic => ['library', 'transport', 'programmes', 'seatMatrix'].includes(topic))
+    && !currentQuery.topics.includes('academicFees');
 
   // Explicit exclusions must reach the scope parser unchanged; do not reuse a negated profile.
   if (/\b(?:not|no|except|excluding|instead)\b/.test(norm)) return question;
 
   // 1. Hostel & mess follow-ups
-  if (context.lastTopic === 'hostel' && !/\b(?:hostel|room)\b/.test(norm)) {
+  if (context.lastTopic === 'hostel' && isBareOrPronoun && !explicitOtherTopic && !/\b(?:hostel|room)\b/.test(norm)) {
     return `Hostel inquiry: ${question}`;
   }
 
   // 2. Fee follow-ups
-  if (!/\b(?:hostel|room|mess)\b/.test(norm) && (isBareOrPronoun && context.lastTopic === 'fees' || /\b(?:fee|fees|cost|tuition|charges|shulka|concession)\b/.test(norm))) {
+  if (!explicitOtherTopic && !/\b(?:hostel|room|mess)\b/.test(norm) && (isBareOrPronoun && context.lastTopic === 'fees' || /\b(?:fee|fees|cost|tuition|charges|shulka|concession)\b/.test(norm))) {
     // Enrich the original question instead of replacing qualifiers such as DSE,
     // academic year, semester, comparison, or installment requests.
     const query = understandQuery(question);
@@ -132,21 +146,21 @@ export function resolveConversationalQuestion(question, chat, context = {}) {
     if (!query.branch.positive.length && !query.branch.excluded.length && context.branch) additions.push(context.branch);
     if (!query.route.positive.length && !query.route.excluded.length && !/\bsecond year\b/.test(norm) && context.route) additions.push(context.route);
     if (!query.academicYears.length && !query.invalidYears.length && context.academicYear) additions.push(context.academicYear);
-    return additions.length ? `${question} (${additions.join(' ')})` : question;
+    return additions.length ? withScope(question, `(${additions.join(' ')})`) : question;
   }
 
   // 3. Intake / seats follow-ups (e.g. "what is the intake?", "how many seats?")
   if (/\b(?:intake|seats?|seat matrix|capacity)\b/.test(norm) && context.branch && !/\b(?:computer|mechanical|civil|railway|ai|data science|entc|electronics)\b/.test(norm)) {
-    return `What is the intake and seat capacity for ${context.branch}?`;
+    return withScope(question, `for ${context.branch}`);
   }
 
   // 4. Cutoff follow-ups (e.g. "what was the cutoff?", "last year cutoff?")
   if (/\b(?:cutoff|cut off|merit|percentile|rank)\b/.test(norm) && context.branch && !/\b(?:computer|mechanical|civil|railway|ai|data science|entc|electronics)\b/.test(norm)) {
-    return `What was the cutoff for ${context.branch}?`;
+    return withScope(question, `for ${context.branch}`);
   }
 
   // 5. Placement follow-ups (e.g. "highest package?", "top recruiters?", "average salary?")
-  if (context.lastTopic === 'placement' && !/\b(?:placement|package|recruiter)\b/.test(norm)) {
+  if (!explicitOtherTopic && context.lastTopic === 'placement' && !/\b(?:placement|package|recruiter)\b/.test(norm)) {
     if (context.branch && !/\b(?:computer|mechanical|civil|railway|ai|data science|entc|electronics)\b/.test(norm)) {
       return `Placement inquiry for ${context.branch}: ${question}`;
     }
@@ -154,8 +168,8 @@ export function resolveConversationalQuestion(question, chat, context = {}) {
   }
 
   // 6. Branch context fallback for short follow-ups
-  if (context.branch && isBareOrPronoun && !/\b(?:computer|mechanical|civil|railway|ai|data science|entc|electronics)\b/.test(norm)) {
-    return `${question} for ${context.branch}`;
+  if (!explicitOtherTopic && context.branch && isBareOrPronoun && !/\b(?:computer|mechanical|civil|railway|ai|data science|entc|electronics)\b/.test(norm)) {
+    return withScope(question, `for ${context.branch}`);
   }
 
   return question;
@@ -187,21 +201,48 @@ export async function askWithHistory(body, user, answerQuestion) {
   return { conversation: { ...summary(conversation), messages: conversation.messages, context: conversation.context } };
 }
 
-export async function askPublicWithHistory(body, answerQuestion) {
+export function prunePublicConversations(now = Date.now()) {
+  const db = getDb();
+  const before = (db.conversations || []).length;
+  db.conversations = (db.conversations || []).filter(chat => chat.ownerId !== 'public'
+    || chat.publicSessionHash && Number.isFinite(Date.parse(chat.expiresAt)) && Date.parse(chat.expiresAt) > now);
+  return before - db.conversations.length;
+}
+
+export function resetPublicConversation(id, sessionToken) {
+  const db = getDb();
+  const removed = prunePublicConversations();
+  const sessionHash = publicSessionHash(sessionToken);
+  const index = db.conversations.findIndex(chat => chat.id === id && chat.ownerId === 'public' && chat.publicSessionHash === sessionHash);
+  if (index < 0) {
+    if (removed) saveDb();
+    throw notFound('Conversation not found or expired.');
+  }
+  db.conversations.splice(index, 1);
+  saveDb();
+  return { deleted: true };
+}
+
+export async function askPublicWithHistory(body, answerQuestion, sessionToken) {
   if (typeof body?.question !== 'string' || !body.question.trim() || body.question.trim().length > 1000) {
     throw badRequest('Enter a question of up to 1000 characters.');
   }
   const question = body.question.trim();
   const db = getDb();
   db.conversations = db.conversations || [];
+  const removed = prunePublicConversations();
+  if (removed) saveDb();
+  const sessionHash = publicSessionHash(sessionToken);
 
   const conversationId = typeof body.conversationId === 'string' && body.conversationId.trim()
     ? body.conversationId.trim()
     : null;
 
   const chat = conversationId
-    ? db.conversations.find((item) => item.id === conversationId && item.ownerId === 'public')
+    ? db.conversations.find((item) => item.id === conversationId && item.ownerId === 'public' && item.publicSessionHash === sessionHash)
     : null;
+
+  if (conversationId && !chat) throw notFound('Conversation not found or expired.');
 
   if (chat && chat.messages.length >= 200) throw badRequest('This conversation is full. Start a new chat to continue.');
 
@@ -214,10 +255,16 @@ export async function askPublicWithHistory(body, answerQuestion) {
     context: updatedContext,
   }, null);
 
+  // Recheck after awaiting an external model: concurrent requests or a reset
+  // must not resurrect a deleted/expired conversation or exceed its bound.
+  if (chat && (!db.conversations.includes(chat) || Date.parse(chat.expiresAt) <= Date.now())) throw notFound('Conversation not found or expired.');
+  if (chat && chat.messages.length >= 200) throw badRequest('This conversation is full. Start a new chat to continue.');
+
   const now = nowIso();
   const conversation = chat || {
     id: generateId('CHAT'),
     ownerId: 'public',
+    publicSessionHash: sessionHash,
     title: question.replace(/\s+/g, ' ').slice(0, 80),
     createdAt: now,
     updatedAt: now,
@@ -237,6 +284,7 @@ export async function askPublicWithHistory(body, answerQuestion) {
     },
   );
   conversation.updatedAt = now;
+  conversation.expiresAt = new Date(Date.now() + config.publicConversationTtlMs).toISOString();
 
   if (!chat) {
     db.conversations.push(conversation);

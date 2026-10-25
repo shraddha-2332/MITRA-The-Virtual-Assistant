@@ -4,7 +4,9 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { config } from './config.js';
-import { askWithHistory, askPublicWithHistory, getConversation, listConversations } from './conversations.js';
+import { requestGeneration } from './generation-client.js';
+import { askWithHistory, askPublicWithHistory, getConversation, listConversations, resetPublicConversation, extractConversationContext, prunePublicConversations } from './conversations.js';
+import { readPublicSession, createPublicSession, publicSessionCookie } from './public-session.js';
 import { validateKnowledgeFields, buildMaintainedAnswer, academicFeeSelection, parseLegacyFactText, extractPublicFacts } from './knowledge.js';
 import { selectLanguage, localizeResponse, buildReviewedPassage } from './language.js';
 import { buildClarificationAnswer, buildCompoundAnswer, buildContextualPassage } from './question-plan.js';
@@ -14,7 +16,7 @@ import { resolveSourceUrl, sourceRecord, uniqueSourceLinks } from './source-link
 import { availability, usableKnowledge, validateProvenance, validateSupersession, confirmSourceReview, splitPassage } from './provenance.js';
 import { createRefreshToken, createToken, getBearerToken, hashPassword, hashToken, requireAuth, requireRole, verifyPassword, verifyToken, canAccessApplicantRecord } from './auth.js';
 import { badRequest, forbidden, HttpError, notFound, tooManyRequests, unauthorized } from './errors.js';
-import { getDb, loadDb, saveDb } from './store.js';
+import { getDb, loadDb, saveDb, checkStorageReady } from './store.js';
 import { generateId, jsonResponse, nowIso, pick, requireString } from './utils.js';
 import { verifyGeneratedAnswer, classifyAnswerOutcome, verifySlotGrounding } from './grounding.js';
 import { syncMonitoredWebsiteSources } from './website-sync.js';
@@ -22,18 +24,22 @@ import { computeConceptScore, getSemanticVectorScores, syncKnowledgeVectorIndex 
 
 const publicRoutes = new Set([
   'GET /api/health',
+  'GET /api/ready',
   'GET /api/public-facts',
   'POST /api/auth/login',
   'POST /api/auth/signup',
   'POST /api/auth/refresh',
   'POST /api/auth/logout',
   'POST /api/public-assistant/ask',
+  'DELETE /api/public-assistant/conversation',
   'POST /api/public/inquiries',
   'POST /api/public/escalate',
   'POST /api/public/feedback',
 ]);
 const allowedRoles = ['applicant', 'parent', 'staff', 'admin'];
 const authAttempts = new Map();
+const loginIpAttempts = new Map();
+const signupIpAttempts = new Map();
 const assistantAttempts = new Map();
 const publicAssistantAttempts = new Map();
 const uploadDir = path.resolve(process.cwd(), 'uploads');
@@ -58,6 +64,8 @@ const extensionByMimeType = {
 
 export function resetRuntimeStateForTests() {
   authAttempts.clear();
+  loginIpAttempts.clear();
+  signupIpAttempts.clear();
   assistantAttempts.clear();
   publicAssistantAttempts.clear();
 }
@@ -187,6 +195,7 @@ function parseMultipart(req, bodyBuffer) {
 }
 
 export function getClientIp(req) {
+  if (!config.trustProxy) return req.socket?.remoteAddress || 'unknown-client';
   const forwarded = req.headers['x-forwarded-for'];
   if (forwarded && typeof forwarded === 'string') {
     const clientIp = forwarded.split(',')[0].trim();
@@ -224,7 +233,8 @@ function getCookie(req, name) {
   const cookies = String(req.headers.cookie || '').split(';');
   const prefix = `${name}=`;
   const match = cookies.map((item) => item.trim()).find((item) => item.startsWith(prefix));
-  return match ? decodeURIComponent(match.slice(prefix.length)) : '';
+  if (!match) return '';
+  try { return decodeURIComponent(match.slice(prefix.length)); } catch { return ''; }
 }
 
 function refreshCookie(token, maxAgeSeconds) {
@@ -256,7 +266,8 @@ function issueSession(user) {
 
 function refreshSession(body, req) {
   const db = getDb();
-  const refreshToken = requireString(body.refreshToken || getCookie(req, 'mitra_refresh') || getCookie(req, 'campusguard_refresh'), 'refreshToken', 500);
+  const refreshToken = body.refreshToken || getCookie(req, 'mitra_refresh') || getCookie(req, 'campusguard_refresh');
+  if (typeof refreshToken !== 'string' || !refreshToken.trim() || refreshToken.length > 500) throw unauthorized('No valid refresh session.');
   const tokenHash = hashToken(refreshToken);
   const session = (db.refreshTokens || []).find((item) => item.tokenHash === tokenHash);
   if (!session || session.revoked || new Date(session.expiresAt).getTime() < Date.now()) {
@@ -327,6 +338,8 @@ function handleAuthSignup(body) {
   const name = requireString(body.name, 'name', 120);
   const email = requireString(body.email, 'email', 120).toLowerCase();
   const password = requireString(body.password, 'password', 200);
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) throw badRequest('Enter a valid email address.');
+  if (password.length < 12) throw badRequest('Use a password or passphrase of at least 12 characters.');
   const role = body.role || 'applicant';
   if (!allowedRoles.includes(role)) throw badRequest('Invalid role.');
   if (['staff', 'admin'].includes(role)) throw forbidden('Staff and admin accounts must be provisioned by college admin.');
@@ -1586,13 +1599,8 @@ function buildNoAnswerSuggestions(normalized) {
 async function generateWithGemini(question, routedAnswer, evidence) {
   if (!config.geminiApiKey || evidence.length === 0) return null;
   const evidenceText = evidence.map((item, index) => `[${index + 1}] ${item.title} (${item.source}): ${item.text}`).join('\n\n');
-  const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 15000);
-  try {
-    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(config.geminiModel)}:generateContent`, {
-      method: 'POST', signal: controller.signal,
-      headers: { 'x-goog-api-key': config.geminiApiKey, 'Content-Type': 'application/json' },
-      body: JSON.stringify({
+  return requestGeneration({ apiKey: config.geminiApiKey, primaryModel: config.geminiModel,
+    fallbackModel: config.geminiFallbackModel, body: {
         // FIX #1 — Rich system prompt with college identity, tone, citation rules, and language guidance.
         systemInstruction: {
           parts: [{
@@ -1619,16 +1627,7 @@ MITCORER is an MIT Group college with a unique focus on railway engineering alon
           parts: [{ text: `Student question: ${question}\n\nVerified official evidence:\n${evidenceText}\n\nAnswer the student's question warmly and accurately using only the evidence above.` }],
         }],
         generationConfig: { temperature: 0.2, maxOutputTokens: 420 },
-      }),
-    });
-    if (!response.ok) return null;
-    const text = (await response.json())?.candidates?.[0]?.content?.parts?.map((part) => part.text || '').join('').trim();
-    return text && !text.startsWith('INSUFFICIENT_EVIDENCE') ? text : null;
-  } catch {
-    return null;
-  } finally {
-    clearTimeout(timeout);
-  }
+      } });
 }
 
 export function generateQuerySuggestions(question, normalized) {
@@ -1729,7 +1728,7 @@ export async function answerAdmissionQuestion(body, user) {
     throw badRequest('Enter a question of up to 1000 characters.');
   }
   const question = body.question.trim();
-  const context = body.context && typeof body.context === 'object' && !Array.isArray(body.context) ? body.context : {};
+  const context = extractConversationContext(question, body.context && typeof body.context === 'object' && !Array.isArray(body.context) ? body.context : {});
   const queryScope = understandQuery(question);
   const language = selectLanguage(question, body.language);
   const normalized = normalizeIntentText(question);
@@ -1747,14 +1746,15 @@ export async function answerAdmissionQuestion(body, user) {
       escalation: {
         available: true,
         reason: 'UNVERIFIED_INFORMATION',
-        message: 'This question does not have a verified published record. You can escalate directly to our human admissions counselors.',
+        department: 'administrative_office',
+        message: 'Staff recruitment, faculty vacancies, and employment inquiries are handled directly by the Administrative Office and Principal Desk. MITRA does not maintain live staff vacancy notices.',
         helplines: [
-          { label: 'Admissions Office Desk 1', number: '+91 84599 67882', tel: '+918459967882' },
-          { label: 'Admissions Office Desk 2', number: '+91 86696 62106', tel: '+918669662106' },
+          { label: 'Administrative Office', number: '02184-222222', tel: '02184222222' },
+          { label: 'Principal Office Desk', number: '02184-222223', tel: '02184222223' },
         ],
-        email: 'info.mitcorer@mitpune.edu.in',
+        email: 'office@mitcorer.edu.in',
         officeHours: 'Monday to Saturday, 9:30 AM to 5:30 PM IST',
-        actionLabel: 'Escalate to Admissions Staff',
+        actionLabel: 'Escalate to Administrative Office',
       },
       suggestions: buildNoAnswerSuggestions(normalized),
     };
@@ -1789,7 +1789,8 @@ export async function answerAdmissionQuestion(body, user) {
   const criticalFactQuery = queryScope.topics.some(topic => ['academicFees', 'accommodationFees', 'programmes', 'seatMatrix'].includes(topic));
   if (language === 'en' && !criticalFactQuery && isAdvisoryQuestion(normalized) && retrievedEvidence.length > 0 && retrievedEvidence[0].score >= 5) {
     const advisoryEvidence = retrievedEvidence.slice(0, 3).map(sourceRecord);
-    const rawAdvisory = await generateWithGemini(question, null, advisoryEvidence);
+    const advisoryDraft = await generateWithGemini(question, null, advisoryEvidence);
+    const rawAdvisory = advisoryDraft?.text;
     if (rawAdvisory) {
       const advisoryVerification = verifySlotGrounding(rawAdvisory, context, advisoryEvidence);
       if (advisoryVerification.verified) {
@@ -1804,7 +1805,7 @@ export async function answerAdmissionQuestion(body, user) {
           answer: rawAdvisory.replace(/CampusGuard/gi, 'the assistant'),
           evidence: advisoryEvidence.map((r) => publicEvidence(r, Date.now())),
           officialLinks: uniqueSourceLinks(advisoryOfficialLinks),
-          model: config.geminiModel,
+          model: advisoryDraft.model,
           outcomeStatus: 'ANSWERED',
           next: '',
         }, language, normalized, [], academicFeeSelection, parseLegacyFactText);
@@ -1827,12 +1828,15 @@ export async function answerAdmissionQuestion(body, user) {
   // The LLM is deliberately not allowed to replace verified admissions answers.
   // It is evaluated against evidence tokens and verified before acceptance.
   let generated = null;
+  let generatedModel = config.geminiModel;
   if (language === 'en' && !answer.managedRecordId && !answer.composed && !answer.clarification && answer.source === 'No verified record' && evidence.length) {
-    const rawGenerated = await generateWithGemini(question, answer, evidence.slice(0, 2));
+    const generationDraft = await generateWithGemini(question, answer, evidence.slice(0, 2));
+    const rawGenerated = generationDraft?.text;
     if (rawGenerated) {
       const verification = verifySlotGrounding(rawGenerated, context, evidence.slice(0, 2));
       if (verification.verified) {
         generated = rawGenerated;
+        generatedModel = generationDraft.model;
       }
     }
   }
@@ -1870,7 +1874,7 @@ export async function answerAdmissionQuestion(body, user) {
         sourceUrl: answer.composed ? '' : resolveSourceUrl(answer.sourceUrl || evidence[0].sourceUrl),
         evidence: evidence.map(record => publicEvidence(record, freshnessAt)),
         officialLinks,
-        model: generated ? config.geminiModel : 'deterministic-rag-fallback',
+        model: generated ? generatedModel : 'deterministic-rag-fallback',
         outcomeStatus: effectiveOutcome,
       }
     : { ...answer, answer: answer.answer.replace(/CampusGuard/gi, 'the assistant'), evidence: [], officialLinks, model: 'deterministic-rag-fallback', outcomeStatus };
@@ -1886,18 +1890,35 @@ export async function answerAdmissionQuestion(body, user) {
     || groundedAnswer.answer.includes('could not find an official answer')
     || groundedAnswer.answer.includes('could not find a published official record');
   if (isUnverified) {
-    groundedAnswer.escalation = {
-      available: true,
-      reason: 'UNVERIFIED_INFORMATION',
-      message: 'This question does not have a verified published record. You can escalate directly to our human admissions counselors.',
-      helplines: [
-        { label: 'Admissions Office Desk 1', number: '+91 84599 67882', tel: '+918459967882' },
-        { label: 'Admissions Office Desk 2', number: '+91 86696 62106', tel: '+918669662106' },
-      ],
-      email: 'info.mitcorer@mitpune.edu.in',
-      officeHours: 'Monday to Saturday, 9:30 AM to 5:30 PM IST',
-      actionLabel: 'Escalate to Admissions Staff',
-    };
+    const isEmployment = isEmploymentQuery(question) || isEmploymentQuery(normalized);
+    if (isEmployment) {
+      groundedAnswer.escalation = {
+        available: true,
+        reason: 'UNVERIFIED_INFORMATION',
+        department: 'administrative_office',
+        message: 'Staff recruitment, faculty vacancies, and employment inquiries are handled directly by the Administrative Office and Principal Desk. MITRA does not maintain live staff vacancy notices.',
+        helplines: [
+          { label: 'Administrative Office', number: '02184-222222', tel: '02184222222' },
+          { label: 'Principal Office Desk', number: '02184-222223', tel: '02184222223' },
+        ],
+        email: 'office@mitcorer.edu.in',
+        officeHours: 'Monday to Saturday, 9:30 AM to 5:30 PM IST',
+        actionLabel: 'Escalate to Administrative Office',
+      };
+    } else {
+      groundedAnswer.escalation = {
+        available: true,
+        reason: 'UNVERIFIED_INFORMATION',
+        message: 'This question does not have a verified published record. You can escalate directly to our human admissions counselors.',
+        helplines: [
+          { label: 'Admissions Office Desk 1', number: '+91 84599 67882', tel: '+918459967882' },
+          { label: 'Admissions Office Desk 2', number: '+91 86696 62106', tel: '+918669662106' },
+        ],
+        email: 'info.mitcorer@mitpune.edu.in',
+        officeHours: 'Monday to Saturday, 9:30 AM to 5:30 PM IST',
+        actionLabel: 'Escalate to Admissions Staff',
+      };
+    }
   }
   groundedAnswer.suggestions = generateQuerySuggestions(question, normalized);
   if ((!groundedAnswer.suggestions || groundedAnswer.suggestions.length === 0) && isUnverified) {
@@ -2320,11 +2341,22 @@ async function handleApi(req) {
   if (req.method === 'GET' && url.pathname === '/api/health') {
     return { status: 'ok', service: 'mitra-backend', time: nowIso() };
   }
+  if (req.method === 'GET' && url.pathname === '/api/ready') {
+    try { if (!checkStorageReady()) throw new Error('Storage not ready'); }
+    catch { throw new HttpError(503, 'NOT_READY', 'Storage is unavailable.'); }
+    return { status: 'ready', service: 'mitra-backend' };
+  }
   if (req.method === 'GET' && url.pathname === '/api/public-facts') {
     return extractPublicFacts(getDb().knowledge || []);
   }
-  if (req.method === 'POST' && url.pathname === '/api/auth/login') return handleAuthLogin(body);
-  if (req.method === 'POST' && url.pathname === '/api/auth/signup') return handleAuthSignup(body);
+  if (req.method === 'POST' && url.pathname === '/api/auth/login') {
+    enforceRateLimit(loginIpAttempts, getClientIp(req), 30, 60_000);
+    return handleAuthLogin(body);
+  }
+  if (req.method === 'POST' && url.pathname === '/api/auth/signup') {
+    enforceRateLimit(signupIpAttempts, getClientIp(req), 5, 60_000);
+    return handleAuthSignup(body);
+  }
   if (req.method === 'POST' && url.pathname === '/api/auth/refresh') return refreshSession(body, req);
   if (req.method === 'POST' && url.pathname === '/api/auth/logout') return logoutSession(body, req);
   if (req.method === 'GET' && url.pathname === '/api/me') return { user: sanitizeUser(requireAuth(context)) };
@@ -2335,7 +2367,15 @@ async function handleApi(req) {
   if (req.method === 'POST' && url.pathname === '/api/public-assistant/ask') {
     const clientKey = getClientIp(req);
     enforceRateLimit(publicAssistantAttempts, clientKey, config.publicAssistantRateLimitMax, 60_000);
-    return askPublicWithHistory(body, answerAdmissionQuestion);
+    const session = readPublicSession(req) || createPublicSession();
+    const result = await askPublicWithHistory(body, answerAdmissionQuestion, session);
+    return { ...result, __publicSessionCookie: publicSessionCookie(session) };
+  }
+  if (req.method === 'DELETE' && url.pathname === '/api/public-assistant/conversation') {
+    const session = readPublicSession(req);
+    if (!session) throw notFound('Conversation not found or expired.');
+    if (typeof body.conversationId !== 'string') throw badRequest('A conversation ID is required.');
+    return resetPublicConversation(body.conversationId, session);
   }
   if (req.method === 'POST' && (url.pathname === '/api/public/inquiries' || url.pathname === '/api/public/escalate')) {
     const clientKey = getClientIp(req);
@@ -2427,13 +2467,19 @@ async function handleApi(req) {
 
 export function createServer() {
   loadDb();
+  if (prunePublicConversations()) saveDb();
   if (config.geminiApiKey && config.geminiApiKey !== 'test-unused-key' && process.env.NODE_ENV !== 'test') {
     syncKnowledgeVectorIndex(getDb().knowledge, config.geminiApiKey).catch(() => {});
   }
-  return http.createServer(async (req, res) => {
+  const server = http.createServer(async (req, res) => {
     const requestId = generateId('REQ');
+    const requestStarted = performance.now();
+    if (config.nodeEnv === 'production' || process.env.LOG_REQUESTS === 'true') {
+      res.once('finish', () => console.log(JSON.stringify({ event: 'http_request', requestId,
+        method: req.method, status: res.statusCode, durationMs: Math.round((performance.now() - requestStarted) * 100) / 100 })));
+    }
     res.setHeader('X-Request-Id', requestId);
-    if (req.url.startsWith('/api/conversations')) res.setHeader('Cache-Control', 'private, no-store');
+    if (req.url.startsWith('/api/conversations') || req.url.startsWith('/api/public-assistant')) res.setHeader('Cache-Control', 'private, no-store');
     attachCors(req, res);
     if (req.method === 'OPTIONS') {
       res.writeHead(204);
@@ -2457,7 +2503,8 @@ export function createServer() {
       } else if (payload?.clearRefreshCookie) {
         res.setHeader('Set-Cookie', refreshCookie('', 0));
       }
-      const { refreshToken, clearRefreshCookie, ...responsePayload } = payload || {};
+      if (payload?.__publicSessionCookie) res.setHeader('Set-Cookie', payload.__publicSessionCookie);
+      const { refreshToken, clearRefreshCookie, __publicSessionCookie, ...responsePayload } = payload || {};
       jsonResponse(res, 200, { data: responsePayload });
     } catch (error) {
       const status = error instanceof HttpError ? error.status : 500;
@@ -2466,6 +2513,13 @@ export function createServer() {
       jsonResponse(res, status, { error: { code, message } });
     }
   });
+  const cleanup = setInterval(() => {
+    try { if (prunePublicConversations()) saveDb(); }
+    catch { console.error(JSON.stringify({ event: 'public_history_cleanup_failed' })); }
+  }, 60_000);
+  cleanup.unref();
+  server.once('close', () => clearInterval(cleanup));
+  return server;
 }
 
 const currentFile = fileURLToPath(import.meta.url);

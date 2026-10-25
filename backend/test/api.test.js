@@ -31,10 +31,10 @@ async function request(base, path, options = {}) {
   return { response, payload };
 }
 
-async function login(base, email) {
+async function login(base, email, password = 'mitra') {
   const { payload } = await request(base, '/api/auth/login', {
     method: 'POST',
-    body: JSON.stringify({ email, password: 'mitra' }),
+    body: JSON.stringify({ email, password }),
   });
   return payload.data.token;
 }
@@ -561,13 +561,13 @@ test('assistant answers engineering attendance from verified university rules', 
 
 test('history is private to each account, including staff and admin, and requires authentication', async () => {
   await withServer(async (base) => {
-    const signup = await request(base, '/api/auth/signup', { method: 'POST', body: JSON.stringify({ name: 'Second applicant', email: 'second-applicant@example.com', password: 'mitra', role: 'applicant' }) });
+    const signup = await request(base, '/api/auth/signup', { method: 'POST', body: JSON.stringify({ name: 'Second applicant', email: 'second-applicant@example.com', password: 'isolated-test-passphrase', role: 'applicant' }) });
     assert.equal(signup.response.status, 200);
     const accounts = ['applicant@example.com', 'second-applicant@example.com', 'parent@example.com', 'staff@mitcorer.edu.in', 'admin@mitcorer.edu.in'];
     const tokens = [];
     const ids = [];
     for (const email of accounts) {
-      const token = await login(base, email);
+      const token = await login(base, email, email === 'second-applicant@example.com' ? 'isolated-test-passphrase' : 'mitra');
       tokens.push(token);
       const created = await request(base, '/api/conversations/ask', { method: 'POST', headers: { Authorization: `Bearer ${token}` }, body: JSON.stringify({ question: 'bus facility?', ownerId: 'USR-ADM' }) });
       assert.equal(created.response.status, 200);
@@ -1213,7 +1213,7 @@ test('assistant rate limit protects the verified-answer endpoint', async () => {
   await withServer(async (base) => {
     const signup = await request(base, '/api/auth/signup', {
       method: 'POST',
-      body: JSON.stringify({ name: 'Rate Limit Test', email: 'ratelimit@example.com', password: 'mitra', role: 'applicant' }),
+      body: JSON.stringify({ name: 'Rate Limit Test', email: 'ratelimit@example.com', password: 'isolated-test-passphrase', role: 'applicant' }),
     });
     const token = signup.payload.data.token;
     for (let index = 0; index < 30; index += 1) {
@@ -1503,6 +1503,8 @@ test('staff hiring and employment queries are treated as unverified and trigger 
       assert.ok(payload.data.escalation, `Escalation should be attached for: ${question}`);
       assert.equal(payload.data.escalation.available, true);
       assert.equal(payload.data.escalation.reason, 'UNVERIFIED_INFORMATION');
+      assert.equal(payload.data.escalation.email, 'office@mitcorer.edu.in');
+      assert.equal(payload.data.escalation.actionLabel, 'Escalate to Administrative Office');
       assert.ok(payload.data.escalation.helplines?.length > 0);
     }
   });

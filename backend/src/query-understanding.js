@@ -19,8 +19,10 @@ function oneEdit(left, right) {
 }
 export function isEmploymentQuery(text) {
   const norm = String(text || '').normalize('NFKC').toLowerCase();
-  const hasJobTerms = /\b(?:hiring|recruitment|recruiting|vacancy|vacancies|job openings?|work with us|careers? at (?:mitcorer|mit|the college)|faculty recruitment|staff recruitment|teacher recruitment)\b/i.test(norm)
-    || /\b(?:भरती|नोकरीसाठी अर्ज|रिक्त\s*जागा|प्राध्यापक\s*भरती|शिक्षक\s*भरती|कर्मचारी\s*भरती|नौकरी\s*के\s*लिए|शिक्षक\s*भर्ती)\b/iu.test(norm);
+  const hasDevanagariJob = /(?:भरती|भर्ती|नोकरीसाठी|रिक्त\s*जागा|नोकरी\s*के\s*लिए|रिक्त\s*पदों|अध्यापक|कर्मचारी\s*भरती|शिक्षक\s*भरती|शिक्षक\s*भर्ती|प्राध्यापक\s*भरती)/u.test(norm);
+  if (hasDevanagariJob) return true;
+
+  const hasJobTerms = /\b(?:hiring|recruitment|recruiting|vacancy|vacancies|job openings?|work with us|careers? at (?:mitcorer|mit|the college)|faculty recruitment|staff recruitment|teacher recruitment)\b/i.test(norm);
   const hasStaffRole = /\b(?:faculty|teacher|teachers|professor|professors|staff|teaching|non[- ]teaching|lecturer|lecturers|assistant professor|instructor|clerk|peon|employee|employees)\b/i.test(norm);
   const hasEmploymentAction = /\b(?:apply for (?:a )?(?:job|post)|apply for teaching|apply for faculty|apply for staff|how to apply for.*(?:job|post|vacancy)|job application|staff hiring|faculty hiring|teacher hiring|recruitment process of (?:faculty|staff|teachers?)|staff recruitment)\b/i.test(norm);
 

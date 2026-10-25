@@ -8,6 +8,54 @@
  */
 
 import { availability } from './provenance.js';
+import { understandQuery } from './query-understanding.js';
+
+// Bounded English clause attribution. Ambiguous prose is rejected rather than
+// treating a correct number elsewhere in the answer as proof of this claim.
+function verifyAmountBindings(text, slots, evidence) {
+  const clauses = text.split(/\s+(?:and|but|while|whereas)\s+(?=(?:for\s+)?(?:open|oms|obc|ebc|ews|sebc|sc|st|vjnt|sbc|tfws|boys?|girls?|hostel|mess|deposit)\b)|[;\n]|[.!?](?:\s+|$)/i);
+  for (const clause of clauses) {
+    const query = understandQuery(clause);
+    const tokens = extractFactualTokens(clause).numbers;
+    for (const record of evidence) {
+      const facts = record.facts;
+      if (!facts) continue;
+      if (facts.kind === 'academicFees') {
+        const all = [...Object.values(facts.firstYear || {}), ...Object.values(facts.directSecondYear || {})].map(String);
+        const amounts = [...tokens].filter(value => all.includes(value));
+        if (!amounts.length) continue;
+        if (amounts.length > 1 || query.category.positive.length > 1 || query.gender.positive.length > 1 || query.route.positive.length > 1) {
+          return { verified: false, status: 'AMBIGUOUS_STRUCTURED_CLAIM' };
+        }
+        const localCategory = clause.match(/\b(open|oms|obc|ebc|ews|sebc|sc|st|vjnt|nt|sbc|tfws)\b/i)?.[1]?.toUpperCase();
+        const cat = localCategory || String(slots.category || slots.quota || '').toUpperCase();
+        const gender = query.gender.positive[0] || (/^(?:girl|girls|female)$/i.test(slots.gender || '') ? 'girl' : /^(?:boy|boys|male)$/i.test(slots.gender || '') ? 'boy' : null);
+        let key;
+        if (['OPEN', 'OMS'].includes(cat)) key = 'open';
+        else if (['SC', 'ST'].includes(cat)) key = 'scst';
+        else if (['VJNT', 'NT', 'SBC', 'TFWS'].includes(cat)) key = 'vjnt';
+        else if (['OBC', 'EBC', 'EWS', 'SEBC'].includes(cat) && gender) key = gender === 'girl' ? 'concessionGirl' : 'concessionBoy';
+        if (!key) return { verified: false, status: 'AMBIGUOUS_STRUCTURED_CLAIM' };
+        const route = query.route.positive[0] || (/dse|direct.?second/i.test(slots.route || slots.yearLevel || '') ? 'directSecondYear' : /first.?year/i.test(slots.route || slots.yearLevel || '') ? 'firstYear' : null);
+        const tables = route ? [facts[route]] : [facts.firstYear, facts.directSecondYear];
+        if (!tables.some(table => table && String(table[key]) === amounts[0])) {
+          return { verified: false, status: 'WRONG_SLOT_ERROR', reason: 'An amount contradicts its clause category, gender or admission route.' };
+        }
+      }
+      if (facts.kind === 'accommodationFees') {
+        const values = [facts.hostel, facts.refundableDeposit, facts.messAnnual].map(String);
+        const amounts = [...tokens].filter(value => values.includes(value));
+        if (!amounts.length) continue;
+        if (amounts.length > 1) return { verified: false, status: 'AMBIGUOUS_STRUCTURED_CLAIM' };
+        const service = /\bdeposit\b/i.test(clause) ? 'refundableDeposit' : /\bmess\b/i.test(clause) ? 'messAnnual' : /\bhostel\b/i.test(clause) ? 'hostel' : null;
+        if (service && String(facts[service]) !== amounts[0]) {
+          return { verified: false, status: 'WRONG_SLOT_ERROR', reason: 'An amount contradicts its clause service label.' };
+        }
+      }
+    }
+  }
+  return { verified: true, status: 'SLOT_VERIFIED' };
+}
 
 // Normalize numeric string by stripping commas, currency symbols, and whitespace
 export function normalizeNumber(token) {
@@ -45,6 +93,9 @@ export function extractFactualTokens(text) {
   }
 
   // 4. Currency amounts and significant numbers (e.g. INR 1,05,000, 35,000, 98000)
+  for (const match of content.matchAll(/(?:\b(?:inr|rs\.?)|₹)\s*(\d[\d,]*(?:\.\d+)?)/gi)) {
+    tokens.numbers.add(normalizeNumber(match[1]));
+  }
   for (const match of content.matchAll(/(?:inr|rs\.?|₹)?\s*(\b\d{1,3}(?:,\d{2,3})+(?:\.\d+)?|\b\d{4,7}\b)/gi)) {
     const clean = normalizeNumber(match[1]);
     // Filter out calendar years (2020-2035) from pure fee numbers
@@ -194,6 +245,18 @@ export function verifyGeneratedAnswer(generatedText, evidenceList) {
   }
   if (!Array.isArray(evidenceList) || evidenceList.length === 0) {
     return { verified: false, status: 'NO_EVIDENCE' };
+  }
+  if (evidenceList.some(record => record.status && availability(record) !== 'available')) {
+    return { verified: false, status: 'UNAVAILABLE_EVIDENCE' };
+  }
+  for (const match of generatedText.matchAll(/\[(\d+)\]/g)) {
+    const index = Number(match[1]);
+    if (!Number.isSafeInteger(index) || index < 1 || index > evidenceList.length) {
+      return { verified: false, status: 'INVALID_CITATION' };
+    }
+  }
+  for (const match of generatedText.matchAll(/\[((?:KB|SRC)-[^\]]+)\]/g)) {
+    if (!evidenceList.some(record => record.id === match[1] || record.citationId === match[1])) return { verified: false, status: 'INVALID_CITATION' };
   }
 
   // 1. Prohibited promissory claim detection
@@ -487,5 +550,5 @@ export function verifySlotGrounding(generatedText, slots = {}, evidenceList = []
     }
   }
 
-  return { verified: true, status: 'SLOT_VERIFIED' };
+  return verifyAmountBindings(generatedText, slots, evidenceList);
 }

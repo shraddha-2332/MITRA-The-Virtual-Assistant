@@ -1,0 +1,360 @@
+[
+  {
+    "id": "P30-EN-01",
+    "language": "en",
+    "domain": "fees",
+    "answerability": "ANSWERABLE",
+    "question": "What is the approved annual fee for Open category students in First Year B.Tech for AY 2026-27?",
+    "requiredFacts": [
+      "1,05,000",
+      "2026-27"
+    ],
+    "expectedSourceId": "KB-2",
+    "expectedOutcome": "ANSWERED"
+  },
+  {
+    "id": "P30-EN-02",
+    "language": "en",
+    "domain": "fees",
+    "answerability": "ANSWERABLE",
+    "question": "How much fee is applicable for OBC boys in Direct Second Year (DSE) engineering?",
+    "requiredFacts": [
+      "58,181"
+    ],
+    "expectedSourceId": "KB-2",
+    "expectedOutcome": "ANSWERED"
+  },
+  {
+    "id": "P30-EN-03",
+    "language": "en",
+    "domain": "intake",
+    "answerability": "ANSWERABLE",
+    "question": "What is the sanctioned intake and choice code for Computer Science and Engineering?",
+    "requiredFacts": [
+      "120",
+      "0690124210"
+    ],
+    "expectedSourceId": "KB-10",
+    "expectedOutcome": "ANSWERED"
+  },
+  {
+    "id": "P30-EN-04",
+    "language": "en",
+    "domain": "hostel",
+    "answerability": "ANSWERABLE",
+    "question": "What are the hostel charges and refundable deposit for staying on campus?",
+    "requiredFacts": [
+      "35,000",
+      "5,000",
+      "40,000"
+    ],
+    "expectedSourceId": "KB-3",
+    "expectedOutcome": "ANSWERED"
+  },
+  {
+    "id": "P30-EN-05",
+    "language": "en",
+    "domain": "library",
+    "answerability": "ANSWERABLE",
+    "question": "What facilities and resources are available in the college library?",
+    "requiredFacts": [
+      "library",
+      "digital resources",
+      "journals"
+    ],
+    "expectedSourceId": "KB-20",
+    "expectedOutcome": "ANSWERED"
+  },
+  {
+    "id": "P30-EN-06",
+    "language": "en",
+    "domain": "eligibility",
+    "answerability": "ANSWERABLE",
+    "question": "What are the eligibility criteria for First Year B.Tech admissions for general category?",
+    "requiredFacts": [
+      "45 percent",
+      "Physics",
+      "Mathematics"
+    ],
+    "expectedSourceId": "KB-5",
+    "expectedOutcome": "ANSWERED"
+  },
+  {
+    "id": "P30-EN-07",
+    "language": "en",
+    "domain": "placement",
+    "answerability": "ANSWERABLE",
+    "question": "What is the highest and average salary package offered during campus placements?",
+    "requiredFacts": [
+      "21 LPA",
+      "4.4 LPA"
+    ],
+    "expectedSourceId": "KB-16",
+    "expectedOutcome": "ANSWERED"
+  },
+  {
+    "id": "P30-EN-08",
+    "language": "en",
+    "domain": "hiring",
+    "answerability": "UNANSWERABLE",
+    "question": "What is the staff hiring process and current faculty vacancy at MITCORER?",
+    "requiredFacts": [],
+    "expectedTargetDesk": "administrative_office",
+    "expectedOutcome": "INSUFFICIENT_EVIDENCE"
+  },
+  {
+    "id": "P30-EN-09",
+    "language": "en",
+    "domain": "facilities",
+    "answerability": "UNANSWERABLE",
+    "question": "Does the college have an Olympic-size swimming pool on campus?",
+    "requiredFacts": [],
+    "expectedTargetDesk": "admissions_desk",
+    "expectedOutcome": "INSUFFICIENT_EVIDENCE"
+  },
+  {
+    "id": "P30-EN-10",
+    "language": "en",
+    "domain": "fees",
+    "answerability": "AMBIGUOUS",
+    "question": "What is the fee?",
+    "requiredFacts": [],
+    "expectedOutcome": "CLARIFICATION"
+  },
+  {
+    "id": "P30-MR-01",
+    "language": "mr",
+    "domain": "fees",
+    "answerability": "ANSWERABLE",
+    "question": "शैक्षणिक वर्ष २०२६-२७ साठी प्रथम वर्ष B.Tech ओपन प्रवर्गाची फी किती आहे?",
+    "requiredFacts": [
+      "1,05,000"
+    ],
+    "expectedSourceId": "KB-2",
+    "expectedOutcome": "ANSWERED"
+  },
+  {
+    "id": "P30-MR-02",
+    "language": "mr",
+    "domain": "fees",
+    "answerability": "ANSWERABLE",
+    "question": "थेट दुसऱ्या वर्ष (DSE) प्रवेशासाठी VJNT आणि TFWS प्रवर्गातील विद्यार्थ्यांना किती शुल्क भरावे लागते?",
+    "requiredFacts": [
+      "18,362"
+    ],
+    "expectedSourceId": "KB-2",
+    "expectedOutcome": "ANSWERED"
+  },
+  {
+    "id": "P30-MR-03",
+    "language": "mr",
+    "domain": "intake",
+    "answerability": "ANSWERABLE",
+    "question": "संगणक विज्ञान आणि अभियांत्रिकी (CSE) शाखेची मंजूर प्रवेश क्षमता आणि चॉईस कोड काय आहे?",
+    "requiredFacts": [
+      "120",
+      "0690124210"
+    ],
+    "expectedSourceId": "KB-10",
+    "expectedOutcome": "ANSWERED"
+  },
+  {
+    "id": "P30-MR-04",
+    "language": "mr",
+    "domain": "hostel",
+    "answerability": "ANSWERABLE",
+    "question": "महाविद्यालयाचे वसतिगृह शुल्क, अनामत ठेव आणि मेसचा वार्षिक खर्च किती आहे?",
+    "requiredFacts": [
+      "35,000",
+      "5,000",
+      "40,000"
+    ],
+    "expectedSourceId": "KB-3",
+    "expectedOutcome": "ANSWERED"
+  },
+  {
+    "id": "P30-MR-05",
+    "language": "mr",
+    "domain": "library",
+    "answerability": "ANSWERABLE",
+    "question": "ग्रंथालय सुविधा आणि डिजिटल संसाधने याबद्दल माहिती काय आहे?",
+    "requiredFacts": [
+      "library",
+      "digital resources"
+    ],
+    "expectedSourceId": "KB-20",
+    "expectedOutcome": "ANSWERED"
+  },
+  {
+    "id": "P30-MR-06",
+    "language": "mr",
+    "domain": "eligibility",
+    "answerability": "ANSWERABLE",
+    "question": "प्रथम वर्ष बी.टेक प्रवेशासाठी पात्रता निकष काय आहेत?",
+    "requiredFacts": [
+      "45 percent",
+      "Physics"
+    ],
+    "expectedSourceId": "KB-5",
+    "expectedOutcome": "ANSWERED"
+  },
+  {
+    "id": "P30-MR-07",
+    "language": "mr",
+    "domain": "placement",
+    "answerability": "ANSWERABLE",
+    "question": "कॅम्पस प्लेसमेंटमध्ये सर्वोच्च आणि सरासरी पॅकेज किती मिळाले आहे?",
+    "requiredFacts": [
+      "21 LPA",
+      "4.4 LPA"
+    ],
+    "expectedSourceId": "KB-16",
+    "expectedOutcome": "ANSWERED"
+  },
+  {
+    "id": "P30-MR-08",
+    "language": "mr",
+    "domain": "hiring",
+    "answerability": "UNANSWERABLE",
+    "question": "महाविद्यालयात प्राध्यापक व कर्मचारी भरती प्रक्रिया काय आहे आणि अर्ज कसा करावा?",
+    "requiredFacts": [],
+    "expectedTargetDesk": "administrative_office",
+    "expectedOutcome": "INSUFFICIENT_EVIDENCE"
+  },
+  {
+    "id": "P30-MR-09",
+    "language": "mr",
+    "domain": "facilities",
+    "answerability": "UNANSWERABLE",
+    "question": "कॅम्पसमध्ये विद्यार्थ्यांसाठी ऑलिम्पिक आकाराचा स्विमिंग पूल उपलब्ध आहे का?",
+    "requiredFacts": [],
+    "expectedTargetDesk": "admissions_desk",
+    "expectedOutcome": "INSUFFICIENT_EVIDENCE"
+  },
+  {
+    "id": "P30-MR-10",
+    "language": "mr",
+    "domain": "fees",
+    "answerability": "AMBIGUOUS",
+    "question": "कॉलेजची फी किती आहे?",
+    "requiredFacts": [],
+    "expectedOutcome": "CLARIFICATION"
+  },
+  {
+    "id": "P30-HI-01",
+    "language": "hi",
+    "domain": "fees",
+    "answerability": "ANSWERABLE",
+    "question": "प्रथम वर्ष बी.टेक में OBC लड़कों के लिए शैक्षणिक वर्ष 2026-27 की फीस कितनी है?",
+    "requiredFacts": [
+      "61,109"
+    ],
+    "expectedSourceId": "KB-2",
+    "expectedOutcome": "ANSWERED"
+  },
+  {
+    "id": "P30-HI-02",
+    "language": "hi",
+    "domain": "intake",
+    "answerability": "ANSWERABLE",
+    "question": "कंप्यूटर साइंस एंड इंजीनियरिंग (CSE) ब्रांच में कुल कितनी सीटें हैं और चॉइस कोड क्या है?",
+    "requiredFacts": [
+      "120",
+      "0690124210"
+    ],
+    "expectedSourceId": "KB-10",
+    "expectedOutcome": "ANSWERED"
+  },
+  {
+    "id": "P30-HI-03",
+    "language": "hi",
+    "domain": "hostel",
+    "answerability": "ANSWERABLE",
+    "question": "छात्रावास का वार्षिक शुल्क, रिफंडेबल डिपॉजिट और मेस का खर्च कितना है?",
+    "requiredFacts": [
+      "35,000",
+      "5,000",
+      "40,000"
+    ],
+    "expectedSourceId": "KB-3",
+    "expectedOutcome": "ANSWERED"
+  },
+  {
+    "id": "P30-HI-04",
+    "language": "hi",
+    "domain": "eligibility",
+    "answerability": "ANSWERABLE",
+    "question": "बी.टेक प्रथम वर्ष में प्रवेश के लिए पात्रता नियम क्या हैं?",
+    "requiredFacts": [
+      "45 percent",
+      "Physics"
+    ],
+    "expectedSourceId": "KB-5",
+    "expectedOutcome": "ANSWERED"
+  },
+  {
+    "id": "P30-HI-05",
+    "language": "hi",
+    "domain": "library",
+    "answerability": "ANSWERABLE",
+    "question": "कॉलेज लाइब्रेरी सुविधा और डिजिटल संसाधनों की क्या जानकारी है?",
+    "requiredFacts": [
+      "library",
+      "digital resources"
+    ],
+    "expectedSourceId": "KB-20",
+    "expectedOutcome": "ANSWERED"
+  },
+  {
+    "id": "P30-HI-06",
+    "language": "hi",
+    "domain": "placement",
+    "answerability": "ANSWERABLE",
+    "question": "कैंपस प्लेसमेंट में उच्चतम और औसत पैकेज क्या रहा है?",
+    "requiredFacts": [
+      "21 LPA",
+      "4.4 LPA"
+    ],
+    "expectedSourceId": "KB-16",
+    "expectedOutcome": "ANSWERED"
+  },
+  {
+    "id": "P30-HI-07",
+    "language": "hi",
+    "domain": "hiring",
+    "answerability": "UNANSWERABLE",
+    "question": "एमआईटीकॉरर में शिक्षक भर्ती प्रक्रिया क्या है और रिक्त पदों की जानकारी कहां मिलेगी?",
+    "requiredFacts": [],
+    "expectedTargetDesk": "administrative_office",
+    "expectedOutcome": "INSUFFICIENT_EVIDENCE"
+  },
+  {
+    "id": "P30-HI-08",
+    "language": "hi",
+    "domain": "facilities",
+    "answerability": "UNANSWERABLE",
+    "question": "क्या कॉलेज परिसर में स्विमिंग पूल की सुविधा उपलब्ध है?",
+    "requiredFacts": [],
+    "expectedTargetDesk": "admissions_desk",
+    "expectedOutcome": "INSUFFICIENT_EVIDENCE"
+  },
+  {
+    "id": "P30-HI-09",
+    "language": "hi",
+    "domain": "programmes",
+    "answerability": "UNANSWERABLE",
+    "question": "क्या कॉलेज में रोबोटिक्स में एम.टेक (M.Tech) कोर्स उपलब्ध है?",
+    "requiredFacts": [],
+    "expectedTargetDesk": "admissions_desk",
+    "expectedOutcome": "INSUFFICIENT_EVIDENCE"
+  },
+  {
+    "id": "P30-HI-10",
+    "language": "hi",
+    "domain": "fees",
+    "answerability": "AMBIGUOUS",
+    "question": "फीस कितनी है?",
+    "requiredFacts": [],
+    "expectedOutcome": "CLARIFICATION"
+  }
+]
