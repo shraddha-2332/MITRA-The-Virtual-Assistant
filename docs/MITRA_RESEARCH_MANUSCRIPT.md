@@ -8,7 +8,7 @@
 ---
 
 ### Abstract
-Admissions answers must preserve the academic year, entry route and applicant category attached to each fact, and a misattributed fee can affect a family's financial decisions. This paper presents MITRA, an assistant for MIT College of Railway Engineering & Research, Barshi, supporting English, Marathi and Hindi through maintained records, deterministic rendering of critical fee and intake facts, scope-aware clarification, referral to human assistance, and an optional English-only generation path gated by bounded verification. We report a 90-case benchmark (30 per language; 60 answerable, 21 unanswerable, nine ambiguous) evaluated by external human raters and audited through an automated harness with generation disabled (inter-rater agreement: Cohen's $\kappa = 0.96$ [21]). Across milestones, baseline correctness of 60.0% overall (English 85.0%, Marathi 50.0%, Hindi 45.0%; Fisher's exact $p \approx 0.006$ [22]) was constrained by a 23.3% Devanagari false-refusal rate driven by query normalization gaps. Extending Devanagari facility, sports, and transit normalization combined with script-aware scoring (Run 3) raised correctness to 86.7% overall (English 85.0%, Marathi 85.0%, Hindi 90.0%), eliminating false refusals (0.0%) and closing the language disparity (Fisher's exact $p = 1.0$). Across all 15 institutional fee cases, deterministic rendering preserved 100% attribute fidelity without numerical hallucination (95% CI lower bound ≈ 80%). Large-scale longitudinal deployment, controlled ablation against generative RAG on held-out applicant cohorts, and live monitoring remain future work.
+Admissions answers must preserve the academic year, entry route and applicant category attached to each fact, and a misattributed fee can affect a family's financial decisions. This paper presents MITRA, an assistant for MIT College of Railway Engineering & Research, Barshi, supporting English, Marathi and Hindi through maintained records, deterministic rendering of critical fee and intake facts, scope-aware clarification, referral to human assistance, and an optional English-only generation path gated by bounded verification. We report a 90-case benchmark (30 per language; 60 answerable, 21 unanswerable, nine ambiguous) evaluated by external human raters and audited through an automated harness with generation disabled (inter-rater agreement: Cohen's $\kappa = 0.96$ [21]). Across milestones, baseline correctness of 60.0% overall (English 85.0%, Marathi 50.0%, Hindi 45.0%; Fisher's exact $p \approx 0.006$ [22]) was constrained by a 23.3% Devanagari false-refusal rate driven by query normalization gaps. Extending Devanagari facility, sports, and transit normalization combined with script-aware scoring (Run 3) raised correctness to 86.7% overall (English 85.0%, Marathi 85.0%, Hindi 90.0%), eliminating false refusals (0.0%) and closing the language disparity (Fisher's exact $p = 1.0$). Across all 15 institutional fee cases, deterministic rendering preserved 100% attribute fidelity without numerical hallucination (95% CI lower bound ≈ 80%). Large-scale longitudinal deployment, independent held-out evaluation, and live monitoring remain future work.
 
 **Index Terms**— University admissions, institutional question answering, multilingual assistance, structured knowledge, factual verification, retrieval evaluation.
 
@@ -162,7 +162,7 @@ Each language contains 20 answerable, seven unanswerable, and three ambiguous ca
 - **Referral Routing Accuracy (RR)**: Correct destination attribution (Administrative Office & Principal Desk for employment/governance vs. Admissions Helpdesk for prospective students).
 - **Language Fidelity (LF)**: Heuristic on a 1–5 scale reflecting Devanagari character proportion and numeral preservation (fixed at 5.0 for English).
 
-Evaluation was executed across three milestones: Run 1 on the initial build (commit `809455b`), Run 2 on the updated build (commit `3216bb3`), which incorporates the staff-recruitment routing correction described in Section 4.4, and Run 3 (commit `6219cb8`), which resolves Devanagari query normalization coverage and adds script-aware harness scoring. The full case catalog is preserved in `deliverables/evaluation-record-kit/cases.csv`, and all individual outputs are logged in `backend/evaluation/reports/pilot-evaluation-report.json`.
+Evaluation was executed across three milestones: Run 1 on the initial build (commit `809455b`), Run 2 on the updated build (commit `3216bb3`), which incorporates the staff-recruitment routing correction described in Section 4.4, and Run 3 (commit `8167770`), which resolves Devanagari query normalization coverage and adds script-aware harness scoring. The full case catalog is preserved in `deliverables/evaluation-record-kit/cases.csv`, and all individual outputs are logged in `deliverables/evaluation-record-kit/pilot-evaluation-report.json`.
 
 ### 5.5 Extended Production Evaluation
 While the 90-case benchmark incorporates external human rating and institutional faculty review (Cohen's $\kappa = 0.96$), longitudinal evaluation on continuous unconstrained applicant traffic in live deployment remains the planned next stage. Retrieval will be scored with Recall@1, Recall@3, Recall@5 and MRR on a frozen query set for the weighted-rule, BM25 and conceptual retrievers, with record-level relevance and separate reporting for answerable, ambiguous and unanswerable queries. A rubric will score correctness, completeness, evidence support, clarification/refusal appropriateness and language fidelity, rated by independent raters who are blind to retriever identity, with adjudication and reported inter-rater agreement. Competent Marathi and Hindi speakers will rate multilingual output; latency, model calls, token use and cost will be instrumented; and results will be stratified by language/script, topic, admission route, academic year and question type, with sample sizes and uncertainty intervals.
@@ -209,21 +209,35 @@ These developer-controlled checks are overlapping regression evidence: the 1,218
 
 ### 6.4 Multilingual Benchmark Outcomes ($N = 90$)
 
-### TABLE VII: MULTILINGUAL 90-CASE BENCHMARK OUTCOMES ACROSS MILESTONES (RUN 3 POST-NORMALIZATION [RUN 2 BASELINE])
+### TABLE VII: MULTILINGUAL 90-CASE BENCHMARK BASELINE OUTCOMES (RUN 2)
 | Metric | English ($n = 30$) | Marathi ($n = 30$) | Hindi ($n = 30$) | Overall ($N = 90$) |
 | :--- | :---: | :---: | :---: | :---: |
-| **Answer correctness** | **85.0%** (17/20) [85.0%] | **85.0%** (17/20) [50.0%] | **90.0%** (18/20) [45.0%] | **86.7%** (52/60) [60.0%] |
-| **Source attachment** | **100.0%** (20/20) [100.0%] | **100.0%** (20/20) [70.0%] | **100.0%** (20/20) [60.0%] | **100.0%** (60/60) [76.7%] |
-| **Appropriate abstention** | **57.1%** (4/7) [57.1%] | **57.1%** (4/7) [71.4%] | **85.7%** (6/7) [85.7%] | **66.7%** (14/21) [71.4%] |
-| **Clarification accuracy** | **33.3%** (1/3) [33.3%] | **100.0%** (3/3) [100.0%] | **100.0%** (3/3) [100.0%] | **77.8%** (7/9) [77.8%] |
-| **False-answer rate** | 42.9% (3/7) [42.9%] | 42.9% (3/7) [28.6%] | 14.3% (1/7) [14.3%] | 33.3% (7/21) [28.6%] |
-| **False-refusal rate** | **0.0%** (0/20) [0.0%] | **0.0%** (0/20) [30.0%] | **0.0%** (0/20) [40.0%] | **0.0%** (0/60) [23.3%] |
-| **Referral routing** | **100.0%** (4/4) [100%] | **100.0%** (4/4) [100%] | **100.0%** (6/6) [100%] | **100.0%** (14/14) [100%] |
-| **Language fidelity (mean/5)** | **5.00** [5.00] | **4.13** [4.70] | **4.33** [4.80] | **4.49** [4.83] |
+| **Answer correctness** | 85.0% (17/20) | 50.0% (10/20) | 45.0% (9/20) | 60.0% (36/60) |
+| **Source attachment** | 100.0% (20/20) | 70.0% (14/20) | 60.0% (12/20) | 76.7% (46/60) |
+| **Appropriate abstention** | 57.1% (4/7) | 71.4% (5/7) | 85.7% (6/7) | 71.4% (15/21) |
+| **Clarification accuracy** | 33.3% (1/3) | 100.0% (3/3) | 100.0% (3/3) | 77.8% (7/9) |
+| **False-answer rate** | 42.9% (3/7) | 28.6% (2/7) | 14.3% (1/7) | 28.6% (6/21) |
+| **False-refusal rate** | 0.0% (0/20) | 30.0% (6/20) | 40.0% (8/20) | 23.3% (14/60) |
+| **Referral routing** | 100.0% (4/4) | 100.0% (4/4) | 100.0% (6/6) | 100.0% (14/14) |
+| **Language fidelity (mean/5)** | 5.00 | 4.70 | 4.80 | 4.83 |
 
-Table VII summarizes the evolution across evaluation milestones. In Run 2 (`3216bb3`), 36 of 60 answerable cases (60.0%) were answered correctly, but performance showed a pronounced language disparity: English achieved 85.0% (17/20), whereas Marathi achieved 50.0% (10/20) and Hindi 45.0% (9/20). Statistical testing confirmed this baseline gap: Fisher's exact test [22] yielded $p \approx 0.04$ for English versus Marathi, $p \approx 0.02$ for English versus Hindi, and $p \approx 0.006$ for English versus pooled Devanagari. The false-refusal rate was 23.3% overall (14/60), with all 14 refusals concentrated exclusively in Marathi and Hindi (Fisher's exact $p \approx 0.002$).
+Table VII summarizes baseline performance in Run 2 (`3216bb3`), where 36 of 60 answerable cases (60.0%) were answered correctly, but performance showed a pronounced language disparity: English achieved 85.0% (17/20), whereas Marathi achieved 50.0% (10/20) and Hindi 45.0% (9/20). Statistical testing confirmed this baseline gap: Fisher's exact test [22] yielded $p \approx 0.04$ for English versus Marathi, $p \approx 0.02$ for English versus Hindi, and $p \approx 0.006$ for English versus pooled Devanagari. The false-refusal rate was 23.3% overall (14/60), with all 14 refusals concentrated exclusively in Marathi and Hindi (Fisher's exact $p \approx 0.002$).
 
-Following the diagnosis detailed in Section 6.5, Run 3 (`6219cb8`) integrated native dictionary normalization for facility, sports, transit, and affiliation vocabulary into query preprocessing and made harness fact-scoring script-aware (handling Devanagari numerals and cross-script synonyms like *railway* / *रेल्वे*). In Run 3, overall answer correctness rose to **86.7%** (52/60), source attachment reached **100.0%** (60/60), and the false-refusal rate dropped to **0.0%** (0/60). Crucially, the English-to-Devanagari performance gap was eliminated: English scored 85.0% (17/20), Marathi 85.0% (17/20), and Hindi 90.0% (18/20), yielding a post-normalization Fisher's exact test of $p = 1.0$ for English versus pooled Devanagari (35/40). All significance tests are post hoc and descriptive within this benchmark.
+Following the diagnosis detailed in Section 6.5, Run 3 (`8167770`) integrated native dictionary normalization for facility, sports, transit, and affiliation vocabulary into query preprocessing and made harness fact-scoring script-aware (handling Devanagari numerals and cross-script synonyms like *railway* / *रेल्वे*). Table VIII reports the post-normalization benchmark outcomes.
+
+### TABLE VIII: MULTILINGUAL 90-CASE BENCHMARK POST-NORMALIZATION OUTCOMES (RUN 3)
+| Metric | English ($n = 30$) | Marathi ($n = 30$) | Hindi ($n = 30$) | Overall ($N = 90$) |
+| :--- | :---: | :---: | :---: | :---: |
+| **Answer correctness** | **85.0%** (17/20) | **85.0%** (17/20) | **90.0%** (18/20) | **86.7%** (52/60) |
+| **Source attachment** | **100.0%** (20/20) | **100.0%** (20/20) | **100.0%** (20/20) | **100.0%** (60/60) |
+| **Appropriate abstention** | **57.1%** (4/7) | **57.1%** (4/7) | **85.7%** (6/7) | **66.7%** (14/21) |
+| **Clarification accuracy** | **33.3%** (1/3) | **100.0%** (3/3) | **100.0%** (3/3) | **77.8%** (7/9) |
+| **False-answer rate** | 42.9% (3/7) | 42.9% (3/7) | 14.3% (1/7) | 33.3% (7/21) |
+| **False-refusal rate** | **0.0%** (0/20) | **0.0%** (0/20) | **0.0%** (0/20) | **0.0%** (0/60) |
+| **Referral routing** | **100.0%** (4/4) | **100.0%** (4/4) | **100.0%** (6/6) | **100.0%** (14/14) |
+| **Language fidelity (mean/5)** | **5.00** | **4.13** | **4.33** | **4.49** |
+
+In Run 3, overall answer correctness rose to **86.7%** (52/60), source attachment reached **100.0%** (60/60), and the false-refusal rate dropped to **0.0%** (0/60). Crucially, the English-to-Devanagari performance gap was eliminated: English scored 85.0% (17/20), Marathi 85.0% (17/20), and Hindi 90.0% (18/20), yielding a post-normalization Fisher's exact test of $p = 1.0$ for English versus pooled Devanagari (35/40). All significance tests are post hoc and descriptive within this benchmark.
 
 ### 6.5 Domain Analysis and Error Audit
 
@@ -231,9 +245,9 @@ Following the diagnosis detailed in Section 6.5, Run 3 (`6219cb8`) integrated na
 
 **Resolution of Devanagari false refusals.** In Run 2, 14 answerable Devanagari queries were falsely refused. Tracing `retrieveKnowledge` showed that 13 returned zero hits (`hits: []`) because the initial normalizer mapped only fee, intake, and hostel terms. The underlying records existed (their English counterparts P30-EN-05, E90-EN-13, -14, -15, -18, -19, -20, and -23 all answered correctly), demonstrating a query-normalization coverage gap rather than translation failure. In Run 3, incorporating native mappings for facilities (sports grounds, gym, workshop), university affiliation, and transit distances enabled BM25 and deterministic guards to retrieve the canonical records, successfully resolving all 14 false refusals.
 
-**Audit of remaining non-correct cases.** Table VIII classifies the remaining eight answerable cases that did not achieve full credit in Run 3 (English 3, Marathi 3, Hindi 2).
+**Audit of remaining non-correct cases.** Table IX classifies the remaining eight answerable cases that did not achieve full credit in Run 3 (English 3, Marathi 3, Hindi 2).
 
-### TABLE VIII: AUDIT OF EIGHT NON-CORRECT ANSWERABLE CASES IN RUN 3
+### TABLE IX: AUDIT OF EIGHT NON-CORRECT ANSWERABLE CASES IN RUN 3
 | Category | Cases | Description |
 | :--- | :--- | :--- |
 | **Accurate but incomplete** | P30-EN-06, E90-EN-19 | Process summary was correct, but a specific threshold or workshop trade list was omitted. |
@@ -247,7 +261,7 @@ No fabricated numeric figure was observed in this audit. The Pragati scholarship
 
 ### 6.6 Summary of Evidence Layers
 
-### TABLE IX: SUMMARY OF EVIDENCE LAYERS AND WHAT EACH SUPPORTS
+### TABLE X: SUMMARY OF EVIDENCE LAYERS AND WHAT EACH SUPPORTS
 | Evidence layer | Result and what it supports |
 | :--- | :--- |
 | **Retrieval diagnostic (44 questions, 51 records)** | Group Recall@3 of 1.0000 and MRR@3 of 0.9470; supports lexical retrieval coverage on development questions, not generalization. |
@@ -255,7 +269,7 @@ No fabricated numeric figure was observed in this audit. The Pragati scholarship
 | **Regression checks (1,218 overlapping items)** | All passed (174 backend tests, 16 frontend tests, 468 browser journeys); supports implementation stability. |
 | **Multilingual benchmark (90 cases, automated harness)** | Run 3: 86.7% correctness, 100% source attachment, 0.0% false refusals, 100% fee accuracy (15/15), 100% referral routing. Confirms Devanagari normalization closure and absence of language disparity ($p = 1.0$). |
 
-Table IX summarizes the four evidence layers. Together they demonstrate that deterministic rendering eliminates financial hallucinations on critical institutional facts, while query normalization and script-aware scoring close the regional language gap.
+Table X summarizes the four evidence layers. Together they demonstrate that deterministic rendering eliminates financial hallucinations on critical institutional facts, while query normalization and script-aware scoring close the regional language gap.
 
 ---
 
@@ -276,7 +290,7 @@ Development leakage is the principal validity consideration. Retrieval relevance
 The 90 cases support descriptive reporting across cell categories. The benchmark combines external human evaluation (yielding Cohen's $\kappa = 0.96$ [21]) with automated rule-based harness verification: the case catalog (`cases.csv`) records each case's question, answerability, expected decision, required facts, and authoritative source reference. The external evaluation confirmed that no financial hallucination occurred across all 15 fee cases on the deterministic path (95% CI lower bound ≈ 80%). A future longitudinal evaluation will monitor live interaction streams across subsequent admission cycles, expanding cell sample sizes and tracking unconstrained user phrasing.
 
 ### 7.3 Language and Deployment Limits
-Marathi and Hindi use rule-based interpretations and source-bound translations. The progression across milestones traces the resolution of key engineering limits: in Run 1 (`809455b`), two Marathi and Hindi staff-recruitment cases were misrouted to admissions (13/15 referrals correct); extending employment patterns in Run 2 (`3216bb3`) achieved 100% routing closure. In Run 2, 14 Devanagari queries were falsely refused; extending the normalizer to facility and transit vocabulary in Run 3 (`6219cb8`) eliminated all false refusals (0/60). No experiment reported here calls a live generation model; production HTTPS, cloud persistence, and high-concurrency load testing remain deployment requirements.
+Marathi and Hindi use rule-based interpretations and source-bound translations. The progression across milestones traces the resolution of key engineering limits: in Run 1 (`809455b`), two Marathi and Hindi staff-recruitment cases were misrouted to admissions (13/15 referrals correct); extending employment patterns in Run 2 (`3216bb3`) achieved 100% routing closure. In Run 2, 14 Devanagari queries were falsely refused; extending the normalizer to facility and transit vocabulary in Run 3 (`8167770`) eliminated all false refusals (0/60). No experiment reported here calls a live generation model; production HTTPS, cloud persistence, and high-concurrency load testing remain deployment requirements.
 
 ### 7.4 Security and Privacy
 Authentication, server-side authorization, rate limits, and session ownership reduce application risks. LLM drafts remain untrusted: the assistant cannot approve admission or grant waivers, and source text cannot override permissions. Targeted checks protect against specific prompt-injection vectors, while public history retention and call-back storage require ongoing institutional oversight.
@@ -287,12 +301,12 @@ Authentication, server-side authorization, rate limits, and session ownership re
 
 MITRA demonstrates the viability of combining maintained knowledge, explicit applicant-scope handling, deterministic rendering of critical facts, and bounded verification in a multilingual institutional assistant. On a 90-case benchmark (30 per language) evaluated by external human raters (inter-rater agreement: Cohen's $\kappa = 0.96$ [21]) and audited with an automated harness, baseline performance of 60.0% correctness with a 23.3% Devanagari false-refusal rate was improved through native dictionary normalization and script-aware scoring (Run 3) to 86.7% correctness (English 85.0%, Marathi 85.0%, Hindi 90.0%), eliminating false refusals (0.0%) and closing the language gap ($p = 1.0$). Across all 15 institutional fee cases, no incorrect fee value was observed on the deterministic path (95% CI lower bound ≈ 80%).
 
-Persistent limitations are acknowledged: English safe abstention on unanswerable queries remains 57.1%, and eight answerable cases await seeding of external scheme circulars. The priority next step is a large-scale controlled ablation comparing deterministic rendering directly against generative RAG on held-out applicant cohorts, alongside continuous longitudinal evaluation on unconstrained prospective applicant traffic, expanding unanswerable query abstention guards, and deploying the audited assistant in a supervised institutional pilot.
+Persistent limitations are acknowledged: English safe abstention on unanswerable queries remains 57.1%, and eight answerable cases await seeding of external scheme circulars. The priority next step is a controlled, larger-scale ablation of deterministic rendering against full generative retrieval-augmented generation on the frozen corpus, alongside continuous longitudinal evaluation on unconstrained prospective applicant traffic, expanding unanswerable query abstention guards, and deploying the audited assistant in a supervised institutional pilot.
 
 ---
 
 ## DATA AVAILABILITY
-The case catalog (`cases.csv`), rater adjudication sheets, and Run 1–3 evaluation reports are archived under `deliverables/evaluation-record-kit/` and `backend/evaluation/reports/`. Backend evaluators reproduce the routing, retrieval and verifier diagnostics. Project source: https://github.com/shraddha-2332/MITRA-The-Virtual-Assistant. Source-bound development summaries, corpus identifiers and limitations are stored under `docs/research-review`. Figs. 3–6 are unedited captures of the implemented application.
+The case catalog (`cases.csv`), rater adjudication sheets, and Run 1–3 evaluation reports are archived in the project repository at `deliverables/evaluation-record-kit/`. Backend evaluators reproduce the routing, retrieval and verifier diagnostics. Project source: https://github.com/shraddha-2332/MITRA-The-Virtual-Assistant. Source-bound development summaries, corpus identifiers and limitations are stored under `docs/research-review`. Figs. 3–6 are unedited captures of the implemented application.
 
 ---
 
