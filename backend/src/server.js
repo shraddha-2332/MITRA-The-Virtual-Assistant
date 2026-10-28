@@ -72,11 +72,11 @@ export function resetRuntimeStateForTests() {
 const assistantRules = [
   { match: ['direct admission', 'management quota', 'acap', 'institute level', 'institute-level', 'vacancy'], source: 'Institute-level admission notices', answer: 'Institute-level and ACAP admission follow the published schedule, merit list, vacancy notice, and applicable rules. They are separate from a CAP allotment and cannot guarantee a seat before the current notice is checked.', next: 'Open the ACAP notice and check the current schedule, merit list, and vacancy record.', actionView: 'cap', actionLabel: 'Check ACAP notices' },
   { match: ['cutoff', 'cut-off', 'closing percentile', 'closing rank'], source: 'Historical cutoff records', answer: 'Cutoffs must be matched by academic year, round, branch, exam, category, seat type, and candidature. Historical values support preference planning but do not guarantee current admission.', next: 'Specify the year, CAP round, branch, category, seat type, and whether the score is MHT-CET or JEE.', actionView: 'cap', actionLabel: 'Check CAP history' },
+  { match: ['scholarship', 'ebc', 'ews', 'tfws', 'income', 'concession'], source: 'Scholarship readiness', answer: 'Scholarship fit depends on category, income, admission route, and required proof. Prepare documents before reporting.', next: 'Open scholarship readiness and check likely routes.', actionView: 'scholarships', actionLabel: 'Open scholarship' },
   { match: ['eligible', 'eligibility', 'percentile', 'cse', 'computer science', 'civil', 'mechanical', 'railway', 'ai', 'data science', 'entc', 'electronics'], source: 'Engineering eligibility and branch allotment guidance', answer: 'A CET or JEE percentile alone cannot confirm engineering branch admission. Basic eligibility and branch allotment are separate checks.', next: 'Share your category, candidature, qualifying-examination subjects and marks, admission route, and CAP round for a more useful assessment.', actionView: 'programs', actionLabel: 'Check programs' },
   { match: ['document', 'certificate', 'upload', 'validity', 'marksheet'], source: 'Document workflow', answer: 'Upload documents against the checklist. Staff can mark each record as ready or needing correction before reporting.', next: 'Open document checklist and upload the matching file.', actionView: 'documents', actionLabel: 'Open documents' },
   { match: ['cap', 'allotment', 'freeze', 'betterment', 'reporting'], source: 'Admission CAP workflow', answer: 'Use the CAP workflow to identify your current round, freeze/betterment choice, and reporting readiness before travelling.', next: 'Open CAP tracker and complete the reporting readiness checklist.', actionView: 'cap', actionLabel: 'Open CAP tracker' },
   { match: ['fee', 'fees', 'payment', 'amount', 'installment'], source: 'Fee planner', answer: 'Use the fee planner to estimate academic, hostel, and mess amount by admission type and category.', next: 'Open fee planner and verify scholarship/category documents before payment.', actionView: 'fees', actionLabel: 'Open fee planner' },
-  { match: ['scholarship', 'ebc', 'ews', 'tfws', 'income', 'concession'], source: 'Scholarship readiness', answer: 'Scholarship fit depends on category, income, admission route, and required proof. Prepare documents before reporting.', next: 'Open scholarship readiness and check likely routes.', actionView: 'scholarships', actionLabel: 'Open scholarship' },
   { match: ['branch', 'program', 'course', 'choice code', 'preference'], source: 'Program finder', answer: 'Compare branches and build a draft preference order before CAP option form or institute-level discussion.', next: 'Open program finder and create preference draft.', actionView: 'programs', actionLabel: 'Open programs' },
   { match: ['placement', 'company', 'career', 'package'], source: 'Career outcome guidance', answer: 'Placement data should support branch decision, but does not guarantee outcome. Check branch-goal fit and preparation path.', next: 'Open placement readiness.', actionView: 'placements', actionLabel: 'Open placement' },
   { match: ['hostel', 'mess', 'room', 'bus', 'transport', 'stay'], source: 'Hostel and mess planning', answer: 'Estimate stay cost and confirm room availability, mess charges, transport route, and rules before travelling.', next: 'Open hostel and mess estimator.', actionView: 'visit', actionLabel: 'Open hostel & mess' },
@@ -780,10 +780,9 @@ function buildCutoffAnswer(question, records) {
 
 function buildEligibilityAnswer(question) {
   const normalized = normalizeIntentText(question);
-  const isEligibilityQuestion = ['eligible', 'eligibility', 'percentile']
-    .some((term) => normalized.includes(term));
-  const isBranchQuestion = ['cse', 'computer science', 'computer engineering', 'civil', 'mechanical', 'rail', 'ai', 'data science', 'entc', 'electronics', 'branch', 'department', 'course']
-    .some((term) => normalized.includes(term));
+  if (/\b(?:scholarship|ebc|tfws|concession)\b/i.test(normalized)) return null;
+  const isEligibilityQuestion = /\b(?:eligible|eligibility|percentile)\b/i.test(normalized);
+  const isBranchQuestion = /\b(?:cse|computer science|computer engineering|civil|mechanical|rail(?:way)?|ai|data science|entc|electronics|branch|department|course)\b/i.test(normalized);
   if (!isEligibilityQuestion || !isBranchQuestion) return null;
 
   const query = understandQuery(question);
@@ -1136,9 +1135,10 @@ function buildCollegeProfileAnswer(question) {
   const asksMech = /\b(?:mechanical|mech|railway|rail|sanjay mane|mesa)\b/i.test(normalized);
   const asksCivil = /\b(?:civil|amit shinde|cesa)\b/i.test(normalized);
   const asksCse = /\b(?:cse|computer|somnath mule|space|ai ml honors|cybersecurity honors)\b/i.test(normalized);
-  const asksHodOrDept = /\b(?:hod|head of department|department head|department|departments|labs?|laborator(?:y|ies)|syllabus|specializations?|honor degrees?|minor degrees?)\b/i.test(normalized);
+  const asksHodOrDept = /\b(?:hod|head of department|department head|labs?|laborator(?:y|ies)|syllabus|specializations?|honor degrees?|minor degrees?)\b/i.test(normalized);
+  const isExcludedFromProfile = /\b(?:eligible|eligibility|percentile|cutoff|cut-off|fee|fees|scholarship)\b/i.test(normalized);
 
-  if (asksHodOrDept || /^(?:mechanical engineering|computer engineering|civil engineering)$/.test(normalized) || /\b(?:computer engineering syllabus|mechanical engineering syllabus)\b/.test(normalized)) {
+  if (!isExcludedFromProfile && (asksHodOrDept || /^(?:mechanical engineering|computer engineering|civil engineering)$/.test(normalized) || /\b(?:computer engineering syllabus|mechanical engineering syllabus)\b/.test(normalized))) {
     if (asksMech && !asksCivil && !asksCse) {
       return {
         source: 'MITCORER Mechanical & Rail Engineering department portal',

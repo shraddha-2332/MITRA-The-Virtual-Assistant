@@ -16,7 +16,7 @@ export function extractAcademicYears(text) {
 }
 
 export const branchPatterns = {
-  cse: /\bcse\b|\bcomputer (?:science|engineering)(?: and engineering)?\b/gi,
+  cse: /\bcse\b|(?<!electronics\s+(?:and|&)\s+)\bcomputer\s+(?:science|engineering)(?:\s+and\s+engineering)?\b/gi,
   civil: /\bcivil(?: engineering)?\b/gi,
   aids: /\bartificial intelligence(?: and data science)?\b|\baids\b|\bai\s*(?:&|and)\s*ds\b|\bdata science\b/gi,
   electronicsComputer: /\belectronics and computer(?: engineering)?\b/gi,
