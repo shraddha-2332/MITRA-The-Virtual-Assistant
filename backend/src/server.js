@@ -695,7 +695,7 @@ function buildCutoffAnswer(question, records) {
     return {
       source: record ? record.source : 'Maharashtra CET Cell admission process guidance',
       sourceUrl: 'https://fe2026.mahacet.org/',
-      answer: 'For choice code 0690119110, Civil Engineering at institute 06901 (sanctioned intake 60), published historical All India CAP Round I cutoff records maintained in MITRA currently track Computer Science and Engineering (choice code 0690124210). Civil Engineering seat allotment is governed by MHT-CET/JEE merit rank, candidate category (GOPEN, LOPEN, OBC, SC, ST, EWS, TFWS), CAP round, and home university quota. For official Civil Engineering closing cutoffs across CAP rounds, please refer to the Maharashtra CET Cell CAP portal (https://fe2026.mahacet.org/) or consult the MITCORER admission desk.',
+      answer: 'For choice code 0690119110, Civil Engineering at institute 06901 (sanctioned intake 60), seat allotment is governed by MHT-CET/JEE merit rank, candidate category (GOPEN, LOPEN, OBC, SC, ST, EWS, TFWS), CAP round, and home university quota. For official Civil Engineering closing cutoffs across CAP rounds, please refer to the Maharashtra CET Cell CAP portal (https://fe2026.mahacet.org/) or consult the MITCORER admission desk.',
       evidence: record ? [{ ...record, score: 200 }] : [],
       anchored: true,
       actionView: 'cap',
@@ -709,7 +709,7 @@ function buildCutoffAnswer(question, records) {
     return {
       source: record ? record.source : 'Maharashtra CET Cell admission process guidance',
       sourceUrl: 'https://fe2026.mahacet.org/',
-      answer: 'For choice code 0690158510, Mechanical and Rail Engineering at institute 06901 (sanctioned intake 60, historical 2024 choice code 0690161210), published historical All India CAP Round I cutoff records maintained in MITRA currently track Computer Science and Engineering (choice code 0690124210). Mechanical and Rail Engineering seat allotment is governed by MHT-CET/JEE merit rank, candidate category, CAP round, and home university quota. For official Mechanical and Rail Engineering closing cutoffs across CAP rounds, please refer to the Maharashtra CET Cell CAP portal (https://fe2026.mahacet.org/) or consult the MITCORER admission desk.',
+      answer: 'For choice code 0690158510, Mechanical and Rail Engineering at institute 06901 (sanctioned intake 60, historical 2024 choice code 0690161210), seat allotment is governed by MHT-CET/JEE merit rank, candidate category, CAP round, and home university quota. For official Mechanical and Rail Engineering closing cutoffs across CAP rounds, please refer to the Maharashtra CET Cell CAP portal (https://fe2026.mahacet.org/) or consult the MITCORER admission desk.',
       evidence: record ? [{ ...record, score: 200 }] : [],
       anchored: true,
       actionView: 'cap',
@@ -723,7 +723,7 @@ function buildCutoffAnswer(question, records) {
     return {
       source: record ? record.source : 'Maharashtra CET Cell admission process guidance',
       sourceUrl: 'https://fe2026.mahacet.org/',
-      answer: 'For choice code 0690126310, Artificial Intelligence and Data Science at institute 06901 (sanctioned intake 60), published historical All India CAP Round I cutoff records maintained in MITRA currently track Computer Science and Engineering (choice code 0690124210). AI & DS seat allotment is governed by MHT-CET/JEE merit rank, candidate category, CAP round, and quota. For official Artificial Intelligence and Data Science closing cutoffs across CAP rounds, please refer to the Maharashtra CET Cell CAP portal (https://fe2026.mahacet.org/) or consult the MITCORER admission desk.',
+      answer: 'For choice code 0690126310, Artificial Intelligence and Data Science at institute 06901 (sanctioned intake 60), seat allotment is governed by MHT-CET/JEE merit rank, candidate category, CAP round, and quota. For official Artificial Intelligence and Data Science closing cutoffs across CAP rounds, please refer to the Maharashtra CET Cell CAP portal (https://fe2026.mahacet.org/) or consult the MITCORER admission desk.',
       evidence: record ? [{ ...record, score: 200 }] : [],
       anchored: true,
       actionView: 'cap',
@@ -737,7 +737,7 @@ function buildCutoffAnswer(question, records) {
     return {
       source: record ? record.source : 'Maharashtra CET Cell admission process guidance',
       sourceUrl: 'https://fe2026.mahacet.org/',
-      answer: 'For choice code 0690137210, Electronics and Telecommunication Engineering at institute 06901 (sanctioned intake 60), published historical All India CAP Round I cutoff records maintained in MITRA currently track Computer Science and Engineering (choice code 0690124210). E&TC seat allotment is governed by MHT-CET/JEE merit rank, candidate category, and CAP round. For official Electronics and Telecommunication closing cutoffs across CAP rounds, please refer to the Maharashtra CET Cell CAP portal (https://fe2026.mahacet.org/) or consult the MITCORER admission desk.',
+      answer: 'For choice code 0690137210, Electronics and Telecommunication Engineering at institute 06901 (sanctioned intake 60), seat allotment is governed by MHT-CET/JEE merit rank, candidate category, and CAP round. For official Electronics and Telecommunication closing cutoffs across CAP rounds, please refer to the Maharashtra CET Cell CAP portal (https://fe2026.mahacet.org/) or consult the MITCORER admission desk.',
       evidence: record ? [{ ...record, score: 200 }] : [],
       anchored: true,
       actionView: 'cap',
@@ -751,7 +751,7 @@ function buildCutoffAnswer(question, records) {
     return {
       source: record ? record.source : 'Maharashtra CET Cell admission process guidance',
       sourceUrl: 'https://fe2026.mahacet.org/',
-      answer: 'For choice code 0690184410, Electronics and Computer Engineering at institute 06901 (sanctioned intake 60), published historical All India CAP Round I cutoff records maintained in MITRA currently track Computer Science and Engineering (choice code 0690124210). Electronics and Computer Engineering seat allotment is governed by MHT-CET/JEE merit rank, candidate category, and CAP round. For official closing cutoffs across CAP rounds, please refer to the Maharashtra CET Cell CAP portal (https://fe2026.mahacet.org/) or consult the MITCORER admission desk.',
+      answer: 'For choice code 0690184410, Electronics and Computer Engineering at institute 06901 (sanctioned intake 60), seat allotment is governed by MHT-CET/JEE merit rank, candidate category, and CAP round. For official closing cutoffs across CAP rounds, please refer to the Maharashtra CET Cell CAP portal (https://fe2026.mahacet.org/) or consult the MITCORER admission desk.',
       evidence: record ? [{ ...record, score: 200 }] : [],
       anchored: true,
       actionView: 'cap',
@@ -1133,7 +1133,36 @@ function buildCollegeProfileAnswer(question) {
       next: '', actionView: 'programs', actionLabel: 'Explore programmes',
     };
   }
-  if (/\b(?:hod|head of department|department head|somnath mule|amit shinde|sanjay mane|honor degrees?|minor degrees?|cybersecurity honors|ai ml honors)\b/.test(normalized) || (/\b(?:labs?|laborator(?:y|ies))\b/.test(normalized) && /\b(?:cse|computer|civil|mechanical)\b/.test(normalized)) || /^(?:mechanical engineering|computer engineering|civil engineering)$/.test(normalized) || /\b(?:computer engineering syllabus|mechanical engineering syllabus)\b/.test(normalized)) {
+  const asksMech = /\b(?:mechanical|mech|railway|rail|sanjay mane|mesa)\b/i.test(normalized);
+  const asksCivil = /\b(?:civil|amit shinde|cesa)\b/i.test(normalized);
+  const asksCse = /\b(?:cse|computer|somnath mule|space|ai ml honors|cybersecurity honors)\b/i.test(normalized);
+  const asksHodOrDept = /\b(?:hod|head of department|department head|department|departments|labs?|laborator(?:y|ies)|syllabus|specializations?|honor degrees?|minor degrees?)\b/i.test(normalized);
+
+  if (asksHodOrDept || /^(?:mechanical engineering|computer engineering|civil engineering)$/.test(normalized) || /\b(?:computer engineering syllabus|mechanical engineering syllabus)\b/.test(normalized)) {
+    if (asksMech && !asksCivil && !asksCse) {
+      return {
+        source: 'MITCORER Mechanical & Rail Engineering department portal',
+        sourceUrl: 'https://mitcorer.edu.in/mechanical-engineering.php',
+        answer: 'MITCORER Department of Mechanical & Rail Engineering:\n\n- Head of Department (HOD): Dr. Sanjay Pandurang Mane.\n- Academic Focus: Railway technology, rolling stocks, robotics, thermal engineering, and automotive mechanics.\n- Departmental Facilities & Labs: Equipped with advanced CAD/CAM Lab, Robotics Lab, Heat Transfer Lab, Dynamics of Machinery Lab, and Central Workshop fabrication facilities.\n- Student Association: Mechanical Engineering Students Association (MESA).\n- Specialized Diploma: Professional Diploma in Rolling Stocks and Operations.',
+        next: '', actionView: 'programs', actionLabel: 'Explore Mechanical & Rail Engineering',
+      };
+    }
+    if (asksCivil && !asksMech && !asksCse) {
+      return {
+        source: 'MITCORER Civil Engineering department portal',
+        sourceUrl: 'https://mitcorer.edu.in/civil-engineering.php',
+        answer: 'MITCORER Department of Civil Engineering (Established 2017):\n\n- Head of Department (HOD): Prof. Amit Raosaheb Shinde.\n- Academic Offerings: 4-Year B.Tech with Minor Degrees in AI & Data Science and Software Engineering.\n- Departmental Laboratories: Strength of Materials Lab, Surveying Lab, Concrete Technology Lab, Environmental Engineering Lab, and Computer-Aided Civil Design (CAD) Lab.\n- Student Association: Civil Engineering Students Association (CESA).\n- Specialized Diploma: Professional Diploma in Railway Track Technology.',
+        next: '', actionView: 'programs', actionLabel: 'Explore Civil Engineering',
+      };
+    }
+    if (asksCse && !asksMech && !asksCivil) {
+      return {
+        source: 'MITCORER Computer Science & Engineering department portal',
+        sourceUrl: 'https://mitcorer.edu.in/computer-science-engineering.php',
+        answer: 'MITCORER Department of Computer Science & Engineering (CSE):\n\n- Head of Department (HOD): Prof. Somnath Mule.\n- Academic Offerings: 4-Year B.Tech with Honor Degrees in Artificial Intelligence (AI), Machine Learning (ML), and Cybersecurity.\n- Departmental Laboratories: High-Performance Computing Lab, AI/ML & Deep Learning Lab, Database Systems Lab, Software Engineering Lab, and Programming Computational Center.\n- Student Association: Students Association of Computer Engineering (SPACE).\n- Specialized Diploma: Professional Diploma in Software Technology in Railway Sector.',
+        next: '', actionView: 'programs', actionLabel: 'Explore Computer Science & Engineering',
+      };
+    }
     return {
       source: 'MITCORER official department portals and brochure',
       sourceUrl: 'https://mitcorer.edu.in/computer-science-engineering.php',
