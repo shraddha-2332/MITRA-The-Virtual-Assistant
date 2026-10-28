@@ -15,7 +15,14 @@ export function extractAcademicYears(text) {
   return { years: [...new Set(years)], invalid: [...new Set(invalid)] };
 }
 
-export const branchPatterns = { cse: /\bcse\b|\bcomputer science(?: and engineering)?\b/g, civil: /\bcivil(?: engineering)?\b/g, aids: /\bartificial intelligence(?: and data science)?\b|\baids\b/g, electronicsComputer: /\belectronics and computer engineering\b/g, entc: /\belectronics and telecommunication engineering\b|\be\s*&\s*tc\b|\bentc\b/g, mechanical: /\bmechanical(?: and rail)? engineering\b/g };
+export const branchPatterns = {
+  cse: /\bcse\b|\bcomputer (?:science|engineering)(?: and engineering)?\b/gi,
+  civil: /\bcivil(?: engineering)?\b/gi,
+  aids: /\bartificial intelligence(?: and data science)?\b|\baids\b|\bai\s*(?:&|and)\s*ds\b|\bdata science\b/gi,
+  electronicsComputer: /\belectronics and computer(?: engineering)?\b/gi,
+  entc: /\bentc\b|\be\s*&\s*tc\b|\belectronics and telecommunication(?: engineering)?\b/gi,
+  mechanical: /\bmechanical(?: and rail)?(?: engineering)?\b|\brail(?:way)? engineering\b/gi
+};
 export const servicePatterns = { hostel: /\bhostel\b/g, mess: /\bmess\b/g, transport: /\bbus\b|\btransport\b/g, library: /\blibrary\b|\bjournal\b/g };
 
 export function fieldValues(text, patterns) {

@@ -72,7 +72,7 @@ export function resetRuntimeStateForTests() {
 const assistantRules = [
   { match: ['direct admission', 'management quota', 'acap', 'institute level', 'institute-level', 'vacancy'], source: 'Institute-level admission notices', answer: 'Institute-level and ACAP admission follow the published schedule, merit list, vacancy notice, and applicable rules. They are separate from a CAP allotment and cannot guarantee a seat before the current notice is checked.', next: 'Open the ACAP notice and check the current schedule, merit list, and vacancy record.', actionView: 'cap', actionLabel: 'Check ACAP notices' },
   { match: ['cutoff', 'cut-off', 'closing percentile', 'closing rank'], source: 'Historical cutoff records', answer: 'Cutoffs must be matched by academic year, round, branch, exam, category, seat type, and candidature. Historical values support preference planning but do not guarantee current admission.', next: 'Specify the year, CAP round, branch, category, seat type, and whether the score is MHT-CET or JEE.', actionView: 'cap', actionLabel: 'Check CAP history' },
-  { match: ['eligible', 'eligibility', 'percentile', 'cse', 'computer science'], source: 'Engineering eligibility and branch allotment guidance', answer: 'A CET or JEE percentile alone cannot confirm CSE admission. Basic eligibility and branch allotment are separate checks.', next: 'Share your category, candidature, qualifying-examination subjects and marks, admission route, and CAP round for a more useful assessment.', actionView: 'programs', actionLabel: 'Check programs' },
+  { match: ['eligible', 'eligibility', 'percentile', 'cse', 'computer science', 'civil', 'mechanical', 'railway', 'ai', 'data science', 'entc', 'electronics'], source: 'Engineering eligibility and branch allotment guidance', answer: 'A CET or JEE percentile alone cannot confirm engineering branch admission. Basic eligibility and branch allotment are separate checks.', next: 'Share your category, candidature, qualifying-examination subjects and marks, admission route, and CAP round for a more useful assessment.', actionView: 'programs', actionLabel: 'Check programs' },
   { match: ['document', 'certificate', 'upload', 'validity', 'marksheet'], source: 'Document workflow', answer: 'Upload documents against the checklist. Staff can mark each record as ready or needing correction before reporting.', next: 'Open document checklist and upload the matching file.', actionView: 'documents', actionLabel: 'Open documents' },
   { match: ['cap', 'allotment', 'freeze', 'betterment', 'reporting'], source: 'Admission CAP workflow', answer: 'Use the CAP workflow to identify your current round, freeze/betterment choice, and reporting readiness before travelling.', next: 'Open CAP tracker and complete the reporting readiness checklist.', actionView: 'cap', actionLabel: 'Open CAP tracker' },
   { match: ['fee', 'fees', 'payment', 'amount', 'installment'], source: 'Fee planner', answer: 'Use the fee planner to estimate academic, hostel, and mess amount by admission type and category.', next: 'Open fee planner and verify scholarship/category documents before payment.', actionView: 'fees', actionLabel: 'Open fee planner' },
@@ -212,7 +212,8 @@ function attachCors(req, res) {
   const origin = req.headers.origin;
   const isLocalDevelopmentOrigin = config.nodeEnv !== 'production'
     && /^http:\/\/(?:127\.0\.0\.1|localhost):\d+$/.test(origin || '');
-  const allowOrigin = origin && (config.corsOrigins.includes('*') || config.corsOrigins.includes(origin) || isLocalDevelopmentOrigin)
+  const isCollegeOrigin = /^https?:\/\/(?:[a-zA-Z0-9-]+\.)*mitcorer\.edu\.in(?::\d+)?$/.test(origin || '');
+  const allowOrigin = origin && (config.corsOrigins.includes('*') || config.corsOrigins.includes(origin) || isLocalDevelopmentOrigin || isCollegeOrigin)
     ? origin
     : config.corsOrigins[0];
   res.setHeader('Access-Control-Allow-Origin', allowOrigin);
@@ -680,19 +681,129 @@ function tokenize(text) {
     ?.filter((word) => word.length > 1) || [];
 }
 
+function buildCutoffAnswer(question, records) {
+  const normalized = normalizeIntentText(question);
+  if (!/\b(?:cutoffs?|cut[- ]?offs?|closing percentile|closing rank|closing merit|cap cutoff)\b/i.test(normalized)) {
+    return null;
+  }
+  const query = understandQuery(question);
+  const positive = query.branch.positive;
+  const is2025 = /2025/.test(normalized);
+
+  if (positive.includes('civil')) {
+    const record = records.find((r) => r.id === 'KB-10' && usableKnowledge(r)) || records.find((r) => r.id === 'KB-6');
+    return {
+      source: record ? record.source : 'Maharashtra CET Cell admission process guidance',
+      sourceUrl: 'https://fe2026.mahacet.org/',
+      answer: 'For choice code 0690119110, Civil Engineering at institute 06901 (sanctioned intake 60), published historical All India CAP Round I cutoff records maintained in MITRA currently track Computer Science and Engineering (choice code 0690124210). Civil Engineering seat allotment is governed by MHT-CET/JEE merit rank, candidate category (GOPEN, LOPEN, OBC, SC, ST, EWS, TFWS), CAP round, and home university quota. For official Civil Engineering closing cutoffs across CAP rounds, please refer to the Maharashtra CET Cell CAP portal (https://fe2026.mahacet.org/) or consult the MITCORER admission desk.',
+      evidence: record ? [{ ...record, score: 200 }] : [],
+      anchored: true,
+      actionView: 'cap',
+      actionLabel: 'Check CAP notices',
+      next: 'Check the official Maharashtra CET Cell CAP Round cutoff lists or contact the admission desk.',
+    };
+  }
+
+  if (positive.includes('mechanical')) {
+    const record = records.find((r) => r.id === 'KB-10' && usableKnowledge(r)) || records.find((r) => r.id === 'KB-6');
+    return {
+      source: record ? record.source : 'Maharashtra CET Cell admission process guidance',
+      sourceUrl: 'https://fe2026.mahacet.org/',
+      answer: 'For choice code 0690158510, Mechanical and Rail Engineering at institute 06901 (sanctioned intake 60, historical 2024 choice code 0690161210), published historical All India CAP Round I cutoff records maintained in MITRA currently track Computer Science and Engineering (choice code 0690124210). Mechanical and Rail Engineering seat allotment is governed by MHT-CET/JEE merit rank, candidate category, CAP round, and home university quota. For official Mechanical and Rail Engineering closing cutoffs across CAP rounds, please refer to the Maharashtra CET Cell CAP portal (https://fe2026.mahacet.org/) or consult the MITCORER admission desk.',
+      evidence: record ? [{ ...record, score: 200 }] : [],
+      anchored: true,
+      actionView: 'cap',
+      actionLabel: 'Check CAP notices',
+      next: 'Check the official Maharashtra CET Cell CAP Round cutoff lists or contact the admission desk.',
+    };
+  }
+
+  if (positive.includes('aids')) {
+    const record = records.find((r) => r.id === 'KB-10' && usableKnowledge(r)) || records.find((r) => r.id === 'KB-6');
+    return {
+      source: record ? record.source : 'Maharashtra CET Cell admission process guidance',
+      sourceUrl: 'https://fe2026.mahacet.org/',
+      answer: 'For choice code 0690126310, Artificial Intelligence and Data Science at institute 06901 (sanctioned intake 60), published historical All India CAP Round I cutoff records maintained in MITRA currently track Computer Science and Engineering (choice code 0690124210). AI & DS seat allotment is governed by MHT-CET/JEE merit rank, candidate category, CAP round, and quota. For official Artificial Intelligence and Data Science closing cutoffs across CAP rounds, please refer to the Maharashtra CET Cell CAP portal (https://fe2026.mahacet.org/) or consult the MITCORER admission desk.',
+      evidence: record ? [{ ...record, score: 200 }] : [],
+      anchored: true,
+      actionView: 'cap',
+      actionLabel: 'Check CAP notices',
+      next: 'Check the official Maharashtra CET Cell CAP Round cutoff lists or contact the admission desk.',
+    };
+  }
+
+  if (positive.includes('entc')) {
+    const record = records.find((r) => r.id === 'KB-10' && usableKnowledge(r)) || records.find((r) => r.id === 'KB-6');
+    return {
+      source: record ? record.source : 'Maharashtra CET Cell admission process guidance',
+      sourceUrl: 'https://fe2026.mahacet.org/',
+      answer: 'For choice code 0690137210, Electronics and Telecommunication Engineering at institute 06901 (sanctioned intake 60), published historical All India CAP Round I cutoff records maintained in MITRA currently track Computer Science and Engineering (choice code 0690124210). E&TC seat allotment is governed by MHT-CET/JEE merit rank, candidate category, and CAP round. For official Electronics and Telecommunication closing cutoffs across CAP rounds, please refer to the Maharashtra CET Cell CAP portal (https://fe2026.mahacet.org/) or consult the MITCORER admission desk.',
+      evidence: record ? [{ ...record, score: 200 }] : [],
+      anchored: true,
+      actionView: 'cap',
+      actionLabel: 'Check CAP notices',
+      next: 'Check the official Maharashtra CET Cell CAP Round cutoff lists or contact the admission desk.',
+    };
+  }
+
+  if (positive.includes('electronicsComputer')) {
+    const record = records.find((r) => r.id === 'KB-10' && usableKnowledge(r)) || records.find((r) => r.id === 'KB-6');
+    return {
+      source: record ? record.source : 'Maharashtra CET Cell admission process guidance',
+      sourceUrl: 'https://fe2026.mahacet.org/',
+      answer: 'For choice code 0690184410, Electronics and Computer Engineering at institute 06901 (sanctioned intake 60), published historical All India CAP Round I cutoff records maintained in MITRA currently track Computer Science and Engineering (choice code 0690124210). Electronics and Computer Engineering seat allotment is governed by MHT-CET/JEE merit rank, candidate category, and CAP round. For official closing cutoffs across CAP rounds, please refer to the Maharashtra CET Cell CAP portal (https://fe2026.mahacet.org/) or consult the MITCORER admission desk.',
+      evidence: record ? [{ ...record, score: 200 }] : [],
+      anchored: true,
+      actionView: 'cap',
+      actionLabel: 'Check CAP notices',
+      next: 'Check the official Maharashtra CET Cell CAP Round cutoff lists or contact the admission desk.',
+    };
+  }
+
+  const targetId = is2025 ? 'KB-8' : 'KB-7';
+  const cseRecord = records.find((r) => r.id === targetId && usableKnowledge(r));
+  if (cseRecord) {
+    return {
+      source: cseRecord.source,
+      sourceUrl: cseRecord.sourceUrl || '',
+      answer: cseRecord.text,
+      evidence: [{ ...cseRecord, score: 200 }],
+      anchored: true,
+      actionView: 'cap',
+      actionLabel: 'Check CAP history',
+      next: 'Specify the year, CAP round, branch, category, seat type, and whether the score is MHT-CET or JEE.',
+    };
+  }
+
+  return null;
+}
+
 function buildEligibilityAnswer(question) {
   const normalized = normalizeIntentText(question);
   const isEligibilityQuestion = ['eligible', 'eligibility', 'percentile']
     .some((term) => normalized.includes(term));
-  const isBranchQuestion = ['cse', 'computer science', 'branch', 'department', 'course']
+  const isBranchQuestion = ['cse', 'computer science', 'computer engineering', 'civil', 'mechanical', 'rail', 'ai', 'data science', 'entc', 'electronics', 'branch', 'department', 'course']
     .some((term) => normalized.includes(term));
   if (!isEligibilityQuestion || !isBranchQuestion) return null;
+
+  const query = understandQuery(question);
+  const branchLabels = {
+    cse: 'Computer Science and Engineering (CSE)',
+    civil: 'Civil Engineering',
+    mechanical: 'Mechanical and Rail Engineering',
+    aids: 'Artificial Intelligence and Data Science',
+    entc: 'Electronics and Telecommunication Engineering',
+    electronicsComputer: 'Electronics and Computer Engineering',
+  };
+  const positive = query.branch.positive;
+  const targetBranch = positive.length === 1 ? branchLabels[positive[0]] : null;
+  const targetBranchText = targetBranch || 'your desired engineering branch';
 
   const percentile = normalized.match(/(\d+(?:\.\d+)?)\s*(?:%|percentile|percent)/)?.[1];
   const scoreReference = percentile ? `${percentile} percentile` : 'the stated percentile';
   return {
     source: 'Maharashtra CET Cell admission process guidance',
-    answer: `${scoreReference} alone is not enough to confirm admission to CSE. First, basic engineering eligibility must be checked from your qualifying-examination subjects and marks, entrance score, candidature, and documents. After that, CSE allotment depends on merit rank, category, seat type, CAP or institute-level route, round, preferences, vacancies, and the applicable cutoff. A percentile alone cannot guarantee or rule out CSE admission.`,
+    answer: `${scoreReference} alone is not enough to confirm admission to ${targetBranchText}. First, basic engineering eligibility must be checked from your qualifying-examination subjects and marks, entrance score, candidature, and documents. After that, ${targetBranchText} allotment depends on merit rank, category, seat type, CAP or institute-level route, round, preferences, vacancies, and the applicable cutoff. A percentile alone cannot guarantee or rule out admission.`,
     next: 'Provide your category, Maharashtra candidature status, qualifying-examination subjects and marks, CAP or institute-level route, and current round to refine the guidance.',
     actionView: 'programs',
     actionLabel: 'Check programs',
@@ -839,7 +950,18 @@ function getOfficialExperienceLinks(question) {
   if (/rail-mit|rail mit|technical event|asimit|space/.test(normalized)) {
     links.push({ label: 'Rail-MIT Technical Events', url: 'https://mitcorer.edu.in/technical-events-rail-mit.php' });
   }
-  if (/hod|head of department|computer science|civil|mechanical|somnath mule|amit shinde|sanjay mane/.test(normalized)) {
+  const asksCivil = /civil|amit shinde/.test(normalized);
+  const asksMech = /mechanical|rail engineering|sanjay mane/.test(normalized);
+  const asksCse = /computer science|cse|somnath mule/.test(normalized);
+  const asksAllDepts = /hod|head of department|departments?/.test(normalized);
+
+  if (asksCivil && !asksAllDepts) {
+    links.push({ label: 'Civil Engineering Department', url: 'https://mitcorer.edu.in/civil-engineering.php' });
+  } else if (asksMech && !asksAllDepts) {
+    links.push({ label: 'Mechanical & Rail Engineering Department', url: 'https://mitcorer.edu.in/mechanical-engineering.php' });
+  } else if (asksCse && !asksAllDepts) {
+    links.push({ label: 'Computer Science & Engineering Department', url: 'https://mitcorer.edu.in/computer-science-engineering.php' });
+  } else if (asksAllDepts || asksCivil || asksMech || asksCse) {
     links.push({ label: 'Computer Science & Engineering Department', url: 'https://mitcorer.edu.in/computer-science-engineering.php' });
     links.push({ label: 'Civil Engineering Department', url: 'https://mitcorer.edu.in/civil-engineering.php' });
     links.push({ label: 'Mechanical & Rail Engineering Department', url: 'https://mitcorer.edu.in/mechanical-engineering.php' });
@@ -1814,7 +1936,7 @@ export async function answerAdmissionQuestion(body, user) {
     // Gemini failed verification or returned null — fall through to deterministic chain below.
   }
 
-  const answer = (user && (buildAdmissionReadinessAnswer(question, user) || buildDocumentStatusAnswer(question, user))) || buildCompoundAnswer(question, normalized, records) || buildClarificationAnswer(normalized) || buildReviewedPassage(normalized, language, records) || buildContextualPassage(normalized, records) || guard(buildFacilityAnswer(question), /hostel/.test(normalized) ? 'KB-23' : ((/\b(?:sports grounds?|sports facilit\w*|box cricket|cricket ground|volleyball court|volleyball ground|badminton court|campus gym|college gym|gymnasium|physical fitness)\b/.test(normalized) || /\b(?:sports|gym)\b/.test(normalized)) && !/\b(?:world cup|icc|olympics?)\b/.test(normalized)) ? 'KB-48' : /\b(?:central workshop|machine shop|fitting shop|welding shop|carpentry shop|smithy|sheet metal|computer center|computing center|seminar halls?|audiovisual hall)\b/.test(normalized) ? 'KB-49' : /labs|laborator|workshop/.test(normalized) ? 'KB-22' : /bus|transport/.test(normalized) ? 'KB-19' : /library/.test(normalized) ? 'KB-20' : /railway model/.test(normalized) ? 'KB-42' : 'KB-36') || guard(buildCollegeProfileAnswer(question), /\b(?:student clubs?|technical clubs?|coding club|robotics club|student associations?|technical chapters?|space|mesa|cesa|eesa|co[- ]?curricular)\b/.test(normalized) ? 'KB-50' : /\b(?:industrial visits?|railway visits?|railway workshop visit|field visits?|field training|summer internships?)\b/.test(normalized) ? 'KB-51' : (/\b(?:sports grounds?|sports facilit\w*|box cricket|cricket ground|volleyball (?:court|ground)|badminton court|campus gym|gymnasium|cultural events?|cultural gathering|annual gathering|cultural fest|shiv jayanti|ganesh (?:utsav|festival))\b/.test(normalized) && !/\b(?:world cup|icc|olympics?)\b/.test(normalized)) ? 'KB-48' : /\b(?:professional diplomas?|railway diplomas?|railway track technology|railway signaling|railway signalling|rolling stocks?(?: and operations)?|software technology in railway|railway specializations?|railway modules?)\b/.test(normalized) ? 'KB-47' : (/\b(?:polytechnic|msbte|diploma)\b/.test(normalized) && !/\b(?:professional diploma|railway diploma|direct second|dse|lateral|fees?|cost|charges?)\b/.test(normalized)) ? 'KB-12' : /\b(?:office hours?|office timings?|working hours?|visiting hours?|admission desk|enquiry desk|college timings?|open on saturday|admission helpline|helpline number|campus visit|visit booking)\b/.test(normalized) ? 'KB-46' : /\b(?:nep(?: 2020)?|national education policy|outcome[- ]based education|obe|medium of instruction|english medium|curriculum pattern)\b/.test(normalized) ? 'KB-45' : /\b(?:anti[- ]?ragging|ragging|campus safety|emergency vehicle|ambulance|medical emergenc\w*|student welfare)\b/.test(normalized) ? 'KB-44' : /\b(?:mous?|corporate readiness|industry partner|aptitude training|soft skills training|campus interview|interview process|recruitment process)\b/.test(normalized) ? 'KB-43' : /\b(?:is mitcorer (?:the )?same as mit pune|mit pune|maeer|parent trust|mit wpu)\b/.test(normalized) ? 'KB-41' : /\b(?:nearest railway station|nearest station|which railway station|station to college|barshi town station|kurduwadi junction|nearest bus|barshi bus stand|how to reach|reach by train|reach by bus|barshi to solapur|solapur to barshi|solapur distance)\b/.test(normalized) ? 'KB-40' : /\b(?:affiliation|affiliated|which university|what university|solapur university|pahsu|aicte|dte code|institute code|06901|principal|madhukar lengare)\b/.test(normalized) ? 'KB-37' : /\b(?:hod|head of department|somnath mule|amit shinde|sanjay mane|honor|minor degree)\b/.test(normalized) || (/\blabs?\b/.test(normalized) && /\b(?:cse|computer|civil|mechanical)\b/.test(normalized)) || /^(?:mechanical engineering|computer engineering|civil engineering)$/.test(normalized) || /\b(?:computer engineering syllabus|mechanical engineering syllabus)\b/.test(normalized) ? 'KB-38' : /\b(?:nss|rail-mit|rail mit|technical event|asimit)\b/.test(normalized) ? 'KB-39' : /\b(?:why|faculty|teacher|professor|staff|alumni|reviews?|ratings?)\b/.test(normalized) && !/\b(?:hiring|recruitment|vacancy|vacancies|job|jobs|career|careers|opening|openings|employment|apply for job|work with us)\b/.test(normalized) ? 'KB-35' : /\b(?:b\.?tech admission|engineering admission|admission process|how to apply|admission 2026)\b/.test(normalized) ? 'KB-29' : /\b(?:education loan|bank loan|loan assistance)\b/.test(normalized) ? 'KB-1' : /\b(?:contact details?|contact number|contact email|phone number|email address|helpline number|contact us|college address|official contact|email and phone|how to contact)\b/.test(normalized) || (/\b(?:contact|phone|telephone|email|address)\b/.test(normalized) && /\b(?:mitcorer|college|barshi|solapur)\b/.test(normalized)) ? 'KB-17' : 'KB-34') || guard(buildCampusFacilitiesAnswer(question), 'KB-36') || guard(buildPlacementAnswer(question), 'KB-16') || guard(buildDeadlineAnswer(question), 'KB-30') || guard(buildAttendanceAnswer(question), ['KB-31', 'KB-32']) || buildMaintainedAnswer(question, normalized, records) || guard(buildEligibilityAnswer(question), 'KB-5') || guard(buildScholarshipAnswer(question), /pragati/.test(normalized) ? 'KB-33' : 'KB-18') || (fallbackRule ? guard(fallbackRule, ruleRecords[fallbackRule.source] || 'KB-15', false) : null) || {
+  const answer = (user && (buildAdmissionReadinessAnswer(question, user) || buildDocumentStatusAnswer(question, user))) || buildCompoundAnswer(question, normalized, records) || buildClarificationAnswer(normalized) || buildReviewedPassage(normalized, language, records) || buildContextualPassage(normalized, records) || guard(buildFacilityAnswer(question), /hostel/.test(normalized) ? 'KB-23' : ((/\b(?:sports grounds?|sports facilit\w*|box cricket|cricket ground|volleyball court|volleyball ground|badminton court|campus gym|college gym|gymnasium|physical fitness)\b/.test(normalized) || /\b(?:sports|gym)\b/.test(normalized)) && !/\b(?:world cup|icc|olympics?)\b/.test(normalized)) ? 'KB-48' : /\b(?:central workshop|machine shop|fitting shop|welding shop|carpentry shop|smithy|sheet metal|computer center|computing center|seminar halls?|audiovisual hall)\b/.test(normalized) ? 'KB-49' : /labs|laborator|workshop/.test(normalized) ? 'KB-22' : /bus|transport/.test(normalized) ? 'KB-19' : /library/.test(normalized) ? 'KB-20' : /railway model/.test(normalized) ? 'KB-42' : 'KB-36') || guard(buildCollegeProfileAnswer(question), /\b(?:student clubs?|technical clubs?|coding club|robotics club|student associations?|technical chapters?|space|mesa|cesa|eesa|co[- ]?curricular)\b/.test(normalized) ? 'KB-50' : /\b(?:industrial visits?|railway visits?|railway workshop visit|field visits?|field training|summer internships?)\b/.test(normalized) ? 'KB-51' : (/\b(?:sports grounds?|sports facilit\w*|box cricket|cricket ground|volleyball (?:court|ground)|badminton court|campus gym|gymnasium|cultural events?|cultural gathering|annual gathering|cultural fest|shiv jayanti|ganesh (?:utsav|festival))\b/.test(normalized) && !/\b(?:world cup|icc|olympics?)\b/.test(normalized)) ? 'KB-48' : /\b(?:professional diplomas?|railway diplomas?|railway track technology|railway signaling|railway signalling|rolling stocks?(?: and operations)?|software technology in railway|railway specializations?|railway modules?)\b/.test(normalized) ? 'KB-47' : (/\b(?:polytechnic|msbte|diploma)\b/.test(normalized) && !/\b(?:professional diploma|railway diploma|direct second|dse|lateral|fees?|cost|charges?)\b/.test(normalized)) ? 'KB-12' : /\b(?:office hours?|office timings?|working hours?|visiting hours?|admission desk|enquiry desk|college timings?|open on saturday|admission helpline|helpline number|campus visit|visit booking)\b/.test(normalized) ? 'KB-46' : /\b(?:nep(?: 2020)?|national education policy|outcome[- ]based education|obe|medium of instruction|english medium|curriculum pattern)\b/.test(normalized) ? 'KB-45' : /\b(?:anti[- ]?ragging|ragging|campus safety|emergency vehicle|ambulance|medical emergenc\w*|student welfare)\b/.test(normalized) ? 'KB-44' : /\b(?:mous?|corporate readiness|industry partner|aptitude training|soft skills training|campus interview|interview process|recruitment process)\b/.test(normalized) ? 'KB-43' : /\b(?:is mitcorer (?:the )?same as mit pune|mit pune|maeer|parent trust|mit wpu)\b/.test(normalized) ? 'KB-41' : /\b(?:nearest railway station|nearest station|which railway station|station to college|barshi town station|kurduwadi junction|nearest bus|barshi bus stand|how to reach|reach by train|reach by bus|barshi to solapur|solapur to barshi|solapur distance)\b/.test(normalized) ? 'KB-40' : /\b(?:affiliation|affiliated|which university|what university|solapur university|pahsu|aicte|dte code|institute code|06901|principal|madhukar lengare)\b/.test(normalized) ? 'KB-37' : /\b(?:hod|head of department|somnath mule|amit shinde|sanjay mane|honor|minor degree)\b/.test(normalized) || (/\blabs?\b/.test(normalized) && /\b(?:cse|computer|civil|mechanical)\b/.test(normalized)) || /^(?:mechanical engineering|computer engineering|civil engineering)$/.test(normalized) || /\b(?:computer engineering syllabus|mechanical engineering syllabus)\b/.test(normalized) ? 'KB-38' : /\b(?:nss|rail-mit|rail mit|technical event|asimit)\b/.test(normalized) ? 'KB-39' : /\b(?:why|faculty|teacher|professor|staff|alumni|reviews?|ratings?)\b/.test(normalized) && !/\b(?:hiring|recruitment|vacancy|vacancies|job|jobs|career|careers|opening|openings|employment|apply for job|work with us)\b/.test(normalized) ? 'KB-35' : /\b(?:b\.?tech admission|engineering admission|admission process|how to apply|admission 2026)\b/.test(normalized) ? 'KB-29' : /\b(?:education loan|bank loan|loan assistance)\b/.test(normalized) ? 'KB-1' : /\b(?:contact details?|contact number|contact email|phone number|email address|helpline number|contact us|college address|official contact|email and phone|how to contact)\b/.test(normalized) || (/\b(?:contact|phone|telephone|email|address)\b/.test(normalized) && /\b(?:mitcorer|college|barshi|solapur)\b/.test(normalized)) ? 'KB-17' : 'KB-34') || guard(buildCampusFacilitiesAnswer(question), 'KB-36') || guard(buildPlacementAnswer(question), 'KB-16') || guard(buildDeadlineAnswer(question), 'KB-30') || guard(buildAttendanceAnswer(question), ['KB-31', 'KB-32']) || buildCutoffAnswer(question, records) || buildMaintainedAnswer(question, normalized, records) || guard(buildEligibilityAnswer(question), 'KB-5') || guard(buildScholarshipAnswer(question), /pragati/.test(normalized) ? 'KB-33' : 'KB-18') || (fallbackRule ? guard(fallbackRule, ruleRecords[fallbackRule.source] || 'KB-15', false) : null) || {
     source: 'No verified record',
     answer: 'I could not find an official answer for that question. Please ask about a specific programme, fee, scholarship, admission step, or campus facility.',
     next: '',
