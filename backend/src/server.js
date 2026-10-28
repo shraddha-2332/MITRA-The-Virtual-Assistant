@@ -1201,7 +1201,7 @@ function buildCollegeProfileAnswer(question) {
       next: '', actionView: 'programs', actionLabel: 'Explore programmes',
     };
   }
-  if (/\b(?:b\.?tech admission(?: process)?|engineering admission(?: process)?|admission process|how to apply|apply for (?:engineering|b\.?tech)|apply to mitcorer|admission 2026|admission eligibility criteria)\b/.test(normalized) && !/\b(?:exam|exams|entrance|test|cet|jee|polytechnic|diploma|dse|direct second|fee|fees|cost|document|documents)\b/.test(normalized)) {
+  if (/\b(?:b\.?tech admission(?: process)?|engineering admission(?: process)?|admission process|how to apply|apply for (?:engineering|b\.?tech)|apply to mitcorer|admission 2026|admission eligibility criteria)\b/.test(normalized) && !/\b(?:exam|exams|entrance|test|cet|jee|polytechnic|diploma|dse|direct second|fee|fees|cost|document|documents|hostel|mess|accommodation)\b/.test(normalized)) {
     return {
       source: 'Maharashtra CET Cell and MITCORER Admissions Office',
       sourceUrl: 'https://mitcorer.edu.in/acap-institute-level-admission.php',
@@ -1346,12 +1346,16 @@ function buildAttendanceAnswer(question) {
 
 function buildFacilityAnswer(question) {
   const normalized = normalizeIntentText(question);
-  if (/hostel/.test(normalized) && /mess/.test(normalized) && !/fee|cost|charge|payment/.test(normalized)) {
+  if (/hostel/.test(normalized) && !/fee|cost|charge|payment/.test(normalized)) {
+    const isAllotmentOrProcess = /\b(?:admission|process|allotment|apply|procedure|rules|joining|room)\b/.test(normalized);
     return {
       source: 'MITCORER Admissions FAQ and official brochure',
       sourceUrl: 'https://www.mitcorer.edu.in/hostel-amenities.php',
-      answer: 'MITCORER provides separate hostel and mess facilities for students:\n\n- Separate hostels for boys and girls with safe accommodation\n- RO purified drinking water and solar water-heating systems\n- Emergency vehicle facility on campus for student safety\n- Campus mess and canteen facilities providing daily meals',
-      next: '', actionView: 'visit', actionLabel: 'Explore facilities',
+      answer: isAllotmentOrProcess
+        ? 'MITCORER Hostel Accommodation & Allotment Guidance:\n\n- Separate Facilities: Dedicated on-campus boys and girls hostels with safe, hygienic living spaces.\n- Amenities: RO purified drinking water, solar water-heating systems, hygienic campus mess/dining, and 24/7 emergency vehicle facility.\n- Allotment & Admission: Hostel room allotment is conducted during reporting and admission on a first-come, first-served basis subject to room availability.\n- Formalities: Students complete the hostel enrollment form, submit required identification/undertakings, and obtain room keys from the hostel warden/admission desk.\n- Fees (AY 2026-27): Hostel fee INR 35,000 with INR 5,000 refundable deposit; mess charges are INR 42,000 annually.'
+        : 'MITCORER provides separate hostel and mess facilities for students:\n\n- Separate hostels for boys and girls with safe accommodation\n- RO purified drinking water and solar water-heating systems\n- Emergency vehicle facility on campus for student safety\n- Campus mess and canteen facilities providing daily meals',
+      next: isAllotmentOrProcess ? 'Check room availability and complete the hostel enrollment form at the admission desk.' : '',
+      actionView: 'visit', actionLabel: 'Explore facilities',
     };
   }
   if ((/\b(?:sports grounds?|sports facilit\w*|box cricket|cricket ground|volleyball court|volleyball ground|badminton court|campus gym|college gym|gymnasium|physical fitness)\b/.test(normalized) || /\b(?:sports|gym)\b/.test(normalized)) && !/\b(?:world cup|icc|olympics?)\b/.test(normalized)) {
