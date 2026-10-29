@@ -2,7 +2,7 @@ import { createRefreshSession } from './refresh-session.mjs';
 
 // Production uses the same-origin Vite/Nginx/Vercel API proxy so Strict cookies
 // are first-party. Direct cross-site APIs would break browser session isolation.
-const API_BASE_URL = import.meta.env.DEV ? (import.meta.env.VITE_API_URL || '') : '';
+const API_BASE_URL = import.meta.env.VITE_API_URL || '';
 
 async function request(path, { token, method = 'GET', body } = {}) {
   const response = await fetch(`${API_BASE_URL}${path}`, {

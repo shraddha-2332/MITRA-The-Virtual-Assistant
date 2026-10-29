@@ -106,6 +106,11 @@ function audit(action, resourceType, resourceId, user, details = '') {
 
 function enforceRateLimit(bucket, key, maxRequests, windowMs) {
   const now = Date.now();
+  if (bucket.size > 5000) {
+    for (const [k, timestamps] of bucket.entries()) {
+      if (!timestamps.some((t) => t > now - windowMs)) bucket.delete(k);
+    }
+  }
   const recent = (bucket.get(key) || []).filter((timestamp) => timestamp > now - windowMs);
   if (recent.length >= maxRequests) throw tooManyRequests();
   recent.push(now);
@@ -120,9 +125,10 @@ async function readJson(req) {
   if (!['POST', 'PATCH', 'PUT', 'DELETE'].includes(req.method)) return {};
   const chunks = [];
   let size = 0;
+  const maxJsonBytes = 256 * 1024;
   for await (const chunk of req) {
     size += chunk.length;
-    if (size > config.maxBodyBytes) throw badRequest('Request body is too large.');
+    if (size > maxJsonBytes) throw badRequest('Request body is too large.');
     chunks.push(chunk);
   }
   if (chunks.length === 0) return {};
@@ -375,6 +381,7 @@ function createInquiry(body, user) {
     updatedAt: now,
   };
   db.inquiries.unshift(record);
+  if (db.inquiries.length > 2000) db.inquiries = db.inquiries.slice(0, 2000);
   saveDb();
   audit('inquiry.created', 'inquiry', record.id, user, record.topic);
   return record;
@@ -416,6 +423,7 @@ export function createPublicEscalatedInquiry(body) {
     updatedAt: now,
   };
   db.inquiries.unshift(record);
+  if (db.inquiries.length > 2000) db.inquiries = db.inquiries.slice(0, 2000);
   saveDb();
   audit('inquiry.escalated', 'inquiry', record.id, { email: record.ownerEmail, role: 'applicant' }, record.topic);
   return { success: true, inquiryId: record.id, message: 'Your enquiry has been escalated to MITCORER admissions staff.' };
@@ -2650,15 +2658,19 @@ export function createServer() {
           'Content-Disposition': `inline; filename="${sanitizeFileName(payload.fileName)}"`,
           'Cache-Control': 'private, no-store',
         });
-        fs.createReadStream(payload.filePath).pipe(res);
+        const stream = fs.createReadStream(payload.filePath);
+        stream.on('error', () => { if (!res.headersSent) res.writeHead(500); res.destroy(); });
+        stream.pipe(res);
         return;
       }
+      const cookies = [];
       if (payload?.refreshToken) {
-        res.setHeader('Set-Cookie', refreshCookie(payload.refreshToken, 60 * 60 * 24 * 14));
+        cookies.push(refreshCookie(payload.refreshToken, 60 * 60 * 24 * 14));
       } else if (payload?.clearRefreshCookie) {
-        res.setHeader('Set-Cookie', refreshCookie('', 0));
+        cookies.push(refreshCookie('', 0));
       }
-      if (payload?.__publicSessionCookie) res.setHeader('Set-Cookie', payload.__publicSessionCookie);
+      if (payload?.__publicSessionCookie) cookies.push(payload.__publicSessionCookie);
+      if (cookies.length) res.setHeader('Set-Cookie', cookies.length === 1 ? cookies[0] : cookies);
       const { refreshToken, clearRefreshCookie, __publicSessionCookie, ...responsePayload } = payload || {};
       jsonResponse(res, 200, { data: responsePayload });
     } catch (error) {

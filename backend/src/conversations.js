@@ -196,7 +196,15 @@ export async function askWithHistory(body, user, answerQuestion) {
     { id: generateId('MSG'), type: 'assistant', text: answer.answer, ...pick(answer, ['source', 'sourceUrl', 'officialLinks', 'next', 'actionView', 'actionLabel', 'sections', 'evidence', 'requestedLanguage', 'responseLanguage', 'localizationStatus', 'languageReviewStatus', 'suggestions', 'escalation']), createdAt: now },
   );
   conversation.updatedAt = now;
-  if (!chat) getDb().conversations.push(conversation);
+  if (!chat) {
+    const all = getDb().conversations;
+    all.push(conversation);
+    const userChats = all.filter((c) => c.ownerId === user.id);
+    if (userChats.length > 50) {
+      const oldestId = userChats[0].id;
+      getDb().conversations = all.filter((c) => c.id !== oldestId);
+    }
+  }
   saveDb();
   return { conversation: { ...summary(conversation), messages: conversation.messages, context: conversation.context } };
 }

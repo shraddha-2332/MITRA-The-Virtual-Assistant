@@ -7,9 +7,17 @@ services:
     buildCommand: npm install
     startCommand: npm start
     healthCheckPath: /api/health
+    disk:
+      name: mitra-data
+      mountPath: /app/data
+      sizeGB: 1
     envVars:
       - key: NODE_ENV
         value: production
+      - key: NODE_VERSION
+        value: 22.23.1
+      - key: DATABASE_FILE
+        value: /app/data/mitra.sqlite
       - key: TOKEN_SECRET
         generateValue: true
       - key: CORS_ORIGIN
