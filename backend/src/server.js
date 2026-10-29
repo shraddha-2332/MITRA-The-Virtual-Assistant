@@ -12,6 +12,7 @@ import { selectLanguage, localizeResponse, buildReviewedPassage } from './langua
 import { buildClarificationAnswer, buildCompoundAnswer, buildContextualPassage } from './question-plan.js';
 import { publicEvidence } from './evidence.js';
 import { normalizeQuery, matchesIntent, understandQuery, isEmploymentQuery } from './query-understanding.js';
+import { asksForAllPrograms } from './query-scope.js';
 import { resolveSourceUrl, sourceRecord, uniqueSourceLinks } from './source-links.js';
 import { availability, usableKnowledge, validateProvenance, validateSupersession, confirmSourceReview, splitPassage } from './provenance.js';
 import { createRefreshToken, createToken, getBearerToken, hashPassword, hashToken, requireAuth, requireRole, verifyPassword, verifyToken, canAccessApplicantRecord } from './auth.js';
@@ -1132,7 +1133,15 @@ function buildCollegeProfileAnswer(question) {
       next: '', actionView: 'visit', actionLabel: 'View campus location',
     };
   }
-  if (/\b(?:affiliation|affiliated|which university|what university|solapur university|pahsu|aicte approval|approved by aicte|aicte approved|dte code|institute code|code 06901|who is the principal|principal of|college principal)\b/.test(normalized)) {
+  if (/\b(?:who is the principal|principal name|name of the principal|principal of mitcorer|college principal)\b/.test(normalized) && !/\b(?:affiliation|affiliated|dte|aicte|university|code)\b/.test(normalized)) {
+    return {
+      source: 'MITCORER official leadership portal',
+      sourceUrl: 'https://mitcorer.edu.in/',
+      answer: 'The Principal of MIT College of Railway Engineering and Research (MITCORER), Barshi is Dr. Madhukar J. Lengare.',
+      next: '', actionView: 'visit', actionLabel: 'View college details',
+    };
+  }
+  if (/\b(?:affiliation|affiliated|which university|what university|solapur university|pahsu|aicte approval|approved by aicte|aicte approved|dte code|institute code|code 06901|principal of|college principal)\b/.test(normalized)) {
     return {
       source: 'MITCORER official portal and AICTE Mandatory Disclosure',
       sourceUrl: 'https://mitcorer.edu.in/',
@@ -1143,11 +1152,30 @@ function buildCollegeProfileAnswer(question) {
   const asksMech = /\b(?:mechanical|mech|railway|rail|sanjay mane|mesa)\b/i.test(normalized);
   const asksCivil = /\b(?:civil|amit shinde|cesa)\b/i.test(normalized);
   const asksCse = /\b(?:cse|computer|somnath mule|space|ai ml honors|cybersecurity honors)\b/i.test(normalized);
+  const asksHod = /\b(?:hod|head of department|department head)\b/i.test(normalized);
+  const asksLabs = /\b(?:labs?|laborator(?:y|ies))\b/i.test(normalized);
+  const asksSyllabus = /\b(?:syllabus|curriculum|subjects)\b/i.test(normalized);
   const asksHodOrDept = /\b(?:hod|head of department|department head|labs?|laborator(?:y|ies)|syllabus|specializations?|honor degrees?|minor degrees?)\b/i.test(normalized);
   const isExcludedFromProfile = /\b(?:eligible|eligibility|percentile|cutoff|cut-off|fee|fees|scholarship)\b/i.test(normalized);
 
-  if (!isExcludedFromProfile && (asksHodOrDept || /^(?:mechanical engineering|computer engineering|civil engineering)$/.test(normalized) || /\b(?:computer engineering syllabus|mechanical engineering syllabus)\b/.test(normalized))) {
+  if (!isExcludedFromProfile && (asksHodOrDept || /\b(?:about\s+civil|civil\s+branch|civil\s+department|about\s+mechanical|mechanical\s+branch|mechanical\s+department|about\s+computer|computer\s+branch|computer\s+department)\b/i.test(normalized) || /^(?:mechanical engineering|computer engineering|civil engineering)$/.test(normalized) || /\b(?:computer engineering syllabus|mechanical engineering syllabus)\b/.test(normalized))) {
     if (asksMech && !asksCivil && !asksCse) {
+      if (asksHod && !asksLabs && !asksSyllabus) {
+        return {
+          source: 'MITCORER Mechanical & Rail Engineering department portal',
+          sourceUrl: 'https://mitcorer.edu.in/mechanical-engineering.php',
+          answer: 'The Head of Department (HOD) of Mechanical & Rail Engineering at MITCORER is Dr. Sanjay Pandurang Mane.',
+          next: '', actionView: 'programs', actionLabel: 'Explore Mechanical & Rail Engineering',
+        };
+      }
+      if (asksLabs && !asksHod && !asksSyllabus) {
+        return {
+          source: 'MITCORER Mechanical & Rail Engineering department portal',
+          sourceUrl: 'https://mitcorer.edu.in/mechanical-engineering.php',
+          answer: 'MITCORER Department of Mechanical & Rail Engineering Laboratories:\n\n- CAD/CAM Lab\n- Robotics Lab\n- Heat Transfer Lab\n- Dynamics of Machinery Lab\n- Central Workshop fabrication facilities',
+          next: '', actionView: 'programs', actionLabel: 'Explore Mechanical & Rail Engineering',
+        };
+      }
       return {
         source: 'MITCORER Mechanical & Rail Engineering department portal',
         sourceUrl: 'https://mitcorer.edu.in/mechanical-engineering.php',
@@ -1156,6 +1184,22 @@ function buildCollegeProfileAnswer(question) {
       };
     }
     if (asksCivil && !asksMech && !asksCse) {
+      if (asksHod && !asksLabs && !asksSyllabus) {
+        return {
+          source: 'MITCORER Civil Engineering department portal',
+          sourceUrl: 'https://mitcorer.edu.in/civil-engineering.php',
+          answer: 'The Head of Department (HOD) of Civil Engineering at MITCORER is Prof. Amit Raosaheb Shinde.',
+          next: '', actionView: 'programs', actionLabel: 'Explore Civil Engineering',
+        };
+      }
+      if (asksLabs && !asksHod && !asksSyllabus) {
+        return {
+          source: 'MITCORER Civil Engineering department portal',
+          sourceUrl: 'https://mitcorer.edu.in/civil-engineering.php',
+          answer: 'MITCORER Department of Civil Engineering Laboratories:\n\n- Strength of Materials Lab\n- Surveying Lab\n- Concrete Technology Lab\n- Environmental Engineering Lab\n- Computer-Aided Civil Design (CAD) Lab',
+          next: '', actionView: 'programs', actionLabel: 'Explore Civil Engineering',
+        };
+      }
       return {
         source: 'MITCORER Civil Engineering department portal',
         sourceUrl: 'https://mitcorer.edu.in/civil-engineering.php',
@@ -1164,6 +1208,22 @@ function buildCollegeProfileAnswer(question) {
       };
     }
     if (asksCse && !asksMech && !asksCivil) {
+      if (asksHod && !asksLabs && !asksSyllabus) {
+        return {
+          source: 'MITCORER Computer Science & Engineering department portal',
+          sourceUrl: 'https://mitcorer.edu.in/computer-science-engineering.php',
+          answer: 'The Head of Department (HOD) of Computer Science & Engineering (CSE) at MITCORER is Prof. Somnath Mule.',
+          next: '', actionView: 'programs', actionLabel: 'Explore Computer Science & Engineering',
+        };
+      }
+      if (asksLabs && !asksHod && !asksSyllabus) {
+        return {
+          source: 'MITCORER Computer Science & Engineering department portal',
+          sourceUrl: 'https://mitcorer.edu.in/computer-science-engineering.php',
+          answer: 'MITCORER Department of Computer Science & Engineering Laboratories:\n\n- High-Performance Computing Lab\n- AI/ML & Deep Learning Lab\n- Database Systems Lab\n- Software Engineering Lab\n- Programming Computational Center',
+          next: '', actionView: 'programs', actionLabel: 'Explore Computer Science & Engineering',
+        };
+      }
       return {
         source: 'MITCORER Computer Science & Engineering department portal',
         sourceUrl: 'https://mitcorer.edu.in/computer-science-engineering.php',
@@ -1382,7 +1442,8 @@ function buildFacilityAnswer(question) {
       next: '', actionView: 'visit', actionLabel: 'Explore facilities',
     };
   }
-  if (/labs|laborator|workshop/.test(normalized) && !/\b(?:industrial visits?|field visits?|railway visits?|workshop visit)\b/.test(normalized)) {
+  const hasBranchLabIntent = /\b(?:cse|computer|civil|mechanical|mech|railway|rail|aids|entc)\b/i.test(normalized);
+  if (/labs|laborator|workshop/.test(normalized) && !hasBranchLabIntent && !/\b(?:industrial visits?|field visits?|railway visits?|workshop visit)\b/.test(normalized)) {
     return {
       source: 'MITCORER Admissions FAQ and official workshop page',
       sourceUrl: 'https://mitcorer.edu.in/workshops.php',
@@ -1643,7 +1704,29 @@ export function retrieveKnowledge(question, vectorScores = null) {
       const conceptScore = computeConceptScore(question, item);
       const vectorScore = (vectorScores instanceof Map) ? (vectorScores.get(item.id) || 0) : 0;
       const semanticBoost = Math.max(conceptScore, vectorScore);
-      const score = relevanceScore + tagScore + referenceTokenScore + semanticBoost + (item.category.toLocaleLowerCase() === preferredCategory ? 20 : 0) + (targetedRecordIds.has(item.id) ? 50 : 0) + (primaryRecordIds.has(item.id) ? 100 : 0);
+      let branchScoreAdjustment = 0;
+      const qBranchObj = understandQuery(question);
+      const activeBranches = qBranchObj.branch.positive;
+      if (activeBranches.length === 1 && !asksForAllPrograms(normalizedQuestion)) {
+        const b = activeBranches[0];
+        const itemTags = (item.tags || []).map(t => String(t).toLowerCase());
+        const itemTitle = String(item.title || '').toLowerCase();
+        const branchKeywords = {
+          civil: ['civil', 'amit shinde'],
+          mechanical: ['mechanical', 'rail', 'sanjay mane'],
+          cse: ['cse', 'computer', 'somnath mule'],
+        };
+        const competingMap = {
+          civil: ['cse', 'computer', 'mechanical', 'sanjay mane', 'somnath mule'],
+          mechanical: ['cse', 'computer', 'civil', 'amit shinde', 'somnath mule'],
+          cse: ['civil', 'mechanical', 'amit shinde', 'sanjay mane'],
+        };
+        const matchesTarget = (branchKeywords[b] || []).some(k => itemTags.includes(k) || itemTitle.includes(k));
+        const matchesCompeting = (competingMap[b] || []).some(k => itemTags.includes(k) || itemTitle.includes(k));
+        if (matchesTarget && !matchesCompeting) branchScoreAdjustment += 50;
+        else if (matchesCompeting && !matchesTarget) branchScoreAdjustment -= 50;
+      }
+      const score = relevanceScore + tagScore + referenceTokenScore + semanticBoost + branchScoreAdjustment + (item.category.toLocaleLowerCase() === preferredCategory ? 20 : 0) + (targetedRecordIds.has(item.id) ? 50 : 0) + (primaryRecordIds.has(item.id) ? 100 : 0);
       return { ...item, score };
     })
     .filter((item) => item.score >= 2)
@@ -1886,6 +1969,51 @@ export function generateQuerySuggestions(question, normalized) {
   return [];
 }
 
+function validateBranchRelevance(answerText, question, context = {}) {
+  const normQ = String(question || '').normalize('NFKC').toLowerCase();
+  const qObj = understandQuery(question);
+  const branches = qObj.branch.positive;
+  let targetBranch = branches.length === 1 ? branches[0] : null;
+  if (!targetBranch && context.branch && !qObj.branch.excluded.length && !asksForAllPrograms(normQ)) {
+    const map = {
+      'Civil Engineering': 'civil',
+      'Computer Engineering': 'cse',
+      'Mechanical & Rail Engineering': 'mechanical',
+      'AI & Data Science': 'aids',
+      'Electronics & Telecommunication': 'entc',
+    };
+    targetBranch = map[context.branch] || null;
+  }
+  if (!targetBranch || asksForAllPrograms(normQ)) return answerText;
+
+  const competingSignatures = {
+    civil: [/\bmechanical(?: and rail)?(?: engineering)?\b/i, /\bdr\.? sanjay (?:pandurang )?mane\b/i, /\bprof\.? somnath mule\b/i, /\bcomputer science & engineering\b/i, /\b0690124210\b/, /\b0690161210\b/],
+    mechanical: [/\bcivil engineering\b/i, /\bprof\.? amit (?:raosaheb )?shinde\b/i, /\bprof\.? somnath mule\b/i, /\bcomputer science & engineering\b/i, /\b0690119110\b/, /\b0690124210\b/],
+    cse: [/\bcivil engineering\b/i, /\bprof\.? amit (?:raosaheb )?shinde\b/i, /\bdr\.? sanjay (?:pandurang )?mane\b/i, /\bmechanical(?: and rail)?(?: engineering)?\b/i, /\b0690119110\b/, /\b0690161210\b/],
+  };
+
+  const forbidden = competingSignatures[targetBranch];
+  if (!forbidden) return answerText;
+
+  const hasCompeting = forbidden.some(regex => regex.test(answerText));
+  if (hasCompeting && answerText.includes('\n- ')) {
+    const lines = answerText.split('\n');
+    const filteredLines = [];
+    let keeping = true;
+    for (const line of lines) {
+      if (line.trim().startsWith('- ')) {
+        if (targetBranch === 'civil') keeping = /\bcivil\b|amit shinde/i.test(line);
+        else if (targetBranch === 'mechanical') keeping = /\bmechanical|rail\b|sanjay mane/i.test(line);
+        else if (targetBranch === 'cse') keeping = /\bcomputer|cse\b|somnath mule/i.test(line);
+      }
+      if (keeping) filteredLines.push(line);
+    }
+    const filtered = filteredLines.join('\n').trim();
+    if (filtered.length > 20) return filtered;
+  }
+  return answerText;
+}
+
 export async function answerAdmissionQuestion(body, user) {
   if (typeof body?.question !== 'string' || !body.question.trim() || body.question.trim().length > 1000) {
     throw badRequest('Enter a question of up to 1000 characters.');
@@ -2090,6 +2218,7 @@ export async function answerAdmissionQuestion(body, user) {
     // showing the same generic "contact us" buttons.
     groundedAnswer.suggestions = buildNoAnswerSuggestions(normalized);
   }
+  groundedAnswer.answer = validateBranchRelevance(groundedAnswer.answer, question, context);
   return localizeResponse(groundedAnswer, language, normalized, evidence, academicFeeSelection, parseLegacyFactText);
 }
 

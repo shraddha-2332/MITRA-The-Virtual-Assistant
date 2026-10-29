@@ -16,12 +16,12 @@ export function extractAcademicYears(text) {
 }
 
 export const branchPatterns = {
-  cse: /\bcse\b|(?<!electronics\s+(?:and|&)\s+)\bcomputer\s+(?:science|engineering)(?:\s+and\s+engineering)?\b/gi,
-  civil: /\bcivil(?: engineering)?\b/gi,
+  cse: /\bcse\b|(?<!electronics\s+(?:and|&)\s+)\bcomputer\s+(?:science|engineering|branch|dept|department)(?:\s+and\s+engineering)?\b/gi,
+  civil: /\bcivil(?:\s+(?:engineering|branch|dept|department))?\b/gi,
   aids: /\bartificial intelligence(?: and data science)?\b|\baids\b|\bai\s*(?:&|and)\s*ds\b|\bdata science\b/gi,
   electronicsComputer: /\belectronics and computer(?: engineering)?\b/gi,
   entc: /\bentc\b|\be\s*&\s*tc\b|\belectronics and telecommunication(?: engineering)?\b/gi,
-  mechanical: /\bmechanical(?: and rail)?(?: engineering)?\b|\brail(?:way)? engineering\b/gi
+  mechanical: /\bmech\b|\bmechanical(?: and rail)?(?:\s+(?:engineering|branch|dept|department))?\b|\brail(?:way)? engineering\b/gi
 };
 export const servicePatterns = { hostel: /\bhostel\b/g, mess: /\bmess\b/g, transport: /\bbus\b|\btransport\b/g, library: /\blibrary\b|\bjournal\b/g };
 

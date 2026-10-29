@@ -50,13 +50,13 @@ export function extractConversationContext(text, existingContext = {}) {
   }
 
   // Branch preference
-  if (/\b(?:computer engineering|computer science|cse)\b/.test(norm)) {
+  if (/\b(?:computer engineering|computer science|computer branch|computer dept|cse)\b/.test(norm)) {
     context.branch = 'Computer Engineering';
-  } else if (/\b(?:mechanical and rail(?:way)?|mechanical engineering|mechanical|rail(?:way)? engineering)\b/.test(norm)) {
+  } else if (/\b(?:mechanical and rail(?:way)?|mechanical engineering|mechanical branch|mechanical dept|mechanical|mech|rail(?:way)? engineering)\b/.test(norm)) {
     context.branch = 'Mechanical & Rail Engineering';
   } else if (/\b(?:ai & ds|ai and ds|artificial intelligence|aids)\b/.test(norm)) {
     context.branch = 'AI & Data Science';
-  } else if (/\b(?:civil engineering|civil)\b/.test(norm)) {
+  } else if (/\b(?:civil engineering|civil branch|civil dept|civil)\b/.test(norm)) {
     context.branch = 'Civil Engineering';
   } else if (/\b(?:electronics and telecommunication|entc|electronics)\b/.test(norm)) {
     context.branch = 'Electronics & Telecommunication';
@@ -167,7 +167,12 @@ export function resolveConversationalQuestion(question, chat, context = {}) {
     return `Placement inquiry: ${question}`;
   }
 
-  // 6. Branch context fallback for short follow-ups
+  // 6. Department / HOD / Lab / Syllabus follow-ups
+  if (/\b(?:hod|head of department|department head|labs?|laborator\w*|faculty|syllabus)\b/.test(norm) && context.branch && !/\b(?:computer|mechanical|civil|railway|ai|data science|entc|electronics)\b/.test(norm)) {
+    return withScope(question, `for ${context.branch}`);
+  }
+
+  // 7. Branch context fallback for short follow-ups
   if (!explicitOtherTopic && context.branch && isBareOrPronoun && !/\b(?:computer|mechanical|civil|railway|ai|data science|entc|electronics)\b/.test(norm)) {
     return withScope(question, `for ${context.branch}`);
   }
